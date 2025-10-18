@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+import 'package:arkham_decks/factions.dart';
+import 'package:arkham_decks/icon_manager.dart';
+
+class ArkhamCard {
+  final String code;
+  final int? cost;
+  final String name;
+  final Faction faction;
+  final List<Faction> multiFactions;
+  final String type;
+  final int? level;
+
+  ArkhamCard({
+    required this.code,
+    required this.cost,
+    required this.name,
+    required this.faction,
+    required this.type,
+    required this.level,
+    this.multiFactions = const [],
+  });
+
+  factory ArkhamCard.fromMap(Map<String, dynamic> map) {
+    if (map['faction2_code'] != null) {
+      final multiFactions = [
+        Faction.fromString(map['faction_code']),
+        Faction.fromString(map['faction2_code']),
+        Faction.fromString(map['faction3_code']),
+      ];
+
+      return ArkhamCard(
+        code: map['code'],
+        cost: map['cost'],
+        name: map['name'],
+        faction: Faction.multi,
+        multiFactions: multiFactions.nonNulls.toList(growable: false),
+        type: map['type_code'],
+        level: map['xp'],
+      );
+    } else {
+      return ArkhamCard(
+        code: map['code'],
+        cost: map['cost'],
+        name: map['name'],
+        faction: Faction.fromString(map['faction_code'])!,
+        type: map['type_code'],
+        level: map['xp'],
+      );
+    }
+  }
+}
+
+class CostLevelCircle extends StatelessWidget {
+  final ArkhamCard card;
+  final bool onlyOutline;
+
+  const CostLevelCircle({
+    super.key,
+    required this.card,
+    this.onlyOutline = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final circleDiameter = constraints.maxHeight * 0.9;
+        late final Widget composedIcon;
+
+        if (card.type == 'investigator') {
+          composedIcon = IconManager().getIcon(
+            card.faction.name,
+            color: card.faction.color,
+          );
+        } else if (card.type == 'skill' ||
+            card.type == 'event' ||
+            card.type == 'asset') {
+          composedIcon = Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            children: [
+              onlyOutline
+                  ? IconManager().getIcon(
+                    'inverted_level_${card.level ?? 'none'}',
+                    color: Colors.white,
+                  )
+                  : IconManager().getIcon(
+                    'level_${card.level ?? 'none'}',
+                    color: card.faction.color,
+                  ),
+
+              card.type == 'skill'
+                  ? Container(
+                    padding: EdgeInsets.only(
+                      left: circleDiameter * 0.1,
+                      right: circleDiameter * 0.1,
+                      top: circleDiameter * 0.04,
+                      bottom: circleDiameter * 0.28,
+                    ),
+                    child: IconManager().getIcon(
+                      card.faction.name,
+                      color: Colors.white,
+                    ),
+                  )
+                  : Align(
+                    alignment: Alignment(0.0, -0.55),
+                    child: Text(
+                      card.cost != null ? card.cost!.toString() : '-',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: circleDiameter * 0.4,
+                        color: Colors.white,
+                        fontFamily: 'Cost',
+                      ),
+                    ),
+                  ),
+            ],
+          );
+        } else {
+          composedIcon = IconManager().getIcon(
+            'weakness',
+            color: Colors.black54,
+          );
+        }
+
+        return SizedBox(
+          height: circleDiameter,
+          width: circleDiameter,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 2.0,
+              right: 2.0,
+              top: 5.0,
+              bottom: 2.0,
+            ),
+            child: composedIcon,
+          ),
+        );
+      },
+    );
+  }
+}

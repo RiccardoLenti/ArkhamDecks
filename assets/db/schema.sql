@@ -1,0 +1,30 @@
+DROP TABLE IF EXISTS cards;
+
+CREATE TABLE cards (
+    code TEXT PRIMARY KEY,
+    name TEXT,
+    subname TEXT,
+    type_code TEXT,
+    faction_code TEXT,
+    faction2_code TEXT,
+    faction3_code TEXT,
+    pack_code TEXT,
+    position INTEGER,
+    traits TEXT,
+    text TEXT,
+    flavor TEXT,
+    cost INTEGER,
+    health INTEGER,
+    sanity INTEGER,
+    xp INTEGER,
+    slot TEXT,
+    skill_intellect INTEGER,
+    skill_combat INTEGER,
+    skill_agility INTEGER,
+    skill_willpower INTEGER,
+    skill_wild INTEGER,
+    is_unique BOOLEAN,
+    myriad BOOLEAN,
+    deck_limit INTEGER,
+    quantity INTEGER
+);
