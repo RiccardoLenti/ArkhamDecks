@@ -16,6 +16,7 @@ dependencies:
   flutter_svg: ^2.0.9
   provider: ^6.1.5+1
   flutter_html: ^3.0.0
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:
@@ -36,3 +37,7 @@ flutter:
     - family: Arkhamic 
       fonts:
         - asset: assets/fonts/Arkhamic.ttf
+    - family: Alegreya
+      fonts: 
+        - asset: assets/fonts/Alegreya-VariableFont_wght.ttf
+        - asset: assets/fonts/Alegreya-Italic-VariableFont_wght.ttf

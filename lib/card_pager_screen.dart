@@ -6,7 +6,11 @@ class CardPagerScreen extends StatefulWidget {
   final List<ArkhamCard> cards;
   final int initialIndex;
 
-  const CardPagerScreen({super.key, required this.cards, required this.initialIndex});
+  const CardPagerScreen({
+    super.key,
+    required this.cards,
+    required this.initialIndex,
+  });
 
   @override
   State<CardPagerScreen> createState() => _CardPagerScreenState();
