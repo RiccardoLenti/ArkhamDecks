@@ -22,6 +22,8 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
   List<String>? _traits;
   List<String>? _slots;
   int? _health, _sanity;
+  bool? _isUnique;
+  List<String>? _customizationText;
 
   static const _commitSkillNames = [
     'skill_willpower',
@@ -66,6 +68,9 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
         _health = queryRes.first['health'] as int?;
         _sanity = queryRes.first['sanity'] as int?;
         _flavor = queryRes.first['flavor'] as String?;
+        _isUnique = (queryRes.first['is_unique'] as int) == 1 ? true : false;
+        _customizationText = (queryRes.first['customization_text'] as String?)
+            ?.split('\n');
 
         _commitSkills.clear();
         for (var name in _commitSkillNames) {
@@ -83,132 +88,99 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 5.0),
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.topCenter,
-              child: IntrinsicHeight(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: _card!.faction.color, width: 45),
-                      bottom: BorderSide(color: _card!.faction.color, width: 4),
-                      left: BorderSide(color: _card!.faction.color, width: 4),
-                      right: BorderSide(color: _card!.faction.color, width: 4),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child:
-                        _card!.type == 'investigator'
-                            ? _investigatorDetailScreen()
-                            : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 250,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            spacing: 7.0,
-                                            children: [
-                                              _buildCardTypeSlots(),
-                                              _buildTraits(),
-                                              _buildCommitIcons(),
-                                              _buildSlots(),
-
-                                              if (_health != null ||
-                                                  _sanity != null)
-                                                _buildHealthSanityIcon(
-                                                  _health,
-                                                  _sanity,
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                        Image.network(
-                                          'https://arkhamdb.com/bundles/cards/${_card!.code}.png',
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ],
-                                    ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 5.0),
+          child: Column(
+            children: [
+              _buildBoxBorder(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child:
+                      _card!.type == 'investigator'
+                          ? _investigatorDetailScreen()
+                          : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                height: 250,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
                                   ),
-                                ),
-
-                                // TODO: export this into a single Widget function
-                                Padding(
-                                  padding: EdgeInsets.only(top: 15, bottom: 8),
-                                  child: Column(
-                                    spacing: 5.0,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _text == null
-                                          ? SizedBox.shrink()
-                                          : _buildCardText(),
-                                      _flavor == null
-                                          ? SizedBox.shrink()
-                                          : _buildCardFlavor(),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          spacing: 7.0,
+                                          children: [
+                                            _buildCardTypeSlots(),
+                                            _buildTraits(),
+                                            _buildCommitIcons(),
+                                            _buildSlots(),
+
+                                            if (_health != null ||
+                                                _sanity != null)
+                                              _buildHealthSanityIcon(
+                                                _health,
+                                                _sanity,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Image.network(
+                                        'https://arkhamdb.com/bundles/cards/${_card!.code}.png',
+                                        fit: BoxFit.cover,
+                                      ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+
+                              // TODO: export this into a single Widget function
+                              Padding(
+                                padding: EdgeInsets.only(top: 15, bottom: 8),
+                                child: Column(
+                                  spacing: 5.0,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _text == null
+                                        ? SizedBox.shrink()
+                                        : _buildCardText(),
+                                    _flavor == null
+                                        ? SizedBox.shrink()
+                                        : _buildCardFlavor(),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                ),
+                leading: CostLevelCircle(card: _card!, onlyOutline: true),
+                center: Text(
+                  _isUnique! ? '✷ ${_card!.name}' : _card!.name,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontFamily: 'Arkhamic',
                   ),
                 ),
-              ),
-            ),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 45),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: CostLevelCircle(card: _card!, onlyOutline: true),
-                    ),
-                    Center(
-                      child: Text(
-                        _card!.name,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontFamily: 'Arkhamic',
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: 5.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: _buildFactionIcons(),
-                        ),
-                      ),
-                    ),
-                  ],
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: _buildFactionIcons(),
                 ),
               ),
-            ),
-          ],
+              if (_customizationText != null) _buildCustomizationTable(),
+            ],
+          ),
         ),
       ),
     );
@@ -367,18 +339,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
 
   ///assumes text != null
   Widget _buildCardText() {
-    // matches everything like [tag], discards [[tag]]
-    final pattern = RegExp(r'(?<!\[)\[([^\[\]]+)\](?!\])');
-    final processedText = _text!
-        .replaceAll('\n', '<br>')
-        .replaceAll('[fast]', '[free]')
-        .replaceAll('[[', '<b><i>')
-        .replaceAll(']]', '</i></b>')
-        .replaceAll('- ', '<icon name="bullet"/></icon>')
-        .replaceAllMapped(
-          pattern,
-          (m) => '<icon name="${m.group(1)}"/></icon>',
-        );
+    // matches everything like [tag], ignores [[tag]]
 
     return IntrinsicHeight(
       child: Row(
@@ -392,34 +353,48 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
               borderRadius: BorderRadius.circular(4),
             ),
           ),
-          Expanded(
-            child: Html(
-              data: processedText,
-              extensions: [
-                TagExtension(
-                  tagsToExtend: {'icon'},
-                  builder: (context) {
-                    final iconName = context.element?.attributes['name'];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 2.5),
-                      child: IconManager().getIcon(
-                        iconName!,
-                        size: 18,
-                        color: Colors.black,
-                      ),
-                    );
-                  },
-                ),
-              ],
-              style: {
-                "body": Style(textAlign: TextAlign.left, margin: Margins.zero),
-                "icon": Style(display: Display.inlineBlock),
-              },
-            ),
-          ),
+          Expanded(child: _buildTextWithIcons(_text!)),
         ],
       ),
+    );
+  }
+
+  Widget _buildTextWithIcons(String text) {
+    final pattern = RegExp(r'(?<!\[)\[([^\[\]]+)\](?!\])');
+    final processedText = text
+        .replaceAll('\n- ', '\n<icon name="bullet"/></icon>')
+        .replaceAll('\n', '<br>')
+        .replaceAll('[fast]', '[free]')
+        .replaceAll('[[', '<b><i>')
+        .replaceAll(']]', '</i></b>')
+        .replaceAllMapped(
+          pattern,
+          (m) => '<icon name="${m.group(1)}"/></icon>',
+        );
+
+    return Html(
+      data: processedText,
+      extensions: [
+        TagExtension(
+          tagsToExtend: {'icon'},
+          builder: (context) {
+            final iconName = context.element?.attributes['name'];
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 2.5),
+              child: IconManager().getIcon(
+                iconName!,
+                size: 18,
+                color: Colors.black,
+              ),
+            );
+          },
+        ),
+      ],
+      style: {
+        "body": Style(textAlign: TextAlign.left, margin: Margins.zero),
+        "icon": Style(display: Display.inlineBlock),
+      },
     );
   }
 
@@ -436,6 +411,97 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
           fontVariations: [FontVariation('wght', 450)],
         ),
       ),
+    );
+  }
+
+  Widget _buildBoxBorder({
+    required Widget child,
+    Widget? center,
+    Widget? leading,
+    Widget? trailing,
+  }) {
+    return Stack(
+      children: [
+        Align(
+          alignment: Alignment.topCenter,
+          child: IntrinsicHeight(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: _card!.faction.color, width: 45),
+                  bottom: BorderSide(color: _card!.faction.color, width: 4),
+                  left: BorderSide(color: _card!.faction.color, width: 4),
+                  right: BorderSide(color: _card!.faction.color, width: 4),
+                ),
+              ),
+              child: child,
+            ),
+          ),
+        ),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: 45),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                leading == null
+                    ? SizedBox.shrink()
+                    : Align(alignment: Alignment.centerLeft, child: leading),
+                center == null ? SizedBox.shrink() : Center(child: center),
+                trailing == null
+                    ? SizedBox.shrink()
+                    : Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 5.0),
+                        child: trailing,
+                      ),
+                    ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  ///assumes _customizationText != null
+  Widget _buildCustomizationTable() {
+    return Column(
+      children: [
+        Divider(color: Colors.black54, thickness: 2, height: 30),
+        _buildBoxBorder(
+          center: Text(
+            'Customization',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Arkhamic',
+              color: Colors.white,
+              fontSize: 24,
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(_customizationText!.length * 2 - 1, (
+                index,
+              ) {
+                if (index.isOdd) {
+                  return Divider(
+                    color: Colors.black26,
+                    thickness: 0.75,
+                    height: 10,
+                  );
+                } else {
+                  return _buildTextWithIcons(_customizationText![index ~/ 2]);
+                }
+              }),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

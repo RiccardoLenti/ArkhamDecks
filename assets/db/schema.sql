@@ -25,6 +25,7 @@ CREATE TABLE cards (
     skill_wild INTEGER,
     is_unique BOOLEAN,
     myriad BOOLEAN,
+    customization_text TEXT,
     deck_limit INTEGER,
     quantity INTEGER
 );

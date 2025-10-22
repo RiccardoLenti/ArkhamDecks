@@ -25,9 +25,9 @@ for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
                     code, name, subname, type_code, faction_code, faction2_code, faction3_code,
                     pack_code, position, traits, text, flavor, cost, health,
                     sanity, xp, slot, skill_intellect, skill_combat,
-                    skill_agility, skill_willpower, skill_wild, is_unique, myriad, deck_limit,
-                    quantity
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    skill_agility, skill_willpower, skill_wild, is_unique, myriad, 
+                    customization_text, deck_limit, quantity
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -53,6 +53,7 @@ for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
                 card.get("skill_wild"),
                 1 if card.get("is_unique") else 0,
                 1 if card.get("myriad") else 0,
+                card.get("customization_text"),
                 card.get("deck_limit"),
                 card.get("quantity")
             ))
