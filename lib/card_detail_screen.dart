@@ -24,6 +24,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
   int? _health, _sanity;
   bool? _isUnique;
   List<String>? _customizationText;
+  static const _skillBackgroundColor = Color.fromARGB(255, 123, 118, 118);
 
   static const _commitSkillNames = [
     'skill_willpower',
@@ -200,7 +201,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 123, 118, 118),
+              color: _skillBackgroundColor,
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -555,12 +556,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
             width: 50,
             height: 30,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(
-                255,
-                123,
-                118,
-                118,
-              ), //TODO: same color as commit skills
+              color: _skillBackgroundColor,
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,

@@ -90,31 +90,7 @@ class CostLevelCircle extends StatelessWidget {
                     color: card.faction.color,
                   ),
 
-              card.type == 'skill'
-                  ? Container(
-                    padding: EdgeInsets.only(
-                      left: circleDiameter * 0.1,
-                      right: circleDiameter * 0.1,
-                      top: circleDiameter * 0.04,
-                      bottom: circleDiameter * 0.28,
-                    ),
-                    child: IconManager().getIcon(
-                      card.faction.name,
-                      color: Colors.white,
-                    ),
-                  )
-                  : Align(
-                    alignment: Alignment(0.0, -0.55),
-                    child: Text(
-                      card.cost != null ? card.cost!.toString() : '-',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: circleDiameter * 0.4,
-                        color: Colors.white,
-                        fontFamily: 'Cost',
-                      ),
-                    ),
-                  ),
+              _buildInnerPart(circleDiameter),
             ],
           );
         } else {
@@ -138,6 +114,38 @@ class CostLevelCircle extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInnerPart(double circleDiameter) {
+    if (card.type == 'skill') {
+      return Container(
+        padding: EdgeInsets.only(
+          left: circleDiameter * 0.1,
+          right: circleDiameter * 0.1,
+          top: circleDiameter * 0.04,
+          bottom: circleDiameter * 0.28,
+        ),
+        child: IconManager().getIcon(card.faction.name, color: Colors.white),
+      );
+    } else if (card.cost == -2) {
+      return Padding(
+        padding: EdgeInsets.only(right: 8.0, left: 8.0, top: 6.0, bottom: 10.5),
+        child: IconManager().getIcon('x-fill', color: Colors.white),
+      );
+    }
+
+    return Align(
+      alignment: Alignment(0.0, -0.55),
+      child: Text(
+        card.cost?.toString() ?? '-',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: circleDiameter * 0.4,
+          color: Colors.white,
+          fontFamily: 'Cost',
+        ),
+      ),
     );
   }
 }

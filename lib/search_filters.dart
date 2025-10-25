@@ -212,7 +212,6 @@ class LevelFilter extends BaseFilter {
 class CostFilter extends BaseFilter {
   int _min = 0, _max = 20;
 
-  //TODO: x-cost cards are stored in the db with cost = -2
   int get min => _min;
   int get max => _max;
 
