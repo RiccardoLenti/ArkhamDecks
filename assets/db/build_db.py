@@ -1,6 +1,6 @@
 import sqlite3, json, os, glob
 
-DB_PATH = "cards.db"
+DB_PATH = "app.db"
 SCHEMA_PATH = "schema.sql"
 JSON_DIR = "json"
 
@@ -9,6 +9,8 @@ if os.path.exists(DB_PATH):
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
+
+
 
 with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
     cur.executescript(f.read())
@@ -23,11 +25,11 @@ for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
             cur.execute("""
                 INSERT INTO cards (
                     code, name, subname, type_code, faction_code, faction2_code, faction3_code,
-                    pack_code, position, traits, text, flavor, cost, health,
+                    pack_code, traits, text, flavor, cost, health,
                     sanity, xp, slot, skill_intellect, skill_combat,
-                    skill_agility, skill_willpower, skill_wild, is_unique, myriad, 
-                    customization_text, deck_limit, quantity
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    skill_agility, skill_willpower, skill_wild, deck_requirements,
+                    is_unique, customization_text, deck_limit, quantity
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -37,7 +39,6 @@ for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
                 card.get("faction2_code"),
                 card.get("faction3_code"),
                 card.get("pack_code"),
-                card.get("position"),
                 card.get("traits"),
                 card.get("text"),
                 card.get("flavor"),
@@ -51,8 +52,8 @@ for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
                 card.get("skill_agility"),
                 card.get("skill_willpower"),
                 card.get("skill_wild"),
+                card.get("deck_requirements"),
                 1 if card.get("is_unique") else 0,
-                1 if card.get("myriad") else 0,
                 card.get("customization_text"),
                 card.get("deck_limit"),
                 card.get("quantity")

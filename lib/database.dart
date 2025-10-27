@@ -36,14 +36,13 @@ class DatabaseHelper {
       await Directory(dirname(path)).create(recursive: true);
     } catch (_) {}
 
-    final data = await rootBundle.load(url.join("assets", "db", "cards.db"));
+    final data = await rootBundle.load(url.join("assets", "db", "app.db"));
     final bytes = data.buffer.asUint8List(
       data.offsetInBytes,
       data.lengthInBytes,
     );
 
     await File(path).writeAsBytes(bytes, flush: true);
-    //}
 
     final db = await openDatabase(path);
 

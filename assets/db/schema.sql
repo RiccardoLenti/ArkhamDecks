@@ -1,4 +1,6 @@
 DROP TABLE IF EXISTS cards;
+DROP TABLE IF EXISTS decks;
+DROP TABLE IF EXISTS deck_cards;
 
 CREATE TABLE cards (
     code TEXT PRIMARY KEY,
@@ -9,7 +11,6 @@ CREATE TABLE cards (
     faction2_code TEXT,
     faction3_code TEXT,
     pack_code TEXT,
-    position INTEGER,
     traits TEXT,
     text TEXT,
     flavor TEXT,
@@ -23,9 +24,25 @@ CREATE TABLE cards (
     skill_agility INTEGER,
     skill_willpower INTEGER,
     skill_wild INTEGER,
+    deck_requirements TEXT,
     is_unique BOOLEAN,
-    myriad BOOLEAN,
     customization_text TEXT,
     deck_limit INTEGER,
     quantity INTEGER
+);
+
+CREATE TABLE decks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    investigator_code INTEGER, 
+    FOREIGN KEY(investigator_code) REFERENCES cards(code)
+);
+
+CREATE TABLE deck_cards (
+    deck_id INTEGER NOT NULL,
+    card_code INTEGER NOT NULL,
+    count INTEGER NOT NULL,
+    FOREIGN KEY(deck_id) REFERENCES decks(id),
+    FOREIGN KEY(card_code) REFERENCES cards(code),
+    PRIMARY KEY(deck_id, card_code)
 );

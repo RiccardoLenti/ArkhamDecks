@@ -1,8 +1,102 @@
+import 'package:arkham_decks/database.dart';
 import 'package:flutter/material.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 
-class ArkhamCard {
+class ArkhamCard extends SimplifiedCard {
+  final String? text;
+  final String? flavor;
+  final List<String>? traits;
+  final List<String>? slots;
+  final int? health, sanity;
+  final bool isUnique;
+  final List<String> customizationText;
+  final List<String> additionalCards;
+  final List<int?> commitSkills;
+
+  ArkhamCard({
+    required super.code,
+    required super.cost,
+    required super.name,
+    required super.faction,
+    required super.type,
+    required super.level,
+    super.multiFactions,
+
+    this.text,
+    this.flavor,
+    List<String>? traits,
+    List<String>? slots,
+    this.health,
+    this.sanity,
+    this.isUnique = false,
+    List<String>? customizationText,
+    List<String>? additionalCards,
+    required this.commitSkills,
+  }) : traits = traits ?? const [],
+       slots = slots ?? const [],
+       customizationText = customizationText ?? const [],
+       additionalCards = additionalCards ?? const [];
+
+  factory ArkhamCard.fromMap(Map<String, dynamic> map) {
+    const commitSkillNames = [
+      'skill_willpower',
+      'skill_intellect',
+      'skill_combat',
+      'skill_agility',
+      'skill_wild',
+    ];
+
+    final simplified = SimplifiedCard.fromMap(map);
+
+    final isUnique = (map['is_unique'] as int) == 1 ? true : false;
+    final customizationText = (map['customization_text'] as String?)?.split(
+      '\n',
+    );
+    // for now we only grab the codes for signature and weakness
+    final additionalCards =
+        (map['deck_requirements'] as String?)
+            ?.split(', ')
+            .where((part) => part.startsWith('card:'))
+            .map((part) => part.substring(5).split(':').first)
+            .toList();
+
+    return ArkhamCard(
+      code: simplified.code,
+      cost: simplified.cost,
+      name: simplified.name,
+      faction: simplified.faction,
+      multiFactions: simplified.multiFactions,
+      type: simplified.type,
+      level: simplified.level,
+
+      text: map['text'] as String?,
+      traits: (map['traits'] as String?)?.split(' '),
+      slots: (map['slot'] as String?)?.split('. '),
+      health: map['health'] as int?,
+      sanity: map['sanity'] as int?,
+      flavor: map['flavor'] as String?,
+      isUnique: isUnique,
+      customizationText: customizationText,
+      additionalCards: additionalCards,
+      commitSkills: commitSkillNames.map((name) => map[name] as int?).toList(),
+    );
+  }
+
+  static Future<ArkhamCard> fromDb(String code) async {
+    final db = await DatabaseHelper.instance.db;
+    final rows = await db.query(
+      'cards',
+      where: 'code = ?',
+      whereArgs: [code],
+      limit: 1,
+    );
+
+    return ArkhamCard.fromMap(rows.first);
+  }
+}
+
+class SimplifiedCard {
   final String code;
   final int? cost;
   final String name;
@@ -11,7 +105,7 @@ class ArkhamCard {
   final String type;
   final int? level;
 
-  ArkhamCard({
+  SimplifiedCard({
     required this.code,
     required this.cost,
     required this.name,
@@ -21,7 +115,7 @@ class ArkhamCard {
     this.multiFactions = const [],
   });
 
-  factory ArkhamCard.fromMap(Map<String, dynamic> map) {
+  factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
     if (map['faction2_code'] != null) {
       final multiFactions = [
         Faction.fromString(map['faction_code']),
@@ -29,7 +123,7 @@ class ArkhamCard {
         Faction.fromString(map['faction3_code']),
       ];
 
-      return ArkhamCard(
+      return SimplifiedCard(
         code: map['code'],
         cost: map['cost'],
         name: map['name'],
@@ -39,7 +133,7 @@ class ArkhamCard {
         level: map['xp'],
       );
     } else {
-      return ArkhamCard(
+      return SimplifiedCard(
         code: map['code'],
         cost: map['cost'],
         name: map['name'],
@@ -52,7 +146,7 @@ class ArkhamCard {
 }
 
 class CostLevelCircle extends StatelessWidget {
-  final ArkhamCard card;
+  final SimplifiedCard card;
   final bool onlyOutline;
 
   const CostLevelCircle({

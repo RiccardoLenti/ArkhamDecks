@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/factions.dart';

@@ -28,7 +28,7 @@ flutter:
 
   assets:
   - assets/icons/
-  - assets/db/cards.db
+  - assets/db/app.db
 
   fonts: 
     - family: Cost 

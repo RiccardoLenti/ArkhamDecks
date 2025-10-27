@@ -3,7 +3,7 @@ import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
 
 class CardPagerScreen extends StatefulWidget {
-  final List<ArkhamCard> cards;
+  final List<SimplifiedCard> cards;
   final int initialIndex;
 
   const CardPagerScreen({
