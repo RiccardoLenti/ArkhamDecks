@@ -48,7 +48,7 @@ class SearchFilters extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<ArkhamCard>> queryDb() async {
+  Future<List<SimplifiedCard>> queryDb() async {
     final db = await DatabaseHelper.instance.db;
 
     List<String> whereConditions = [];
@@ -77,7 +77,7 @@ class SearchFilters extends ChangeNotifier {
     _cardCount = cardMaps.length;
     notifyListeners();
 
-    return cardMaps.map((cardMap) => ArkhamCard.fromMap(cardMap)).toList();
+    return cardMaps.map((cardMap) => SimplifiedCard.fromMap(cardMap)).toList();
   }
 }
 
