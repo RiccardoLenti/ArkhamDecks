@@ -38,7 +38,11 @@ class ArkhamCard extends SimplifiedCard {
        customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
 
-  factory ArkhamCard.fromMap(Map<String, dynamic> map) {
+  ///calling this constructor directly DOES NOT handle bonded cards
+  factory ArkhamCard.fromMap(
+    Map<String, dynamic> map, {
+    List<String>? restrictedCards,
+  }) {
     const commitSkillNames = [
       'skill_willpower',
       'skill_intellect',
@@ -53,13 +57,6 @@ class ArkhamCard extends SimplifiedCard {
     final customizationText = (map['customization_text'] as String?)?.split(
       '\n',
     );
-    // for now we only grab the codes for signature and weakness
-    final additionalCards =
-        (map['deck_requirements'] as String?)
-            ?.split(', ')
-            .where((part) => part.startsWith('card:'))
-            .map((part) => part.substring(5).split(':').first)
-            .toList();
 
     return ArkhamCard(
       code: simplified.code,
@@ -78,7 +75,7 @@ class ArkhamCard extends SimplifiedCard {
       flavor: map['flavor'] as String?,
       isUnique: isUnique,
       customizationText: customizationText,
-      additionalCards: additionalCards,
+      additionalCards: [...?restrictedCards],
       commitSkills: commitSkillNames.map((name) => map[name] as int?).toList(),
     );
   }
@@ -92,7 +89,21 @@ class ArkhamCard extends SimplifiedCard {
       limit: 1,
     );
 
-    return ArkhamCard.fromMap(rows.first);
+    // TODO: actual bonded cards
+    // for now we only grab investigators' signature and weakness
+    final additionalCards = await db.query(
+      'cards',
+      distinct: true,
+      columns: ['code'],
+      where: "restrictions LIKE 'investigator:' || ? || '%'",
+      whereArgs: [code],
+    );
+
+    return ArkhamCard.fromMap(
+      rows.first,
+      restrictedCards:
+          additionalCards.map((map) => map['code'] as String).toList(),
+    );
   }
 }
 

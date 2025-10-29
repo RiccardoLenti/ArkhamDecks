@@ -25,6 +25,7 @@ CREATE TABLE cards (
     skill_willpower INTEGER,
     skill_wild INTEGER,
     deck_requirements TEXT,
+    restrictions TEXT,
     is_unique BOOLEAN,
     customization_text TEXT,
     deck_limit INTEGER,

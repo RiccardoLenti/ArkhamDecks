@@ -271,8 +271,6 @@ class CardView extends StatelessWidget {
 
   ///assumes text != null
   Widget _buildCardText() {
-    // matches everything like [tag], ignores [[tag]]
-
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,6 +290,7 @@ class CardView extends StatelessWidget {
   }
 
   Widget _buildTextWithIcons(String text) {
+    // matches everything like [tag], ignores [[tag]]
     final pattern = RegExp(r'(?<!\[)\[([^\[\]]+)\](?!\])');
     final processedText = text
         .replaceAll('\n- ', '\n<icon name="bullet"/></icon>')
