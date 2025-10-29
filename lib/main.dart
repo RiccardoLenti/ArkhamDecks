@@ -1,5 +1,6 @@
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/decks_screen.dart';
+import 'package:flutter/services.dart';
 import 'icon_manager.dart';
 
 import 'package:flutter/material.dart';
@@ -39,35 +40,48 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedPageIndex,
-        children: [
-          Navigator(
-            key: _navigatorKeys[0],
-            onGenerateRoute:
-                (_) => MaterialPageRoute(builder: (_) => const CardsScreen()),
-          ),
-          Navigator(
-            key: _navigatorKeys[1],
-            onGenerateRoute:
-                (_) => MaterialPageRoute(builder: (_) => const DecksScreen()),
-          ),
-        ],
-      ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, res) async {
+        if(didPop) return;
 
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedPageIndex,
-        onDestinationSelected: (index) {
-          setState(() => _selectedPageIndex = index);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.library_books),
-            label: 'Cards',
-          ),
-          NavigationDestination(icon: Icon(Icons.book), label: 'Decks'),
-        ],
+        final currentNavigator = _navigatorKeys[_selectedPageIndex].currentState;
+        if(currentNavigator != null && currentNavigator.canPop()) {
+            currentNavigator.pop();
+        } else {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedPageIndex,
+          children: [
+            Navigator(
+              key: _navigatorKeys[0],
+              onGenerateRoute:
+                  (_) => MaterialPageRoute(builder: (_) => const CardsScreen()),
+            ),
+            Navigator(
+              key: _navigatorKeys[1],
+              onGenerateRoute:
+                  (_) => MaterialPageRoute(builder: (_) => const DecksScreen()),
+            ),
+          ],
+        ),
+
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _selectedPageIndex,
+          onDestinationSelected: (index) {
+            setState(() => _selectedPageIndex = index);
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.library_books),
+              label: 'Cards',
+            ),
+            NavigationDestination(icon: Icon(Icons.book), label: 'Decks'),
+          ],
+        ),
       ),
     );
   }
