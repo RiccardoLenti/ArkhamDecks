@@ -34,16 +34,18 @@ class FilterScreen extends StatelessWidget {
               ),
             ],
           ),
-          body: Column(
-            spacing: 12.0,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FactionFilterWidget(filter: filters.factionFilter),
-              TypeFilterWidget(filter: filters.typeFilter),
-              LevelFilterWidget(filter: filters.levelFilter),
-              CostFilterWidget(filter: filters.costFilter),
-              TraitFilterWidget(filter: filters.traitFilter),
-            ],
+          body: SingleChildScrollView(
+            child: Column(
+              spacing: 12.0,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FactionFilterWidget(filter: filters.factionFilter),
+                TypeFilterWidget(filter: filters.typeFilter),
+                LevelFilterWidget(filter: filters.levelFilter),
+                CostFilterWidget(filter: filters.costFilter),
+                TraitFilterWidget(filter: filters.traitFilter),
+              ],
+            ),
           ),
         );
       },

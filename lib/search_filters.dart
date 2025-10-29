@@ -130,6 +130,7 @@ class FactionFilter extends BaseFilter {
   }
 }
 
+//TODO: export this somewhere decent
 enum Type {
   investigator('investigator'),
   asset('asset'),
