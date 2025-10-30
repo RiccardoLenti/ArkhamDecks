@@ -345,6 +345,7 @@ class CardView extends StatelessWidget {
     );
   }
 
+  //TODO: add texture
   Widget _buildBoxBorder({
     required Widget child,
     Widget? center,

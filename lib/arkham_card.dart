@@ -3,6 +3,59 @@ import 'package:flutter/material.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 
+class SimplifiedCard {
+  final String code;
+  final int? cost;
+  final String name;
+  final String? subname;
+  final Faction faction;
+  final List<Faction> multiFactions;
+  final String type;
+  final int? level;
+
+  SimplifiedCard({
+    required this.code,
+    required this.cost,
+    required this.name,
+    required this.subname,
+    required this.faction,
+    required this.type,
+    required this.level,
+    this.multiFactions = const [],
+  });
+
+  factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
+    if (map['faction2_code'] != null) {
+      final multiFactions = [
+        Faction.fromString(map['faction_code']),
+        Faction.fromString(map['faction2_code']),
+        Faction.fromString(map['faction3_code']),
+      ];
+
+      return SimplifiedCard(
+        code: map['code'],
+        cost: map['cost'],
+        name: map['name'],
+        subname: map['subname'],
+        faction: Faction.multi,
+        multiFactions: multiFactions.nonNulls.toList(growable: false),
+        type: map['type_code'],
+        level: map['xp'],
+      );
+    } else {
+      return SimplifiedCard(
+        code: map['code'],
+        cost: map['cost'],
+        name: map['name'],
+        subname: map['subname'],
+        faction: Faction.fromString(map['faction_code'])!,
+        type: map['type_code'],
+        level: map['xp'],
+      );
+    }
+  }
+}
+
 class ArkhamCard extends SimplifiedCard {
   final String? text;
   final String? flavor;
@@ -18,6 +71,7 @@ class ArkhamCard extends SimplifiedCard {
     required super.code,
     required super.cost,
     required super.name,
+    required super.subname,
     required super.faction,
     required super.type,
     required super.level,
@@ -62,6 +116,7 @@ class ArkhamCard extends SimplifiedCard {
       code: simplified.code,
       cost: simplified.cost,
       name: simplified.name,
+      subname: simplified.subname,
       faction: simplified.faction,
       multiFactions: simplified.multiFactions,
       type: simplified.type,
@@ -104,55 +159,6 @@ class ArkhamCard extends SimplifiedCard {
       restrictedCards:
           additionalCards.map((map) => map['code'] as String).toList(),
     );
-  }
-}
-
-class SimplifiedCard {
-  final String code;
-  final int? cost;
-  final String name;
-  final Faction faction;
-  final List<Faction> multiFactions;
-  final String type;
-  final int? level;
-
-  SimplifiedCard({
-    required this.code,
-    required this.cost,
-    required this.name,
-    required this.faction,
-    required this.type,
-    required this.level,
-    this.multiFactions = const [],
-  });
-
-  factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
-    if (map['faction2_code'] != null) {
-      final multiFactions = [
-        Faction.fromString(map['faction_code']),
-        Faction.fromString(map['faction2_code']),
-        Faction.fromString(map['faction3_code']),
-      ];
-
-      return SimplifiedCard(
-        code: map['code'],
-        cost: map['cost'],
-        name: map['name'],
-        faction: Faction.multi,
-        multiFactions: multiFactions.nonNulls.toList(growable: false),
-        type: map['type_code'],
-        level: map['xp'],
-      );
-    } else {
-      return SimplifiedCard(
-        code: map['code'],
-        cost: map['cost'],
-        name: map['name'],
-        faction: Faction.fromString(map['faction_code'])!,
-        type: map['type_code'],
-        level: map['xp'],
-      );
-    }
   }
 }
 

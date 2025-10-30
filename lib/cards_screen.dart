@@ -100,7 +100,8 @@ class _CardsScreenState extends State<CardsScreen> {
                 return ListTile(
                   leading: CostLevelCircle(card: card),
                   title: Text(card.name),
-                  subtitle: Text(card.code.toString()),
+                  subtitle: Text(card.subname?? '', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12.0)),
+                  titleAlignment: ListTileTitleAlignment.top,
                   onTap: () {
                     Navigator.push(
                       context,
