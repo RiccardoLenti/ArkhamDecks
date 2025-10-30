@@ -101,14 +101,34 @@ class CardView extends StatelessWidget {
                     ),
           ),
           leading: CostLevelCircle(card: card, onlyOutline: true),
-          center: Text(
-            card.isUnique ? '✷ ${card.name}' : card.name,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontFamily: 'Arkhamic',
-            ),
+          center: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                card.isUnique ? '✷ ${card.name}' : card.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontFamily: 'Arkhamic',
+                ),
+              ),
+
+              if (card.subname != null)
+                Expanded( // corrects overflow check
+                  child: Transform.translate(
+                    offset: const Offset(0, -5),
+                    child: Text(
+                      card.subname!,
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 10,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -361,7 +381,10 @@ class CardView extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: card.faction.color, width: (thickTop ? 45 : 4)),
+                  top: BorderSide(
+                    color: card.faction.color,
+                    width: (thickTop ? 50 : 4),
+                  ),
                   bottom: BorderSide(color: card.faction.color, width: 4),
                   left: BorderSide(color: card.faction.color, width: 4),
                   right: BorderSide(color: card.faction.color, width: 4),
@@ -372,7 +395,7 @@ class CardView extends StatelessWidget {
           ),
         ),
         ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: 45),
+          constraints: BoxConstraints(maxHeight: 50),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             child: Stack(
