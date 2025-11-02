@@ -43,7 +43,9 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('New Deck', style: TextStyle(fontFamily: 'Arkhamic'))),
+      appBar: AppBar(
+        title: Text('New Deck', style: TextStyle(fontFamily: 'Arkhamic')),
+      ),
       body:
           _investigatorMap == null
               ? Center(child: CircularProgressIndicator())
@@ -60,20 +62,63 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
   List<Widget> _buildInvestigatorsList(Expansion expansion) {
     final investigators = _investigatorMap![expansion]!;
+    final _textEditingController = TextEditingController();
 
     return [
       buildDividerWithText(expansion.name),
-        ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: investigators.length,
-          itemBuilder: (context, index) {
-            final investigator = investigators[index];
-            return ListTile(
+      ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: investigators.length,
+        itemBuilder: (context, index) {
+          final investigator = investigators[index];
+          return Container(
+            decoration: BoxDecoration(
+              color: investigator.faction.color,
+              border: Border.all(color: Colors.white, width: 3.0),
+            ),
+            child: ListTile(
               title: Text(investigator.name),
               subtitle: Text(investigator.code.toString()),
-            );
-          },
+              onTap:
+                  () => showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('New ${investigator.name} Deck'),
+                        content: TextField(
+                          controller: _textEditingController,
+                          decoration: InputDecoration(hintText: 'Deck name.'),
+                        ),
+                        actions: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton(
+                                onPressed:
+                                    () => {
+                                      _textEditingController.clear(),
+                                      Navigator.pop(context),
+                                    },
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed:
+                                    () => {
+                                      //TODO: Store deck in db
+                                      Navigator.pop(context),
+                                    },
+                                child: Text('Confirm'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+            ),
+          );
+        },
       ),
     ];
   }

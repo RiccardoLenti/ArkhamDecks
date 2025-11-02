@@ -429,15 +429,6 @@ class CardView extends StatelessWidget {
         buildDividerWithText('Customization'),
         _buildBoxBorder(
           thickTop: false,
-          //center: Text(
-          //  'Customization',
-          //  textAlign: TextAlign.center,
-          //  style: TextStyle(
-          //    fontFamily: 'Arkhamic',
-          //    color: Colors.white,
-          //    fontSize: 24,
-          //  ),
-          //),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             child: Column(
