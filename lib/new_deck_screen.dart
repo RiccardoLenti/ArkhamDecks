@@ -26,10 +26,13 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     final db = await DatabaseHelper.instance.db;
 
     for (final expansion in Expansion.values) {
+      // the group by is needed so that it returns only 1 Hank Samson
       final maps = (await db.query(
         'cards',
         where: 'type_code = ? AND pack_code = ?',
         whereArgs: ['investigator', expansion.packCode],
+        groupBy: 'name',
+        orderBy: 'code',
       ));
 
       res[expansion] = maps.map((map) => SimplifiedCard.fromMap(map)).toList();
@@ -62,7 +65,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
   List<Widget> _buildInvestigatorsList(Expansion expansion) {
     final investigators = _investigatorMap![expansion]!;
-    final _textEditingController = TextEditingController();
+    final textEditingController = TextEditingController();
 
     return [
       buildDividerWithText(expansion.name),
@@ -78,8 +81,14 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
               border: Border.all(color: Colors.white, width: 3.0),
             ),
             child: ListTile(
-              title: Text(investigator.name),
+              title: Text(
+                investigator.name,
+                style: TextStyle(fontFamily: 'Arkhamic', fontSize: 18),
+              ),
               subtitle: Text(investigator.code.toString()),
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              contentPadding: EdgeInsets.only(left: 22.0),
               onTap:
                   () => showDialog(
                     context: context,
@@ -87,8 +96,8 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                       return AlertDialog(
                         title: Text('New ${investigator.name} Deck'),
                         content: TextField(
-                          controller: _textEditingController,
-                          decoration: InputDecoration(hintText: 'Deck name.'),
+                          controller: textEditingController,
+                          decoration: InputDecoration(hintText: 'Deck name:'),
                         ),
                         actions: [
                           Row(
@@ -97,7 +106,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                               TextButton(
                                 onPressed:
                                     () => {
-                                      _textEditingController.clear(),
+                                      textEditingController.clear(),
                                       Navigator.pop(context),
                                     },
                                 child: Text('Cancel'),
