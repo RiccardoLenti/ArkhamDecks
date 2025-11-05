@@ -35,7 +35,7 @@ CREATE TABLE cards (
 CREATE TABLE decks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    investigator_code INTEGER, 
+    investigator_code TEXT, 
     FOREIGN KEY(investigator_code) REFERENCES cards(code)
 );
 
