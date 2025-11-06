@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:arkham_decks/arkham_card.dart';
-import 'package:arkham_decks/card_pager_screen.dart';
+import 'package:arkham_decks/card_view.dart';
+import 'package:arkham_decks/deck.dart';
+import 'package:arkham_decks/deck_screen.dart';
 import 'package:arkham_decks/filter_screen.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/material.dart';
 
 class CardsScreen extends StatefulWidget {
-  const CardsScreen({super.key});
+  final Deck? deck;
+
+  const CardsScreen({super.key, this.deck});
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -18,6 +22,7 @@ class _CardsScreenState extends State<CardsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final SearchFilters _searchFilters = SearchFilters();
   Timer? _debounce;
+  //TODO: add investigator deckbuilding restriction
 
   @override
   void initState() {
@@ -97,23 +102,14 @@ class _CardsScreenState extends State<CardsScreen> {
               itemCount: _cards.length,
               itemBuilder: (context, index) {
                 final card = _cards[index];
-                return ListTile(
-                  leading: CostLevelCircle(card: card),
-                  title: Text(card.name),
-                  subtitle: Text(card.subname?? '', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12.0)),
-                  titleAlignment: ListTileTitleAlignment.top,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => CardPagerScreen(
-                              cards: _cards,
-                              initialIndex: index,
-                            ),
-                      ),
-                    );
-                  },
+                return CardListTile(
+                  card: card,
+                  cards: _cards,
+                  index: index,
+                  trailing:
+                      widget.deck == null
+                          ? null
+                          : buildAddCardButton(widget.deck!, card),
                 );
               },
             ),

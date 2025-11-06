@@ -1,5 +1,6 @@
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
+import 'package:arkham_decks/deck_screen.dart';
 import 'package:arkham_decks/new_deck_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -67,6 +68,11 @@ class _DecksScreenState extends State<DecksScreen> {
                   style: TextStyle(fontFamily: 'Arkhamic'),
                 ),
                 subtitle: Text(deck.investigatorName),
+                onTap:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => DeckScreen(deck: deck)),
+                    ),
               );
             },
           );

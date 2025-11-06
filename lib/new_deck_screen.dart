@@ -27,6 +27,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
     for (final expansion in Expansion.values) {
       // the group by is needed so that it returns only 1 Hank Samson
+      // TODO: this also returns only one agatha crane...
       final maps = (await db.query(
         'cards',
         where: 'type_code = ? AND pack_code = ?',

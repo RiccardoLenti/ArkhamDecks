@@ -1,13 +1,57 @@
-class Deck {
+import 'package:arkham_decks/arkham_card.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
+
+class Deck extends ChangeNotifier {
   final String name;
   final String investigatorName;
+  final List<DeckCard> deckCards = [];
 
   Deck({required this.name, required this.investigatorName});
 
+  List<SimplifiedCard> get cards =>
+      deckCards.map((deckCard) => deckCard.card).toList();
+
   factory Deck.fromMap(Map<String, dynamic> map) {
-    return Deck(
-      name: map['name'],
-      investigatorName: map['investigator_name'],
-    );
+    return Deck(name: map['name'], investigatorName: map['investigator_name']);
   }
+
+  // TODO: make deckCards a map for O(1) lookup
+  DeckCard getDeckCard(SimplifiedCard card) {
+    // TODO: override equality operator for this type
+    return deckCards.firstWhereOrNull((deckCard) => deckCard.card.code == card.code) ??
+        DeckCard(card, 0);
+  }
+
+  void addCard(DeckCard cardToAdd) {
+    final deckCard = deckCards.firstWhereOrNull((d) => d == cardToAdd);
+    if (deckCard == null) {
+      deckCards.add(DeckCard(cardToAdd.card, 1));
+    } else {
+      deckCard.count++;
+    }
+    notifyListeners();
+  }
+
+  void removeCard(DeckCard cardToRemove) {
+    final deckCard = deckCards.firstWhereOrNull((d) => d.card.code == cardToRemove.card.code);
+    if (deckCard == null) {
+      // TODO: should never reach this
+      throw Exception('Tried to remove card that was not part of deck');
+    } else {
+      if (deckCard.count == 1) {
+        deckCards.remove(cardToRemove);
+      } else {
+        deckCard.count--;
+      }
+    }
+    notifyListeners();
+  }
+}
+
+class DeckCard {
+  final SimplifiedCard card;
+  int count;
+
+  DeckCard(this.card, this.count);
 }

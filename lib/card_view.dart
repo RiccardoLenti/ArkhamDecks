@@ -1,5 +1,6 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
+import 'package:arkham_decks/card_pager_screen.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:collection/collection.dart';
@@ -537,6 +538,44 @@ class CardView extends StatelessWidget {
           );
         }),
       ],
+    );
+  }
+}
+
+//TODO: is this the right place for this?
+class CardListTile extends StatelessWidget {
+  const CardListTile({
+    super.key,
+    required this.card,
+    required this.cards,
+    required this.index,
+    this.trailing,
+  });
+
+  final SimplifiedCard card;
+  final List<SimplifiedCard> cards;
+  final int index;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: CostLevelCircle(card: card),
+      title: Text(card.name),
+      subtitle: Text(
+        card.subname ?? '',
+        style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12.0),
+      ),
+      titleAlignment: ListTileTitleAlignment.top,
+      trailing: trailing,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CardPagerScreen(cards: cards, initialIndex: index),
+          ),
+        );
+      },
     );
   }
 }
