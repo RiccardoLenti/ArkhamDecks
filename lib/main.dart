@@ -1,5 +1,6 @@
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/decks_screen.dart';
+import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/services.dart';
 import 'icon_manager.dart';
 
@@ -38,6 +39,14 @@ class _MainScreenState extends State<MainScreen> {
     GlobalKey<NavigatorState>(),
   ];
 
+  final SearchFilters _searchFilters = SearchFilters();
+
+  @override
+  void dispose() {
+    _searchFilters.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -59,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
             Navigator(
               key: _navigatorKeys[0],
               onGenerateRoute:
-                  (_) => MaterialPageRoute(builder: (_) => const CardsScreen()),
+                  (_) => MaterialPageRoute(builder: (_) => CardsScreen(searchFilters: _searchFilters,)),
             ),
             Navigator(
               key: _navigatorKeys[1],

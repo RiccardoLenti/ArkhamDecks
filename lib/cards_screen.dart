@@ -10,8 +10,9 @@ import 'package:flutter/material.dart';
 
 class CardsScreen extends StatefulWidget {
   final Deck? deck;
+  final SearchFilters searchFilters;
 
-  const CardsScreen({super.key, this.deck});
+  const CardsScreen({super.key, this.deck, required this.searchFilters});
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -19,15 +20,17 @@ class CardsScreen extends StatefulWidget {
 
 class _CardsScreenState extends State<CardsScreen> {
   List<SimplifiedCard> _cards = [];
-  final TextEditingController _searchController = TextEditingController();
-  final SearchFilters _searchFilters = SearchFilters();
+  late final TextEditingController _searchController;
+  late final SearchFilters _searchFilters;
   Timer? _debounce;
   //TODO: add investigator deckbuilding restriction
 
   @override
   void initState() {
     super.initState();
+    _searchFilters = widget.searchFilters;
     _searchFilters.addListener(_onFiltersChanged);
+    _searchController = TextEditingController(text: _searchFilters.searchText);
     _updateCards();
   }
 
@@ -36,7 +39,6 @@ class _CardsScreenState extends State<CardsScreen> {
     _debounce?.cancel();
     _searchController.dispose();
     _searchFilters.removeListener(_onFiltersChanged);
-    _searchFilters.dispose();
     super.dispose();
   }
 

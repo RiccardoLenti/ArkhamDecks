@@ -48,6 +48,8 @@ class SearchFilters extends ChangeNotifier {
     notifyListeners();
   }
 
+  String get searchText => _searchText;
+
   Future<List<SimplifiedCard>> queryDb() async {
     final db = await DatabaseHelper.instance.db;
 

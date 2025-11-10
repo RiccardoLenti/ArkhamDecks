@@ -2,6 +2,7 @@ import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_view.dart';
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/deck.dart';
+import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/material.dart';
 
 class DeckScreen extends StatefulWidget {
@@ -14,6 +15,8 @@ class DeckScreen extends StatefulWidget {
 }
 
 class _DeckScreenState extends State<DeckScreen> {
+  final SearchFilters _searchFilters = SearchFilters();
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +51,7 @@ class _DeckScreenState extends State<DeckScreen> {
             card: deckCard.card,
             cards: deck.cards,
             index: index,
-            trailing: Text('${deckCard.count.toString()}x')
+            trailing: Text('${deckCard.count.toString()}x'),
           );
         },
       ),
@@ -57,8 +60,11 @@ class _DeckScreenState extends State<DeckScreen> {
         onPressed:
             () => Navigator.push(
               context,
-              // TODO: make this persistent until the deck is closed
-              MaterialPageRoute(builder: (_) => CardsScreen(deck: deck)),
+              MaterialPageRoute(
+                builder:
+                    (_) =>
+                        CardsScreen(deck: deck, searchFilters: _searchFilters),
+              ),
             ),
         child: const Icon(Icons.add),
       ),
