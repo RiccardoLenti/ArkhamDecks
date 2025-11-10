@@ -81,12 +81,12 @@ Widget buildAddCardButton(Deck deck, SimplifiedCard card) {
     children: [
       IconButton(
         icon: Icon(Icons.remove),
-        onPressed: deckCard.count == 0 ? null : () => deck.removeCard(deckCard),
+        onPressed: deckCard.count <= 0 ? null : () => deck.removeCard(deckCard),
       ),
       Text('${deckCard.count}x'),
       IconButton(
         icon: Icon(Icons.add),
-        onPressed: deckCard.count == 2 ? null : () => deck.addCard(deckCard),
+        onPressed: deckCard.count >= 2 ? null : () => deck.addCard(deckCard),
       ),
     ],
   );

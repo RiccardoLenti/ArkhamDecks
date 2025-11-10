@@ -19,7 +19,9 @@ class Deck extends ChangeNotifier {
   // TODO: make deckCards a map for O(1) lookup
   DeckCard getDeckCard(SimplifiedCard card) {
     // TODO: override equality operator for this type
-    return deckCards.firstWhereOrNull((deckCard) => deckCard.card.code == card.code) ??
+    return deckCards.firstWhereOrNull(
+          (deckCard) => deckCard.card.code == card.code,
+        ) ??
         DeckCard(card, 0);
   }
 
@@ -27,24 +29,26 @@ class Deck extends ChangeNotifier {
     final deckCard = deckCards.firstWhereOrNull((d) => d == cardToAdd);
     if (deckCard == null) {
       deckCards.add(DeckCard(cardToAdd.card, 1));
-    } else {
+    } else if (deckCard.count < 2) {
+      //TODO: this needs to be adjusted for myriads
       deckCard.count++;
     }
     notifyListeners();
   }
 
   void removeCard(DeckCard cardToRemove) {
-    final deckCard = deckCards.firstWhereOrNull((d) => d.card.code == cardToRemove.card.code);
+    final deckCard = deckCards.firstWhereOrNull(
+      (d) => d.card.code == cardToRemove.card.code,
+    );
     if (deckCard == null) {
-      // TODO: should never reach this
-      throw Exception('Tried to remove card that was not part of deck');
-    } else {
-      if (deckCard.count == 1) {
-        deckCards.remove(cardToRemove);
-      } else {
-        deckCard.count--;
-      }
+      return;
     }
+    if (deckCard.count > 1) {
+      deckCard.count--;
+    } else {
+      deckCards.remove(cardToRemove);
+    }
+
     notifyListeners();
   }
 }
