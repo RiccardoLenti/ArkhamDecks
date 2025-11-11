@@ -35,7 +35,7 @@ class Deck extends ChangeNotifier {
   }
 
   void addCard(DeckCard cardToAdd) {
-    final deckCard = deckCards.firstWhereOrNull((d) => d == cardToAdd);
+    final deckCard = deckCards.firstWhereOrNull((d) => d.card.code == cardToAdd.card.code);
     if (deckCard == null) {
       deckCards.add(DeckCard(cardToAdd.card, 1));
     } else if (deckCard.count < 2) {

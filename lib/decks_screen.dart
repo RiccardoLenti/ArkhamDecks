@@ -3,6 +3,7 @@ import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/deck_screen.dart';
 import 'package:arkham_decks/new_deck_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DecksScreen extends StatefulWidget {
   const DecksScreen({super.key});
@@ -71,7 +72,13 @@ class _DecksScreenState extends State<DecksScreen> {
                 onTap:
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => DeckScreen(deck: deck)),
+                      MaterialPageRoute(
+                        builder:
+                            (_) => ChangeNotifierProvider.value(
+                              value: deck,
+                              child: DeckScreen(deck: deck),
+                            ),
+                      ),
                     ),
               );
             },

@@ -7,12 +7,12 @@ import 'package:arkham_decks/deck_screen.dart';
 import 'package:arkham_decks/filter_screen.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CardsScreen extends StatefulWidget {
-  final Deck? deck;
   final SearchFilters searchFilters;
 
-  const CardsScreen({super.key, this.deck, required this.searchFilters});
+  const CardsScreen({super.key, required this.searchFilters});
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -22,6 +22,7 @@ class _CardsScreenState extends State<CardsScreen> {
   List<SimplifiedCard> _cards = [];
   late final TextEditingController _searchController;
   late final SearchFilters _searchFilters;
+  Deck? _deck;
 
   @override
   void initState() {
@@ -54,6 +55,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _deck = context.watch<Deck?>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Investigator Cards'),
@@ -103,10 +105,7 @@ class _CardsScreenState extends State<CardsScreen> {
                   card: card,
                   cards: _cards,
                   index: index,
-                  trailing:
-                      widget.deck == null
-                          ? null
-                          : buildAddCardButton(widget.deck!, card),
+                  trailing: _deck == null ? null : AddCardButton(card: card),
                 );
               },
             ),

@@ -4,42 +4,17 @@ import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class DeckScreen extends StatefulWidget {
+class DeckScreen extends StatelessWidget {
   final Deck deck;
+  final SearchFilters _searchFilters;
 
-  const DeckScreen({super.key, required this.deck});
-
-  @override
-  State<DeckScreen> createState() => _DeckScreenState();
-}
-
-class _DeckScreenState extends State<DeckScreen> {
-  late final SearchFilters _searchFilters;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchFilters = SearchFilters(deckOptions: widget.deck.deckOptions);
-    widget.deck.addListener(_onDeckChanged);
-  }
-
-  void _onDeckChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.deck.removeListener(_onDeckChanged);
-    super.dispose();
-  }
+  DeckScreen({super.key, required this.deck})
+    : _searchFilters = SearchFilters(deckOptions: deck.deckOptions);
 
   @override
   Widget build(BuildContext context) {
-    final deck = widget.deck;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(deck.name, style: TextStyle(fontFamily: 'Arkhamic')),
@@ -63,8 +38,12 @@ class _DeckScreenState extends State<DeckScreen> {
               context,
               MaterialPageRoute(
                 builder:
-                    (_) =>
-                        CardsScreen(deck: deck, searchFilters: _searchFilters),
+                    (_) => ChangeNotifierProvider.value(
+                      value: deck,
+                      child: CardsScreen(
+                        searchFilters: _searchFilters,
+                      ),
+                    ),
               ),
             ),
         child: const Icon(Icons.add),
@@ -73,22 +52,33 @@ class _DeckScreenState extends State<DeckScreen> {
   }
 }
 
-Widget buildAddCardButton(Deck deck, SimplifiedCard card) {
-  final deckCard = deck.getDeckCard(card);
+class AddCardButton extends StatelessWidget {
+  final SimplifiedCard card;
+  const AddCardButton({super.key, required this.card});
 
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      IconButton(
-        icon: Icon(Icons.remove),
-        onPressed: deckCard.count <= 0 ? null : () => deck.removeCard(deckCard),
-      ),
-      Text('${deckCard.count}x'),
-      IconButton(
-        icon: Icon(Icons.add),
-        onPressed: deckCard.count >= 2 ? null : () => deck.addCard(deckCard),
-      ),
-    ],
-  );
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<Deck>(
+      builder: (context, deck, _) {
+        final deckCard = deck.getDeckCard(card);
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.remove),
+              onPressed:
+                  deckCard.count <= 0 ? null : () => deck.removeCard(deckCard),
+            ),
+            Text('${deckCard.count}x'),
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed:
+                  deckCard.count >= 2 ? null : () => deck.addCard(deckCard),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
