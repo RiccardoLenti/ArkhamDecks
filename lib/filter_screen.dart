@@ -17,13 +17,18 @@ class FilterScreen extends StatelessWidget {
             title: Row(
               children: [
                 Text('Filters'),
-                Padding(
-                  padding: EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    '\t\t[${filters.cardCount.toString()} cards]',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12.0),
-                  ),
+                ValueListenableBuilder(
+                  valueListenable: filters.cardCount,
+                  builder: (context, cardCount, _) {
+                    return Padding(
+                      padding: EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        '\t\t[$cardCount cards]',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12.0),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

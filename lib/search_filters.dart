@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 class SearchFilters extends ChangeNotifier {
   String _searchText = '';
-  late int _cardCount;
+  final ValueNotifier<int> cardCount = ValueNotifier<int>(0);
   final FactionFilter factionFilter = FactionFilter();
   final TypeFilter typeFilter = TypeFilter();
   final LevelFilter levelFilter = LevelFilter();
@@ -40,8 +40,6 @@ class SearchFilters extends ChangeNotifier {
     }
     super.dispose();
   }
-
-  int get cardCount => _cardCount;
 
   void clear() {
     for (final filter in filters) {
@@ -82,10 +80,8 @@ class SearchFilters extends ChangeNotifier {
       orderBy: 'type_code = "investigator" desc',
     );
 
-    print('queried cards\nwhere: ${whereConditions.join(' AND ')}\nargs: $whereArgs');
-
-    _cardCount = cardMaps.length;
-    notifyListeners();
+    cardCount.value = cardMaps.length;
+    //notifyListeners();
 
     return cardMaps.map((cardMap) => SimplifiedCard.fromMap(cardMap)).toList();
   }

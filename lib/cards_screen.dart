@@ -22,8 +22,6 @@ class _CardsScreenState extends State<CardsScreen> {
   List<SimplifiedCard> _cards = [];
   late final TextEditingController _searchController;
   late final SearchFilters _searchFilters;
-  Timer? _debounce;
-  //TODO: add investigator deckbuilding restriction
 
   @override
   void initState() {
@@ -36,17 +34,14 @@ class _CardsScreenState extends State<CardsScreen> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _searchController.dispose();
     _searchFilters.removeListener(_onFiltersChanged);
     super.dispose();
   }
 
+  //TODO: this used to make sense, now it's just an alias for a function, it can be removed
   void _onFiltersChanged() {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _updateCards();
-    });
+    _updateCards();
   }
 
   Future<void> _updateCards() async {
