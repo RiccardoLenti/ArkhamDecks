@@ -85,7 +85,7 @@ class _DecksScreenState extends State<DecksScreen> {
     final db = await DatabaseHelper.instance.db;
 
     final rows = await db.rawQuery('''
-      SELECT decks.id, decks.name, decks.investigator_code, cards.name AS investigator_name
+      SELECT decks.id, decks.name, decks.investigator_code, cards.name AS investigator_name, cards.deck_options
       FROM decks
       JOIN cards ON decks.investigator_code = cards.code
     ''');

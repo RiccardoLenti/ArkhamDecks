@@ -5,15 +5,24 @@ import 'package:flutter/material.dart';
 class Deck extends ChangeNotifier {
   final String name;
   final String investigatorName;
+  final String deckOptions;
   final List<DeckCard> deckCards = [];
 
-  Deck({required this.name, required this.investigatorName});
+  Deck({
+    required this.name,
+    required this.investigatorName,
+    required this.deckOptions,
+  });
 
   List<SimplifiedCard> get cards =>
       deckCards.map((deckCard) => deckCard.card).toList();
 
   factory Deck.fromMap(Map<String, dynamic> map) {
-    return Deck(name: map['name'], investigatorName: map['investigator_name']);
+    return Deck(
+      name: map['name'],
+      investigatorName: map['investigator_name'],
+      deckOptions: map['deck_options'],
+    );
   }
 
   // TODO: make deckCards a map for O(1) lookup

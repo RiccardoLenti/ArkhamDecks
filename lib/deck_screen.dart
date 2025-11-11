@@ -15,11 +15,12 @@ class DeckScreen extends StatefulWidget {
 }
 
 class _DeckScreenState extends State<DeckScreen> {
-  final SearchFilters _searchFilters = SearchFilters();
+  late final SearchFilters _searchFilters;
 
   @override
   void initState() {
     super.initState();
+    _searchFilters = SearchFilters(deckOptions: widget.deck.deckOptions);
     widget.deck.addListener(_onDeckChanged);
   }
 

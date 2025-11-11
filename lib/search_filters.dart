@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/factions.dart';
@@ -11,6 +13,7 @@ class SearchFilters extends ChangeNotifier {
   final LevelFilter levelFilter = LevelFilter();
   final CostFilter costFilter = CostFilter();
   final TraitFilter traitFilter = TraitFilter();
+  late final InvestigatorFilter investigatorFilter;
 
   Iterable<BaseFilter> get filters => [
     factionFilter,
@@ -18,10 +21,13 @@ class SearchFilters extends ChangeNotifier {
     levelFilter,
     costFilter,
     traitFilter,
+    investigatorFilter,
   ];
 
   @override
-  SearchFilters() {
+  SearchFilters({String? deckOptions}) {
+    investigatorFilter = InvestigatorFilter(deckOptions);
+
     for (final filter in filters) {
       filter.addListener(notifyListeners);
     }
@@ -57,14 +63,14 @@ class SearchFilters extends ChangeNotifier {
     List<String> whereArgs = [];
 
     if (_searchText.isNotEmpty) {
-      whereConditions.add('LOWER(name) LIKE ?');
+      whereConditions.add('(LOWER(name) LIKE ?)');
       whereArgs.add('%${_searchText.toLowerCase()}%');
     }
 
     for (final filter in filters) {
       if (filter.isActive) {
         final clause = filter.whereClause;
-        whereConditions.add(clause.sql);
+        whereConditions.add('(${clause.sql})');
         whereArgs.addAll(clause.args);
       }
     }
@@ -75,6 +81,8 @@ class SearchFilters extends ChangeNotifier {
       whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
       orderBy: 'type_code = "investigator" desc',
     );
+
+    print('queried cards\nwhere: ${whereConditions.join(' AND ')}\nargs: $whereArgs');
 
     _cardCount = cardMaps.length;
     notifyListeners();
@@ -91,6 +99,8 @@ class SqlClause {
 
 abstract class BaseFilter extends ChangeNotifier {
   bool get isActive;
+
+  ///This is only called if the filter is active
   SqlClause get whereClause;
   void clear();
 }
@@ -203,9 +213,9 @@ class LevelFilter extends BaseFilter {
   @override
   SqlClause get whereClause {
     //TODO: this should not be called xp
-    return SqlClause('(xp <= ? AND xp >= ?)', [
-      _max.toString(),
+    return SqlClause('(xp BETWEEN ? AND ?)', [
       _min.toString(),
+      _max.toString(),
     ]);
   }
 }
@@ -258,13 +268,13 @@ class TraitFilter extends BaseFilter {
   bool contains(String trait) => _traits.contains(trait);
 
   void addTrait(String trait) {
-    if(_traits.add(trait)) {
+    if (_traits.add(trait)) {
       notifyListeners();
     }
   }
 
   void removeTrait(String trait) {
-    if(_traits.remove(trait)) {
+    if (_traits.remove(trait)) {
       notifyListeners();
     }
   }
@@ -275,5 +285,47 @@ class TraitFilter extends BaseFilter {
     final args = _traits.map((trait) => '%$trait%').toList();
 
     return SqlClause('($condition)', args);
+  }
+}
+
+// TODO: this might be exported outside if it gets too heavy as the whereClause is constant
+class InvestigatorFilter extends BaseFilter {
+  final String? deckOptions;
+
+  InvestigatorFilter(this.deckOptions);
+
+  @override
+  /// This should never be called
+  void clear() {}
+
+  @override
+  bool get isActive => deckOptions != null;
+
+  @override
+  SqlClause get whereClause {
+    final List<String> conditions = [];
+    final List<String> args = [];
+
+    //option is like {faction: ['faction1', 'faction2'], level: {'min': m1, 'max': m2}}
+    for (final Map<String, dynamic> option in jsonDecode(deckOptions!)) {
+      final factions = (option['faction'] as List?)?.cast<String>();
+      final level = option['level'] as Map<String, dynamic>?;
+
+      if (factions == null || level == null) {
+        continue;
+      }
+
+      final int minXp = level['min'];
+      final int maxXp = level['max'];
+
+      for (final faction in factions) {
+        conditions.add(
+          '((faction_code = ? OR faction2_code = ? OR faction3_code = ?) AND xp BETWEEN ? AND ?)',
+        );
+        args.addAll([faction, faction, faction, '$minXp', '$maxXp']);
+      }
+    }
+
+    return SqlClause(conditions.join(' OR '), args);
   }
 }
