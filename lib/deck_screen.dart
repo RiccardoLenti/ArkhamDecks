@@ -15,7 +15,7 @@ class DeckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer<Deck>(builder: (consumer, deck, _) => Scaffold(
       appBar: AppBar(
         title: Text(deck.name, style: TextStyle(fontFamily: 'Arkhamic')),
       ),
@@ -48,7 +48,7 @@ class DeckScreen extends StatelessWidget {
             ),
         child: const Icon(Icons.add),
       ),
-    );
+    ));
   }
 }
 
