@@ -24,29 +24,7 @@ class _DecksScreenState extends State<DecksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Decks'),
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add, color: Colors.black),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NewDeckScreen()),
-              );
-
-              if (!mounted) {
-                return;
-              }
-
-              setState(() {
-                _decksFuture = fetchDecks();
-              }); //rebuilds
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Decks'), backgroundColor: Colors.deepPurple),
       body: FutureBuilder(
         future: _decksFuture,
         builder: (context, snapshot) {
@@ -84,6 +62,24 @@ class _DecksScreenState extends State<DecksScreen> {
             },
           );
         },
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => NewDeckScreen()),
+          );
+
+          if (!mounted) {
+            return;
+          }
+
+          setState(() {
+            _decksFuture = fetchDecks();
+          }); //rebuilds
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
