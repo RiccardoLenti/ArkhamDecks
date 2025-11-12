@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class Deck extends ChangeNotifier {
-  int id;
+  final int id;
   final String name;
   final String investigatorName;
   final String deckOptions;
@@ -77,7 +77,7 @@ class Deck extends ChangeNotifier {
     deckCards = rows.map((map) => DeckCard.fromMap(map)).toList();
   }
 
-  Future<void> storeToDb() async {
+  Future<void> storeCardsToDb() async {
     final db = await DatabaseHelper.instance.db;
     await db.delete('deck_cards', where: 'deck_id = ?', whereArgs: [id]);
     final batch = db.batch();

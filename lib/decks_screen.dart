@@ -47,19 +47,24 @@ class _DecksScreenState extends State<DecksScreen> {
                   style: TextStyle(fontFamily: 'Arkhamic'),
                 ),
                 subtitle: Text(deck.investigatorName),
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => ChangeNotifierProvider.value(
-                              value: deck,
-                              child: DeckScreen(deck: deck),
-                            ),
-                      ),
-                    ).then((_) async {
-                      await deck.storeToDb();
-                    }),
+                onTap: () async {
+                  final bool? res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ChangeNotifierProvider.value(
+                            value: deck,
+                            child: DeckScreen(deck: deck),
+                          ),
+                    ),
+                  );
+
+                  if (res != null && res) {
+                    setState(() {
+                      _decksFuture = fetchDecks();
+                    });
+                  }
+                },
               );
             },
           );
