@@ -9,46 +9,73 @@ import 'package:provider/provider.dart';
 class DeckScreen extends StatelessWidget {
   final Deck deck;
   final SearchFilters _searchFilters;
+  final Future<void> deckFuture;
 
   DeckScreen({super.key, required this.deck})
-    : _searchFilters = SearchFilters(deckOptions: deck.deckOptions);
+    : _searchFilters = SearchFilters(deckOptions: deck.deckOptions),
+      deckFuture = deck.fetchCards();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Deck>(builder: (consumer, deck, _) => Scaffold(
-      appBar: AppBar(
-        title: Text(deck.name, style: TextStyle(fontFamily: 'Arkhamic')),
-      ),
-      body: ListView.builder(
-        itemCount: deck.cards.length,
-        itemBuilder: (context, index) {
-          final deckCard = deck.deckCards[index];
-          return CardListTile(
-            card: deckCard.card,
-            cards: deck.cards,
-            index: index,
-            trailing: Text('${deckCard.count.toString()}x'),
-          );
-        },
-      ),
+    return Consumer<Deck>(
+      builder:
+          (consumer, deck, _) => FutureBuilder(
+            future: deckFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
 
-      floatingActionButton: FloatingActionButton(
-        onPressed:
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (_) => ChangeNotifierProvider.value(
-                      value: deck,
-                      child: CardsScreen(
-                        searchFilters: _searchFilters,
+              if (snapshot.hasError) {
+                return Scaffold(
+                  body: Center(
+                    child: Text('Error loading deck: ${snapshot.error}'),
+                  ),
+                );
+              }
+
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(
+                    deck.name,
+                    style: TextStyle(fontFamily: 'Arkhamic'),
+                  ),
+                ),
+                body: ListView.builder(
+                  itemCount: deck.cards.length,
+                  itemBuilder: (context, index) {
+                    final deckCard = deck.deckCards[index];
+                    return CardListTile(
+                      card: deckCard.card,
+                      cards: deck.cards,
+                      index: index,
+                      trailing: Text('${deckCard.count.toString()}x'),
+                    );
+                  },
+                ),
+
+                floatingActionButton: FloatingActionButton(
+                  onPressed:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => ChangeNotifierProvider.value(
+                                value: deck,
+                                child: CardsScreen(
+                                  searchFilters: _searchFilters,
+                                ),
+                              ),
+                        ),
                       ),
-                    ),
-              ),
-            ),
-        child: const Icon(Icons.add),
-      ),
-    ));
+                  child: const Icon(Icons.add),
+                ),
+              );
+            },
+          ),
+    );
   }
 }
 

@@ -57,7 +57,9 @@ class _DecksScreenState extends State<DecksScreen> {
                               child: DeckScreen(deck: deck),
                             ),
                       ),
-                    ),
+                    ).then((_) async {
+                      await deck.storeToDb();
+                    }),
               );
             },
           );

@@ -42,7 +42,7 @@ CREATE TABLE decks (
 
 CREATE TABLE deck_cards (
     deck_id INTEGER NOT NULL,
-    card_code INTEGER NOT NULL,
+    card_code TEXT NOT NULL,
     count INTEGER NOT NULL,
     FOREIGN KEY(deck_id) REFERENCES decks(id),
     FOREIGN KEY(card_code) REFERENCES cards(code),

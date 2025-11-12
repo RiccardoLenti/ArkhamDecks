@@ -29,20 +29,21 @@ class DatabaseHelper {
     final directory = await getDatabasesPath();
     final path = join(directory, "working_cards.db");
 
-    //final exists = await databaseExists(path);
+    final exists = await databaseExists(path);
 
-    //if (!exists) {
-    try {
-      await Directory(dirname(path)).create(recursive: true);
-    } catch (_) {}
+    if (!exists) {
+      try {
+        await Directory(dirname(path)).create(recursive: true);
+      } catch (_) {}
 
-    final data = await rootBundle.load(url.join("assets", "db", "app.db"));
-    final bytes = data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
+      final data = await rootBundle.load(url.join("assets", "db", "app.db"));
+      final bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
 
-    await File(path).writeAsBytes(bytes, flush: true);
+      await File(path).writeAsBytes(bytes, flush: true);
+    }
 
     final db = await openDatabase(path);
 
