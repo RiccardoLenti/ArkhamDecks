@@ -259,6 +259,7 @@ class TraitFilter extends BaseFilter {
   @override
   void clear() {
     _traits.clear();
+    notifyListeners();
   }
 
   @override
@@ -294,6 +295,7 @@ class ExpansionFilter extends BaseFilter {
   @override
   void clear() {
     _expansions.clear();
+    notifyListeners();
   }
 
   @override
@@ -302,21 +304,34 @@ class ExpansionFilter extends BaseFilter {
   Set<Cycle> get expansions => Set.unmodifiable(_expansions);
 
   void addExpansion(Cycle expansion) {
-    if(_expansions.add(expansion)) {
+    if (_expansions.add(expansion)) {
       notifyListeners();
     }
   }
 
-  void removeTrait(Cycle expansion) {
-    if(_expansions.remove(expansion)) {
+  void removeExpansion(Cycle expansion) {
+    if (_expansions.remove(expansion)) {
       notifyListeners();
     }
   }
+
+  bool contains(Cycle cycle) => _expansions.contains(cycle);
 
   @override
-  // TODO: implement whereClause
-  SqlClause get whereClause => throw UnimplementedError();
+  SqlClause get whereClause {
+    final List<String> conditions = [];
+    final List<String> args = [];
 
+    for (final cycle in expansions) {
+      final packs = cycle.packs;
+      conditions.add(
+        '(pack_code IN (${List.filled(packs.length, '?').join(',')}))',
+      );
+      args.addAll(packs.map((p) => p.code));
+    }
+
+    return SqlClause(conditions.join(' OR '), args);
+  }
 }
 
 // TODO: this might be exported outside if it gets too heavy as the whereClause is constant

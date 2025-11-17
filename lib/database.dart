@@ -70,7 +70,8 @@ class DatabaseHelper {
 
     // initialize cycles
     final cycles = await db.query('cycles');
-    Cycle.initValues(cycles);
+    final packs = await db.query('packs');
+    Cycle.initValues(cycles, packs);
 
     return db;
   }

@@ -49,6 +49,7 @@ class FilterScreen extends StatelessWidget {
                 LevelFilterWidget(filter: filters.levelFilter),
                 CostFilterWidget(filter: filters.costFilter),
                 TraitFilterWidget(filter: filters.traitFilter),
+                ExpansionFilterWidget(filter: filters.expansionFilter),
               ],
             ),
           ),

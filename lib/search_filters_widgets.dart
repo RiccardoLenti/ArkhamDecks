@@ -1,4 +1,5 @@
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/search_filters.dart';
@@ -305,7 +306,7 @@ class TraitsSelectorScreen extends StatefulWidget {
   const TraitsSelectorScreen({super.key, required this.filter});
 
   @override
-  State<StatefulWidget> createState() => _TraitsSelectorScreenState();
+  State<TraitsSelectorScreen> createState() => _TraitsSelectorScreenState();
 }
 
 class _TraitsSelectorScreenState extends State<TraitsSelectorScreen> {
@@ -416,7 +417,7 @@ class ExpansionFilterWidget extends StatelessWidget {
                           ),
                         )
                         : Text(
-                          filter.expansions.join(', '),
+                          filter.expansions.map((cycle) => cycle.name).join(', '),
                           softWrap: true,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -447,12 +448,40 @@ class ExpansionFilterWidget extends StatelessWidget {
 
 class ExpansionsSelectorScreen extends StatefulWidget {
   final ExpansionFilter filter;
-
   const ExpansionsSelectorScreen({super.key, required this.filter});
 
   @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    throw UnimplementedError();
+  State<ExpansionsSelectorScreen> createState() =>
+      _ExpansionsSelectorScreenState();
+}
+
+class _ExpansionsSelectorScreenState extends State<ExpansionsSelectorScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final cycles = Cycle.values;
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Cycles')),
+      body: AnimatedBuilder(
+        animation: widget.filter,
+        builder: (context, _) {
+          return ListView.builder(
+            itemCount: cycles.length,
+            itemBuilder: (context, index) {
+              final cycle = cycles[index];
+              final checked = widget.filter.contains(cycle);
+
+              return CheckboxListTile(title: Text(cycle.name), value: checked, onChanged: (bool? value) {
+                if(value == true) {
+                  widget.filter.addExpansion(cycle);
+                } else {
+                  widget.filter.removeExpansion(cycle);
+                }
+              });
+            },
+          );
+        },
+      ),
+    );
   }
 }
