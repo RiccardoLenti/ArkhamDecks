@@ -15,7 +15,7 @@ cur = conn.cursor()
 with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
     cur.executescript(f.read())
 
-for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
+for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=True):
     with open(path, "r", encoding="utf-8") as f:
         cards = json.load(f)
         for card in cards:
@@ -60,6 +60,28 @@ for path in glob.glob(os.path.join(JSON_DIR, "**/*.json"), recursive=True):
                 card.get("deck_limit"),
                 card.get("quantity")
             ))
+
+cycles_path = os.path.join(JSON_DIR, "cycles.json")
+if os.path.exists(cycles_path):
+    with open(cycles_path, "r", encoding="utf-8") as f:
+        cycles = json.load(f)
+        for cycle in cycles:
+            cur.execute("""
+                INSERT INTO cycles (code, name)
+                VALUES (?, ?)
+            """, (cycle.get("code"), cycle.get("name")))
+else:
+    print("WARNING: cycles.json not found!")
+
+packs_path = os.path.join(JSON_DIR, "packs.json")
+if os.path.exists(packs_path):
+    with open(packs_path, "r", encoding="utf-8") as f:
+        packs = json.load(f)
+        for pack in packs: 
+            cur.execute("""
+                INSERT INTO packs (code, cycle_code, name) 
+                VALUES (?, ?, ?)
+            """, (pack.get("code"), pack.get("cycle_code"), pack.get("name")))
 
 conn.commit()
 conn.close()

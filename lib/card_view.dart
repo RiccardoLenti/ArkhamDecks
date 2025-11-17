@@ -183,7 +183,6 @@ class CardView extends StatelessWidget {
   }
 
   Widget _buildHealthSanityIcon(int? valueHealth, int? valueSanity) {
-    //final numberIconName = value != null ? 'num$value' : 'numNull';
     const healthColor = Color(0xFF8D181E);
     const sanityColor = Color(0xFF165385);
     final numberHealth = valueHealth != null ? 'num$valueHealth' : 'numNull';
@@ -290,6 +289,7 @@ class CardView extends StatelessWidget {
     );
   }
 
+  // TODO: make bullet points text indented on multiple rows (ex: Gray's anatomy)
   ///assumes text != null
   Widget _buildCardText() {
     return IntrinsicHeight(

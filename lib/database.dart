@@ -1,3 +1,4 @@
+import 'package:arkham_decks/expansions.dart';
 import 'package:path/path.dart';
 import 'dart:io';
 
@@ -66,6 +67,10 @@ class DatabaseHelper {
             .where((t) => t.isNotEmpty),
       );
     }
+
+    // initialize cycles
+    final cycles = await db.query('cycles');
+    Cycle.initValues(cycles);
 
     return db;
   }

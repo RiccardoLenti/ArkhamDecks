@@ -266,12 +266,18 @@ class TraitFilterWidget extends StatelessWidget {
                     filter.traits.isEmpty
                         ? Text(
                           'None',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                          ),
                         )
                         : Text(
                           filter.traits.join(', '),
                           softWrap: true,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                   ],
                 ),
@@ -377,5 +383,76 @@ class _TraitsSelectorScreenState extends State<TraitsSelectorScreen> {
         ],
       ),
     );
+  }
+}
+
+class ExpansionFilterWidget extends StatelessWidget {
+  final ExpansionFilter filter;
+
+  const ExpansionFilterWidget({super.key, required this.filter});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: filter,
+      builder: (context, _) {
+        return FilterBox(
+          title: 'Expansion',
+          isActive: filter.isActive,
+          clear: filter.clear,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: Wrap(
+                  children: [
+                    filter.expansions.isEmpty
+                        ? Text(
+                          'None',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        )
+                        : Text(
+                          filter.expansions.join(', '),
+                          softWrap: true,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_right_alt),
+                onPressed:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => ExpansionsSelectorScreen(filter: filter),
+                      ),
+                    ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ExpansionsSelectorScreen extends StatefulWidget {
+  final ExpansionFilter filter;
+
+  const ExpansionsSelectorScreen({super.key, required this.filter});
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    throw UnimplementedError();
   }
 }

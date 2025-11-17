@@ -12,7 +12,7 @@ class NewDeckScreen extends StatefulWidget {
 }
 
 class _NewDeckScreenState extends State<NewDeckScreen> {
-  Map<Expansion, List<SimplifiedCard>>? _investigatorMap;
+  Map<Cycle, List<SimplifiedCard>>? _investigatorMap;
 
   @override
   void initState() {
@@ -20,18 +20,27 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     _loadInvestigators();
   }
 
+  //TODO: when the refactoring is finishes change every 'expansion' here into something decent
   Future<void> _loadInvestigators() async {
-    final Map<Expansion, List<SimplifiedCard>> res = {};
+    final Map<Cycle, List<SimplifiedCard>> res = {};
 
     final db = await DatabaseHelper.instance.db;
 
-    for (final expansion in Expansion.values) {
+    for (final expansion in Cycle.values) {
+      final List<String> packs = (await db.query(
+        'packs',
+        where: 'cycle_code = ?',
+        whereArgs: [expansion.code],
+      )).map((map) => map['code']).toList().cast<String>();
+
+      final List<String> placeholders = List.filled(packs.length, '?');
+
       // the group by is needed so that it returns only 1 Hank Samson
       // TODO: this also returns only one agatha crane...
       final maps = (await db.query(
         'cards',
-        where: 'type_code = ? AND pack_code = ?',
-        whereArgs: ['investigator', expansion.packCode],
+        where: 'type_code = ? AND pack_code IN (${placeholders.join(', ')})',
+        whereArgs: ['investigator', ...packs],
         groupBy: 'name',
         orderBy: 'code',
       ));
@@ -56,7 +65,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
               : SingleChildScrollView(
                 child: Column(
                   children: [
-                    for (final expansion in Expansion.values)
+                    for (final expansion in Cycle.values)
                       ..._buildInvestigatorsList(expansion),
                   ],
                 ),
@@ -64,9 +73,13 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     );
   }
 
-  List<Widget> _buildInvestigatorsList(Expansion expansion) {
+  List<Widget> _buildInvestigatorsList(Cycle expansion) {
     final investigators = _investigatorMap![expansion]!;
     final textEditingController = TextEditingController();
+
+    if(investigators.isEmpty) {
+      return [SizedBox.shrink()];
+    }
 
     return [
       buildDividerWithText(expansion.name),

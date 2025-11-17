@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,7 @@ class SearchFilters extends ChangeNotifier {
   final LevelFilter levelFilter = LevelFilter();
   final CostFilter costFilter = CostFilter();
   final TraitFilter traitFilter = TraitFilter();
+  final ExpansionFilter expansionFilter = ExpansionFilter();
   late final InvestigatorFilter investigatorFilter;
 
   Iterable<BaseFilter> get filters => [
@@ -21,6 +23,7 @@ class SearchFilters extends ChangeNotifier {
     levelFilter,
     costFilter,
     traitFilter,
+    expansionFilter,
     investigatorFilter,
   ];
 
@@ -282,6 +285,38 @@ class TraitFilter extends BaseFilter {
 
     return SqlClause('($condition)', args);
   }
+}
+
+// TODO: this was just renamed from Expansion to Cycle temporarily, it's very wonky
+class ExpansionFilter extends BaseFilter {
+  final Set<Cycle> _expansions = {};
+
+  @override
+  void clear() {
+    _expansions.clear();
+  }
+
+  @override
+  bool get isActive => _expansions.isNotEmpty;
+
+  Set<Cycle> get expansions => Set.unmodifiable(_expansions);
+
+  void addExpansion(Cycle expansion) {
+    if(_expansions.add(expansion)) {
+      notifyListeners();
+    }
+  }
+
+  void removeTrait(Cycle expansion) {
+    if(_expansions.remove(expansion)) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  // TODO: implement whereClause
+  SqlClause get whereClause => throw UnimplementedError();
+
 }
 
 // TODO: this might be exported outside if it gets too heavy as the whereClause is constant

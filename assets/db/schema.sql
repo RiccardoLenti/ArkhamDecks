@@ -48,3 +48,14 @@ CREATE TABLE deck_cards (
     FOREIGN KEY(card_code) REFERENCES cards(code),
     PRIMARY KEY(deck_id, card_code)
 );
+
+CREATE TABLE cycles (
+    code TEXT PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE packs (
+    code TEXT PRIMARY KEY,
+    cycle_code TEXT NOT NULL,
+    name TEXT NOT NULL
+);

@@ -62,7 +62,7 @@ class _DecksScreenState extends State<DecksScreen> {
                   if (res != null && res) {
                     setState(() {
                       _decksFuture = fetchDecks();
-                    });
+                    }); // rebuilds
                   }
                 },
               );
