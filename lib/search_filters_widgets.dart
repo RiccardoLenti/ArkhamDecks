@@ -388,7 +388,7 @@ class _TraitsSelectorScreenState extends State<TraitsSelectorScreen> {
 }
 
 class ExpansionFilterWidget extends StatelessWidget {
-  final ExpansionFilter filter;
+  final PackFilter filter;
 
   const ExpansionFilterWidget({super.key, required this.filter});
 
@@ -408,7 +408,7 @@ class ExpansionFilterWidget extends StatelessWidget {
               Expanded(
                 child: Wrap(
                   children: [
-                    filter.expansions.isEmpty
+                    filter.isEmpty
                         ? Text(
                           'None',
                           style: TextStyle(
@@ -417,7 +417,7 @@ class ExpansionFilterWidget extends StatelessWidget {
                           ),
                         )
                         : Text(
-                          filter.expansions.map((cycle) => cycle.name).join(', '),
+                          filter.selectedText(),
                           softWrap: true,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -447,7 +447,7 @@ class ExpansionFilterWidget extends StatelessWidget {
 }
 
 class ExpansionsSelectorScreen extends StatefulWidget {
-  final ExpansionFilter filter;
+  final PackFilter filter;
   const ExpansionsSelectorScreen({super.key, required this.filter});
 
   @override
@@ -456,28 +456,118 @@ class ExpansionsSelectorScreen extends StatefulWidget {
 }
 
 class _ExpansionsSelectorScreenState extends State<ExpansionsSelectorScreen> {
+  late final List<Cycle> _cycles;
+
+  @override
+  void initState() {
+    super.initState();
+    _cycles = Cycle.values;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final cycles = Cycle.values;
-
     return Scaffold(
       appBar: AppBar(title: Text('Cycles')),
       body: AnimatedBuilder(
         animation: widget.filter,
         builder: (context, _) {
           return ListView.builder(
-            itemCount: cycles.length,
+            itemCount: _cycles.length,
             itemBuilder: (context, index) {
-              final cycle = cycles[index];
+              final cycle = _cycles[index];
               final checked = widget.filter.contains(cycle);
 
-              return CheckboxListTile(title: Text(cycle.name), value: checked, onChanged: (bool? value) {
-                if(value == true) {
-                  widget.filter.addExpansion(cycle);
-                } else {
-                  widget.filter.removeExpansion(cycle);
-                }
-              });
+              return ListTile(
+                title: Text(cycle.name),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    cycle.packs.length <= 1
+                        ? SizedBox.shrink()
+                        : IconButton(
+                          icon: Icon(Icons.arrow_right_alt),
+                          onPressed:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => PacksSelectorScreen(
+                                        filter: widget.filter,
+                                        cycle: cycle,
+                                      ),
+                                ),
+                              ),
+                        ),
+
+                    Checkbox(
+                      value: checked,
+                      tristate: true,
+                      onChanged: (bool? value) {
+                        if (value == true) {
+                          widget.filter.addCycle(cycle);
+                        } else {
+                          widget.filter.removeCycle(cycle);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class PacksSelectorScreen extends StatefulWidget {
+  final PackFilter filter;
+  final Cycle cycle;
+
+  const PacksSelectorScreen({
+    super.key,
+    required this.filter,
+    required this.cycle,
+  });
+
+  @override
+  State<PacksSelectorScreen> createState() => _PacksSelectorScreenState();
+}
+
+class _PacksSelectorScreenState extends State<PacksSelectorScreen> {
+  late final List<Pack> _packs;
+
+  @override
+  void initState() {
+    super.initState();
+    _packs = widget.cycle.packs;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('${widget.cycle.name} Packs')),
+      body: AnimatedBuilder(
+        animation: widget.filter,
+        builder: (context, _) {
+          return ListView.builder(
+            itemCount: _packs.length,
+            itemBuilder: (context, index) {
+              final pack = _packs[index];
+              final checked = widget.filter.containsPack(widget.cycle, pack);
+
+              return CheckboxListTile(
+                title: Text(pack.name),
+                value: checked,
+                onChanged: (bool? value) {
+                  if (value == true) {
+                    widget.filter.addPack(widget.cycle, pack);
+                  } else {
+                    widget.filter.removePack(widget.cycle, pack);
+                  }
+                },
+              );
             },
           );
         },

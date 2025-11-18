@@ -34,6 +34,18 @@ class Cycle {
         })
         .toList(growable: false);
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is !Cycle) {
+      return false;
+    }
+    return code == other.code;
+  }
+  
+  @override
+  int get hashCode => code.hashCode;
+  
 }
 
 class Pack {

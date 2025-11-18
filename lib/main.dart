@@ -1,4 +1,5 @@
 import 'package:arkham_decks/cards_screen.dart';
+import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/decks_screen.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await DatabaseHelper.instance.initDb();
 
   final iconManager = IconManager();
   await iconManager.loadIcons('assets/icons/app.json');

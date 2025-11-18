@@ -14,7 +14,7 @@ class SearchFilters extends ChangeNotifier {
   final LevelFilter levelFilter = LevelFilter();
   final CostFilter costFilter = CostFilter();
   final TraitFilter traitFilter = TraitFilter();
-  final ExpansionFilter expansionFilter = ExpansionFilter();
+  final PackFilter expansionFilter = PackFilter();
   late final InvestigatorFilter investigatorFilter;
 
   Iterable<BaseFilter> get filters => [
@@ -289,41 +289,87 @@ class TraitFilter extends BaseFilter {
 }
 
 // TODO: this was just renamed from Expansion to Cycle temporarily, it's very wonky
-class ExpansionFilter extends BaseFilter {
-  final Set<Cycle> _expansions = {};
+class PackFilter extends BaseFilter {
+  final Map<Cycle, List<Pack>> _selectedPacks = {};
+
+  @override
+  PackFilter() {
+    for (final cycle in Cycle.values) {
+      _selectedPacks[cycle] = [];
+    }
+  }
 
   @override
   void clear() {
-    _expansions.clear();
+    _selectedPacks.forEach((key, value) => value.clear());
     notifyListeners();
   }
 
   @override
-  bool get isActive => _expansions.isNotEmpty;
+  bool get isActive => _selectedPacks.entries
+      .map((entry) => entry.value.isNotEmpty)
+      .fold(false, (p, v) => p | v);
 
-  Set<Cycle> get expansions => Set.unmodifiable(_expansions);
+  bool get isEmpty => !isActive;
 
-  void addExpansion(Cycle expansion) {
-    if (_expansions.add(expansion)) {
-      notifyListeners();
+  String selectedText() {
+    final List<String> res = [];
+
+    for (final entry in _selectedPacks.entries) {
+      final cycle = entry.key;
+      final packs = entry.value;
+
+      if (cycle.packs.length == packs.length) {
+        res.add(cycle.name);
+      } else {
+        res.addAll(packs.map((p) => p.name));
+      }
+    }
+
+    return res.join(', ');
+  }
+
+  void addCycle(Cycle cycle) {
+    _selectedPacks[cycle]!.addAll(cycle.packs);
+    notifyListeners();
+  }
+
+  void removeCycle(Cycle cycle) {
+    _selectedPacks[cycle] = [];
+    notifyListeners();
+  }
+
+  void addPack(Cycle cycle, Pack pack) {
+    _selectedPacks[cycle]!.add(pack);
+    notifyListeners();
+  }
+
+  void removePack(Cycle cycle, Pack pack) {
+    _selectedPacks[cycle]!.remove(pack);
+    notifyListeners();
+  }
+
+  bool? contains(Cycle cycle) {
+    if (_selectedPacks[cycle]!.isEmpty) {
+      return false;
+    } else if (cycle.packs.length == _selectedPacks[cycle]!.length) {
+      return true;
+    } else {
+      return null;
     }
   }
 
-  void removeExpansion(Cycle expansion) {
-    if (_expansions.remove(expansion)) {
-      notifyListeners();
-    }
+  bool containsPack(Cycle cycle, Pack pack) {
+    return _selectedPacks[cycle]!.contains(pack);
   }
-
-  bool contains(Cycle cycle) => _expansions.contains(cycle);
 
   @override
   SqlClause get whereClause {
     final List<String> conditions = [];
     final List<String> args = [];
 
-    for (final cycle in expansions) {
-      final packs = cycle.packs;
+    for (final entry in _selectedPacks.entries) {
+      final packs = entry.value;
       conditions.add(
         '(pack_code IN (${List.filled(packs.length, '?').join(',')}))',
       );
