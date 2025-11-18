@@ -12,6 +12,7 @@ class InvestigatorFilter extends BaseFilter {
     : _constraints = {
         'faction': FactionConstraint(),
         'level': LevelConstraint(),
+        'trait': TraitConstraint(),
       };
 
   @override
@@ -77,5 +78,18 @@ class LevelConstraint implements OptionConstraint {
     final maxXp = level['max'] as int;
 
     return ("(xp BETWEEN ? AND ?)", ['$minXp', '$maxXp']);
+  }
+}
+
+class TraitConstraint implements OptionConstraint {
+  //TODO: this is exactly identical to TraitFilter. MH.
+  @override
+  (String, List<String>) buildQuery(dynamic value) {
+    final traits = (value as List).cast<String>();
+
+    final condition = List.filled(traits.length, 'traits LIKE ?').join(' OR ');
+    final args = traits.map((trait) => '%$trait%').toList();
+
+    return ('($condition)', args);
   }
 }
