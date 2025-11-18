@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
+import 'package:arkham_decks/investigator_filter.dart';
 import 'package:flutter/material.dart';
 
 class SearchFilters extends ChangeNotifier {
@@ -26,6 +25,8 @@ class SearchFilters extends ChangeNotifier {
     expansionFilter,
     investigatorFilter,
   ];
+  //TODO: investigatorFilter might be handled differently if the computation becomes too slow
+  //(the query is quite long and it's constant, it can be computed only once instead of at every call)
 
   @override
   SearchFilters({String? deckOptions}) {
@@ -374,48 +375,6 @@ class PackFilter extends BaseFilter {
         '(pack_code IN (${List.filled(packs.length, '?').join(',')}))',
       );
       args.addAll(packs.map((p) => p.code));
-    }
-
-    return SqlClause(conditions.join(' OR '), args);
-  }
-}
-
-// TODO: this might be exported outside if it gets too heavy as the whereClause is constant
-class InvestigatorFilter extends BaseFilter {
-  final String? deckOptions;
-
-  InvestigatorFilter(this.deckOptions);
-
-  @override
-  /// This should never be called
-  void clear() {}
-
-  @override
-  bool get isActive => deckOptions != null;
-
-  @override
-  SqlClause get whereClause {
-    final List<String> conditions = [];
-    final List<String> args = [];
-
-    //option is like {faction: ['faction1', 'faction2'], level: {'min': m1, 'max': m2}}
-    for (final Map<String, dynamic> option in jsonDecode(deckOptions!)) {
-      final factions = (option['faction'] as List?)?.cast<String>();
-      final level = option['level'] as Map<String, dynamic>?;
-
-      if (factions == null || level == null) {
-        continue;
-      }
-
-      final int minXp = level['min'];
-      final int maxXp = level['max'];
-
-      for (final faction in factions) {
-        conditions.add(
-          '((faction_code = ? OR faction2_code = ? OR faction3_code = ?) AND xp BETWEEN ? AND ?)',
-        );
-        args.addAll([faction, faction, faction, '$minXp', '$maxXp']);
-      }
     }
 
     return SqlClause(conditions.join(' OR '), args);
