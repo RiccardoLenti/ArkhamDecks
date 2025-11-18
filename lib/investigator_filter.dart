@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/foundation.dart';
 
-//right now we handle factions (list), levels (json), traits (list)
+//right now we handle factions (list), levels (json), traits (list), types (list)
 class InvestigatorFilter extends BaseFilter {
   final String? deckOptions;
   final Map<String, OptionConstraint> _constraints;
@@ -13,6 +13,7 @@ class InvestigatorFilter extends BaseFilter {
         'faction': FactionConstraint(),
         'level': LevelConstraint(),
         'trait': TraitConstraint(),
+        'type': TypeConstraint(),
       };
 
   @override
@@ -91,5 +92,16 @@ class TraitConstraint implements OptionConstraint {
     final args = traits.map((trait) => '%$trait%').toList();
 
     return ('($condition)', args);
+  }
+}
+
+class TypeConstraint implements OptionConstraint {
+  @override
+  (String, List<String>) buildQuery(dynamic value) {
+    final types = (value as List).cast<String>();
+
+    final placeholders = List.filled(types.length, '?').join(', ');
+
+    return ('(type_code IN ($placeholders))', types);
   }
 }
