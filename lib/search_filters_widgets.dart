@@ -482,8 +482,20 @@ class _ExpansionsSelectorScreenState extends State<ExpansionsSelectorScreen> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Checkbox(
+                      value: checked,
+                      tristate: true,
+                      onChanged: (bool? value) {
+                        if (value == true) {
+                          widget.filter.addCycle(cycle);
+                        } else {
+                          widget.filter.removeCycle(cycle);
+                        }
+                      },
+                    ),
+
                     cycle.packs.length <= 1
-                        ? SizedBox.shrink()
+                        ? SizedBox(width: 48.0)
                         : IconButton(
                           icon: Icon(Icons.arrow_right_alt),
                           onPressed:
@@ -498,18 +510,6 @@ class _ExpansionsSelectorScreenState extends State<ExpansionsSelectorScreen> {
                                 ),
                               ),
                         ),
-
-                    Checkbox(
-                      value: checked,
-                      tristate: true,
-                      onChanged: (bool? value) {
-                        if (value == true) {
-                          widget.filter.addCycle(cycle);
-                        } else {
-                          widget.filter.removeCycle(cycle);
-                        }
-                      },
-                    ),
                   ],
                 ),
               );
