@@ -174,7 +174,9 @@ class AddCardButton extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.add),
               onPressed:
-                  deckCard.count >= 2 ? null : () => deck.addCard(deckCard),
+                  deckCard.count >= deckCard.card.deckLimit
+                      ? null
+                      : () => deck.addCard(deckCard),
             ),
           ],
         );

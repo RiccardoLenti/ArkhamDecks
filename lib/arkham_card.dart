@@ -12,6 +12,7 @@ class SimplifiedCard {
   final List<Faction> multiFactions;
   final String type;
   final int? level;
+  final int deckLimit;
 
   SimplifiedCard({
     required this.code,
@@ -21,6 +22,7 @@ class SimplifiedCard {
     required this.faction,
     required this.type,
     required this.level,
+    required this.deckLimit,
     this.multiFactions = const [],
   });
 
@@ -32,6 +34,8 @@ class SimplifiedCard {
         Faction.fromString(map['faction3_code']),
       ];
 
+      // TODO: fix the deckLimit check. The only cards without a deck_limit 
+      // are sophie and the disciplines back sides. They are linked with back_link
       return SimplifiedCard(
         code: map['code'],
         cost: map['cost'],
@@ -41,6 +45,7 @@ class SimplifiedCard {
         multiFactions: multiFactions.nonNulls.toList(growable: false),
         type: map['type_code'],
         level: map['xp'],
+        deckLimit: map['deck_limit'] ?? 1,
       );
     } else {
       return SimplifiedCard(
@@ -51,6 +56,7 @@ class SimplifiedCard {
         faction: Faction.fromString(map['faction_code'])!,
         type: map['type_code'],
         level: map['xp'],
+        deckLimit: map['deck_limit'] ?? 1,
       );
     }
   }
@@ -75,6 +81,7 @@ class ArkhamCard extends SimplifiedCard {
     required super.faction,
     required super.type,
     required super.level,
+    required super.deckLimit,
     super.multiFactions,
 
     this.text,
@@ -121,6 +128,7 @@ class ArkhamCard extends SimplifiedCard {
       multiFactions: simplified.multiFactions,
       type: simplified.type,
       level: simplified.level,
+      deckLimit: simplified.deckLimit,
 
       text: map['text'] as String?,
       traits: (map['traits'] as String?)?.split(' '),

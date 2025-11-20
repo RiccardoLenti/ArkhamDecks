@@ -44,8 +44,7 @@ class Deck extends ChangeNotifier {
     );
     if (deckCard == null) {
       deckCards.add(DeckCard(cardToAdd.card, 1));
-    } else if (deckCard.count < 2) {
-      //TODO: this needs to be adjusted for myriads
+    } else if (deckCard.count < deckCard.card.deckLimit) {
       deckCard.count++;
     }
     notifyListeners();
