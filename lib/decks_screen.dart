@@ -24,7 +24,7 @@ class _DecksScreenState extends State<DecksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Decks'), backgroundColor: Colors.deepPurple),
+      appBar: AppBar(title: Text('Decks')),
       body: FutureBuilder(
         future: _decksFuture,
         builder: (context, snapshot) {
@@ -44,7 +44,7 @@ class _DecksScreenState extends State<DecksScreen> {
               return ListTile(
                 title: Text(
                   deck.name,
-                  style: TextStyle(fontFamily: 'Arkhamic'),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 subtitle: Text(deck.investigatorName),
                 onTap: () async {

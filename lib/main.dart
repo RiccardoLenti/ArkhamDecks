@@ -2,6 +2,7 @@ import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/decks_screen.dart';
 import 'package:arkham_decks/search_filters.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:flutter/services.dart';
 import 'icon_manager.dart';
 
@@ -24,7 +25,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'title', home: MainScreen());
+    return MaterialApp(title: 'title', home: MainScreen(), theme: AppTheme.theme());
   }
 }
 

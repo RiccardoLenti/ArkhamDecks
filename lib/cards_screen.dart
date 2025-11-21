@@ -59,7 +59,6 @@ class _CardsScreenState extends State<CardsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Investigator Cards'),
-        backgroundColor: Colors.deepPurple,
         actions: [
           IconButton(
             onPressed: () {

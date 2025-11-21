@@ -60,7 +60,6 @@ class _DeckScreenState extends State<DeckScreen> {
                   appBar: AppBar(
                     title: Text(
                       deck.name,
-                      style: TextStyle(fontFamily: 'Arkhamic'),
                     ),
 
                     actions: [

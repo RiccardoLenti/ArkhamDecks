@@ -337,7 +337,7 @@ class _TraitsSelectorScreenState extends State<TraitsSelectorScreen> {
                 .toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Traits'), backgroundColor: Colors.deepPurple),
+      appBar: AppBar(title: Text('Traits')),
       body: Column(
         children: [
           Padding(

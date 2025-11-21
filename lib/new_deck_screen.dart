@@ -27,11 +27,12 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     final db = await DatabaseHelper.instance.db;
 
     for (final expansion in Cycle.values) {
-      final List<String> packs = (await db.query(
-        'packs',
-        where: 'cycle_code = ?',
-        whereArgs: [expansion.code],
-      )).map((map) => map['code']).toList().cast<String>();
+      final List<String> packs =
+          (await db.query(
+            'packs',
+            where: 'cycle_code = ?',
+            whereArgs: [expansion.code],
+          )).map((map) => map['code']).toList().cast<String>();
 
       final List<String> placeholders = List.filled(packs.length, '?');
 
@@ -56,9 +57,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('New Deck', style: TextStyle(fontFamily: 'Arkhamic')),
-      ),
+      appBar: AppBar(title: Text('New Deck')),
       body:
           _investigatorMap == null
               ? Center(child: CircularProgressIndicator())
@@ -77,12 +76,12 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     final investigators = _investigatorMap![expansion]!;
     final textEditingController = TextEditingController();
 
-    if(investigators.isEmpty) {
+    if (investigators.isEmpty) {
       return [SizedBox.shrink()];
     }
 
     return [
-      buildDividerWithText(expansion.name),
+      DividerWithText(text: expansion.name),
       ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -97,7 +96,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
             child: ListTile(
               title: Text(
                 investigator.name,
-                style: const TextStyle(fontFamily: 'Arkhamic', fontSize: 18),
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
               subtitle: Text(investigator.code.toString()),
               dense: true,

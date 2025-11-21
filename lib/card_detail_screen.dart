@@ -38,7 +38,7 @@ class CardDetailScreen extends StatelessWidget {
                 children: [
                   CardView(card: cards.first),
                   if (cards.length > 1) ...[
-                    buildDividerWithText('Bonded Cards'),
+                    DividerWithText(text: 'Bonded Cards'),
 
                     for (final card in cards.skip(1)) ...[
                       CardView(card: card),
@@ -55,30 +55,31 @@ class CardDetailScreen extends StatelessWidget {
   }
 }
 
-Widget buildDividerWithText(String text) {
-  const divider = Divider(thickness: 2.5, color: Colors.black54, height: 30);
+class DividerWithText extends StatelessWidget {
+  final String text;
+  static const Divider _divider = Divider(thickness: 2.5, height: 30);
 
-  return Column(
-    children: [
-      SizedBox(height: 20),
-      Row(
-        children: [
-          const Expanded(child: divider),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontFamily: 'Arkhamic',
-                color: Colors.black,
-                fontSize: 21.0,
+  const DividerWithText({super.key, required this.text});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(height: 20),
+        Row(
+          children: [
+            const Expanded(child: _divider),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                text,
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
-          ),
-          const Expanded(child: divider),
-        ],
-      ),
-      SizedBox(height: 20),
-    ],
-  );
+            const Expanded(child: _divider),
+          ],
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
 }
