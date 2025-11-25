@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 class FilterBox extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final bool isActive;
   final Widget child;
   final Function clear;
@@ -15,6 +16,7 @@ class FilterBox extends StatelessWidget {
   const FilterBox({
     super.key,
     required this.title,
+    this.subtitle,
     required this.isActive,
     required this.child,
     required this.clear,
@@ -56,6 +58,13 @@ class FilterBox extends StatelessWidget {
                       context,
                     ).textTheme.headlineMedium!.copyWith(fontSize: 18),
                   ),
+                  if (subtitle != null)
+                    Text(
+                      ' :  $subtitle',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium!.copyWith(fontSize: 18),
+                    ),
                 ],
               ),
               Row(
@@ -172,6 +181,7 @@ class LevelFilterWidget extends StatelessWidget {
       builder: (context, _) {
         return FilterBox(
           title: 'Level',
+          subtitle: !filter.isActive ? null : '${filter.min} - ${filter.max}',
           isActive: filter.isActive,
           clear: filter.clear,
           child: Column(
@@ -205,10 +215,6 @@ class LevelFilterWidget extends StatelessWidget {
                 min: 0.0,
                 max: 5.0,
                 onChanged: (values) => filter.updateValues(values),
-                labels: RangeLabels(
-                  filter.min.toString(),
-                  filter.max.toString(),
-                ),
               ),
             ],
           ),
@@ -230,6 +236,7 @@ class CostFilterWidget extends StatelessWidget {
       builder: (context, _) {
         return FilterBox(
           title: 'Cost',
+          subtitle: !filter.isActive ? null : '${filter.min} - ${filter.max}',
           isActive: filter.isActive,
           clear: filter.clear,
           child: RangeSlider(
@@ -238,7 +245,6 @@ class CostFilterWidget extends StatelessWidget {
             min: 0.0,
             max: 20.0,
             onChanged: (values) => filter.updateValues(values),
-            labels: RangeLabels(filter.min.toString(), filter.max.toString()),
           ),
         );
       },
@@ -345,17 +351,10 @@ class _TraitsSelectorScreenState extends State<TraitsSelectorScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: InputDecoration(
-                labelText: 'Search',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  onPressed: _clearSearch,
-                  icon: Icon(Icons.clear),
-                ),
-              ),
+            child: CustomSearchBar(
+              controller: _searchController,
               onChanged: (text) => setState(() => _searchText = text.trim()),
+              clear: _clearSearch,
             ),
           ),
           Expanded(

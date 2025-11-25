@@ -672,6 +672,7 @@ class InvestigatorDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 12),

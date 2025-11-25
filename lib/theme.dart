@@ -84,7 +84,7 @@ class AppTheme {
 
     const ColorScheme colorScheme = ColorScheme(
       brightness: Brightness.dark,
-      primary: AppColors._nord5,//Color(0xFFBBC3FF),
+      primary: AppColors._nord5, //Color(0xFFBBC3FF),
       onPrimary: Color(0xFF232C61),
       primaryContainer: Color(0xFF3A4279),
       onPrimaryContainer: Color(0xFFDFE0FF),
@@ -183,6 +183,42 @@ class AppTheme {
       listTileTheme: listTileTheme,
       scaffoldBackgroundColor: colorScheme.surface,
       navigationBarTheme: navigationBarTheme,
+    );
+  }
+}
+
+// TODO: put this in a widgets.dart
+class CustomSearchBar extends StatelessWidget {
+  final TextEditingController controller;
+  final Function clear;
+  final Function onChanged;
+
+  const CustomSearchBar({
+    super.key,
+    required this.controller,
+    required this.onChanged,
+    required this.clear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40.0,
+      child: TextField(
+        controller: controller,
+        autocorrect: false,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
+          prefixIcon: Icon(Icons.search),
+          suffixIcon: IconButton(
+            onPressed: () => clear(),
+            icon: Icon(Icons.clear),
+          ),
+          contentPadding: EdgeInsets.zero,
+          isDense: true,
+        ),
+        onChanged: (searchText) => onChanged(searchText),
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/deck_screen.dart';
 import 'package:arkham_decks/filter_screen.dart';
 import 'package:arkham_decks/search_filters.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -77,42 +78,17 @@ class _CardsScreenState extends State<CardsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              height: 40.0,
-              child: TextField(
-                controller: _searchController,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      _searchController.clear();
-                      _searchFilters.updateSearchText('');
-                    },
-                    icon: Icon(Icons.clear),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                ),
-                onChanged:
-                    (searchText) => _searchFilters.updateSearchText(searchText),
-              ),
+            child: CustomSearchBar(
+              controller: _searchController,
+              onChanged:
+                  (searchText) => _searchFilters.updateSearchText(searchText),
+              clear: () {
+                _searchController.clear();
+                _searchFilters.updateSearchText('');
+              },
             ),
           ),
           Expanded(
-            /*child: ListView.builder(
-              itemCount: _cards.length,
-              itemBuilder: (context, index) {
-                final card = _cards[index];
-                return CardListTile(
-                  card: card,
-                  cards: _cards,
-                  index: index,
-                  trailing: _deck == null ? null : AddCardButton(card: card),
-                );
-              },
-            ), */
             child: ListView.separated(
               itemCount: _cards.length,
               separatorBuilder: (_, _) => const Divider(height: 0.0),
