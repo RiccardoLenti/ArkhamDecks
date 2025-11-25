@@ -3,6 +3,7 @@ import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/search_filters.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 
 class FilterBox extends StatelessWidget {
@@ -25,9 +26,8 @@ class FilterBox extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withAlpha(127),
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -38,24 +38,23 @@ class FilterBox extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const SizedBox(width: 2),
+                  const SizedBox(width: 4),
                   isActive
                       ? Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Colors.greenAccent,
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           shape: BoxShape.circle,
                         ),
                       )
-                      : const SizedBox(width: 8),
+                      : const SizedBox(width: 6),
                   const SizedBox(width: 6),
                   Text(
                     title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.0,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineMedium!.copyWith(fontSize: 18),
                   ),
                 ],
               ),
@@ -100,10 +99,14 @@ class FactionFilterWidget extends StatelessWidget {
                       filter.selected.contains(faction)
                           ? IconManager().getIcon(
                             faction.name,
-                            color: faction.color,
+                            color: AppColors.factions[faction]!.light,
                             size: 36,
                           )
-                          : IconManager().getIcon(faction.name, size: 36),
+                          : IconManager().getIcon(
+                            faction.name,
+                            size: 36,
+                            color: Colors.white70,
+                          ),
                 );
               }),
             ],

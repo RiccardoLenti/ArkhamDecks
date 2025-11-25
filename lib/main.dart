@@ -25,7 +25,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'title', home: MainScreen(), theme: AppTheme.theme());
+    return MaterialApp(
+      title: 'title',
+      home: MainScreen(),
+      theme: AppTheme.theme(),
+    );
   }
 }
 
@@ -56,11 +60,12 @@ class _MainScreenState extends State<MainScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, res) async {
-        if(didPop) return;
+        if (didPop) return;
 
-        final currentNavigator = _navigatorKeys[_selectedPageIndex].currentState;
-        if(currentNavigator != null && currentNavigator.canPop()) {
-            currentNavigator.pop();
+        final currentNavigator =
+            _navigatorKeys[_selectedPageIndex].currentState;
+        if (currentNavigator != null && currentNavigator.canPop()) {
+          currentNavigator.pop();
         } else {
           SystemNavigator.pop();
         }
@@ -72,7 +77,9 @@ class _MainScreenState extends State<MainScreen> {
             Navigator(
               key: _navigatorKeys[0],
               onGenerateRoute:
-                  (_) => MaterialPageRoute(builder: (_) => CardsScreen(searchFilters: _searchFilters,)),
+                  (_) => MaterialPageRoute(
+                    builder: (_) => CardsScreen(searchFilters: _searchFilters),
+                  ),
             ),
             Navigator(
               key: _navigatorKeys[1],
@@ -82,6 +89,8 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
 
+        // notes on the colors: the icon and text not selected are onSurfaceVariant
+        // the selected text is onSurface, the icon is onSecondaryContainer
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedPageIndex,
           onDestinationSelected: (index) {
@@ -94,6 +103,8 @@ class _MainScreenState extends State<MainScreen> {
             ),
             NavigationDestination(icon: Icon(Icons.book), label: 'Decks'),
           ],
+
+          height: 60.0,
         ),
       ),
     );

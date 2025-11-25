@@ -1,4 +1,5 @@
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
@@ -34,7 +35,7 @@ class SimplifiedCard {
         Faction.fromString(map['faction3_code']),
       ];
 
-      // TODO: fix the deckLimit check. The only cards without a deck_limit 
+      // TODO: fix the deckLimit check. The only cards without a deck_limit
       // are sophie and the disciplines back sides. They are linked with back_link
       return SimplifiedCard(
         code: map['code'],
@@ -188,9 +189,13 @@ class CostLevelCircle extends StatelessWidget {
         late final Widget composedIcon;
 
         if (card.type == 'investigator') {
-          composedIcon = IconManager().getIcon(
-            card.faction.name,
-            color: card.faction.color,
+          composedIcon = Transform.translate(
+            offset: Offset(0, -constraints.maxHeight * 0.08),
+            child: IconManager().getIcon(
+              card.faction.name,
+              // TODO: I don't like this being light but on dark neutral is impossible to see
+              color: AppColors.factions[card.faction]!.light,
+            ),
           );
         } else if (card.type == 'skill' ||
             card.type == 'event' ||
@@ -202,41 +207,45 @@ class CostLevelCircle extends StatelessWidget {
               onlyOutline
                   ? IconManager().getIcon(
                     'inverted_level_${card.level ?? 'none'}',
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   )
                   : IconManager().getIcon(
                     'level_${card.level ?? 'none'}',
-                    color: card.faction.color,
+                    color: AppColors.factions[card.faction]!.light,
                   ),
 
-              _buildInnerPart(circleDiameter),
+              _buildInnerPart(context, circleDiameter, onlyOutline),
             ],
           );
         } else {
           composedIcon = IconManager().getIcon(
             'weakness',
-            color: Colors.black54,
+            color:
+                onlyOutline
+                    ? Theme.of(context).colorScheme.onSurface
+                    : AppColors.factions[card.faction]!.light,
           );
         }
 
         return SizedBox(
           height: circleDiameter,
           width: circleDiameter,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: 2.0,
-              right: 2.0,
-              top: 5.0,
-              bottom: 2.0,
-            ),
-            child: composedIcon,
-          ),
+          child: composedIcon,
         );
       },
     );
   }
 
-  Widget _buildInnerPart(double circleDiameter) {
+  Widget _buildInnerPart(
+    BuildContext context,
+    double circleDiameter,
+    bool onlyOutline,
+  ) {
+    final color =
+        onlyOutline
+            ? Theme.of(context).colorScheme.onSurface
+            : Theme.of(context).colorScheme.surface;
+
     if (card.type == 'skill') {
       return Container(
         padding: EdgeInsets.only(
@@ -245,23 +254,28 @@ class CostLevelCircle extends StatelessWidget {
           top: circleDiameter * 0.04,
           bottom: circleDiameter * 0.28,
         ),
-        child: IconManager().getIcon(card.faction.name, color: Colors.white),
+        child: IconManager().getIcon(card.faction.name, color: color),
       );
     } else if (card.cost == -2) {
       return Padding(
-        padding: EdgeInsets.only(right: 8.0, left: 8.0, top: 6.0, bottom: 10.5),
-        child: IconManager().getIcon('x-fill', color: Colors.white),
+        padding: EdgeInsets.only(
+          right: 10.0,
+          left: 10.0,
+          top: 8.0,
+          bottom: 13.5,
+        ),
+        child: IconManager().getIcon('x-fill', color: color),
       );
     }
 
     return Align(
-      alignment: Alignment(0.0, -0.55),
+      alignment: Alignment(0, -0.55),
       child: Text(
         card.cost?.toString() ?? '-',
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: circleDiameter * 0.4,
-          color: Colors.white,
+          fontSize: circleDiameter * 0.5,
+          color: color,
           fontFamily: 'Cost',
         ),
       ),

@@ -40,4 +40,5 @@ flutter:
     - family: Alegreya
       fonts: 
         - asset: assets/fonts/Alegreya-VariableFont_wght.ttf
-        - asset: assets/fonts/Alegreya-Italic-VariableFont_wght.ttf
+        - asset: assets/fonts/Alegreya-Italic-VariableFont_wght.ttf 
+          style: italic

@@ -3,14 +3,13 @@ import 'package:arkham_decks/card_detail_screen.dart';
 import 'package:arkham_decks/card_pager_screen.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class CardView extends StatelessWidget {
   final ArkhamCard card;
-
-  static const skillBackgroundColor = Color.fromARGB(255, 123, 118, 118);
 
   static const commitSkillNames = [
     'skill_willpower',
@@ -20,15 +19,6 @@ class CardView extends StatelessWidget {
     'skill_wild',
   ];
 
-  //TODO: purge this.
-  static const commitSkillColors = [
-    Color(0xFF2C7FC0),
-    Color(0xFF7C3C85),
-    Color(0xFFAE4236),
-    Color(0xFF14854D),
-    Color(0xFF8A7D5A),
-  ];
-
   const CardView({super.key, required this.card});
 
   @override
@@ -36,9 +26,15 @@ class CardView extends StatelessWidget {
     return Column(
       children: [
         BoxBorder(
-          color: card.faction.color,
+          color: AppColors.factions[card.faction]!.dark,
           thickTop: true,
-          leading: CostLevelCircle(card: card, onlyOutline: true),
+          leading:
+              card.type == 'investigator'
+                  ? null
+                  : Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: CostLevelCircle(card: card, onlyOutline: true),
+                  ),
           center: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -55,11 +51,9 @@ class CardView extends StatelessWidget {
                     offset: const Offset(0, -5),
                     child: Text(
                       card.subname!,
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 10,
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium!.copyWith(fontSize: 11.0),
                     ),
                   ),
                 ),
@@ -80,6 +74,7 @@ class CardView extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Row(
+                              spacing: 2.0,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -87,12 +82,16 @@ class CardView extends StatelessWidget {
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    spacing: 7.0,
+                                    spacing: 14.0,
                                     children: [
                                       TypeAndSlots(card: card),
-                                      Traits(card: card),
-                                      CommitIcons(card: card),
-                                      Slots(card: card),
+                                      if (card.traits != null)
+                                        Traits(card: card),
+                                      if (card.commitSkills.isNotEmpty)
+                                        CommitIcons(card: card),
+                                      if (card.slots != null &&
+                                          card.slots!.isNotEmpty)
+                                        Slots(card: card),
 
                                       if (card.health != null ||
                                           card.sanity != null)
@@ -106,6 +105,7 @@ class CardView extends StatelessWidget {
                                 Image.network(
                                   'https://arkhamdb.com/bundles/cards/${card.code}.png',
                                   fit: BoxFit.cover,
+                                  alignment: AlignmentGeometry.topCenter,
                                 ),
                               ],
                             ),
@@ -188,7 +188,7 @@ class CommitIcons extends StatelessWidget {
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: CardView.skillBackgroundColor,
+              color: Theme.of(context).colorScheme.surfaceDim,
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -196,13 +196,13 @@ class CommitIcons extends StatelessWidget {
               children: [
                 IconManager().getIcon(
                   CardView.commitSkillNames[index],
-                  size: 22,
-                  color: CardView.commitSkillColors[index],
+                  size: 24,
+                  color: AppColors.stats[index],
                 ),
 
                 IconManager().getIcon(
                   '${CardView.commitSkillNames[index]}_inverted',
-                  size: 22,
+                  size: 24,
                   color: Colors.white,
                 ),
               ],
@@ -212,7 +212,7 @@ class CommitIcons extends StatelessWidget {
       }
     }
 
-    return Wrap(spacing: 5.0, children: children);
+    return Wrap(spacing: 5.0, runSpacing: 5.0, children: children);
   }
 }
 
@@ -223,12 +223,8 @@ class Slots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (card.slots == null) {
-      return const SizedBox.shrink();
-    }
-
     return Row(
-      spacing: 12,
+      spacing: 8,
       children: [
         ...card.slots!.map((slotName) {
           return Container(
@@ -237,11 +233,25 @@ class Slots extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.surfaceDim,
             ),
-            child: IconManager().getIcon(
-              '${slotName.toLowerCase().replaceAll(' ', '_')}_inverted',
-              size: 30,
+            child: Stack(
+              children: [
+                IconManager().getIcon(
+                  slotName.toLowerCase().replaceAll(' ', '_'),
+                  color:
+                      Theme.of(
+                        context,
+                      ).colorScheme.onSurface, // this can be variant
+                  size: 30,
+                ),
+
+                IconManager().getIcon(
+                  '${slotName.toLowerCase().replaceAll(' ', '_')}_inverted',
+                  color: Theme.of(context).colorScheme.surface,
+                  size: 30,
+                ),
+              ],
             ),
           );
         }),
@@ -257,15 +267,23 @@ class TypeAndSlots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final type = card.type[0].toUpperCase() + card.type.substring(1);
+
     return Text(
-      card.slots == null
-          ? card.type
-          : '${card.type} • ${card.slots!.join(' - ')}',
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      card.slots == null || card.slots!.isEmpty
+          ? type
+          : '$type  •  ${card.slots!.join(' - ')}',
+      style: TextStyle(
+        fontFamily: 'Alegreya',
+        height: 0.4,
+        fontSize: 16,
+        fontVariations: [FontVariation('wght', 800)],
+      ),
     );
   }
 }
 
+///assumes traits != null
 class Traits extends StatelessWidget {
   final ArkhamCard card;
 
@@ -273,24 +291,24 @@ class Traits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (card.traits == null)
-        ? SizedBox.shrink()
-        : Text(
-          card.traits!.join(' '),
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontStyle: FontStyle.italic,
-            fontSize: 16,
-          ),
-          softWrap: true,
-          overflow: TextOverflow.visible,
-        );
+    return Text(
+      card.traits!.join('  '),
+      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+        fontStyle: FontStyle.italic,
+        fontVariations: [FontVariation('wght', 800)],
+        height: 1.1,
+      ),
+      textHeightBehavior: TextHeightBehavior(
+        applyHeightToFirstAscent: false,
+        applyHeightToLastDescent: false,
+      ),
+      softWrap: true,
+      overflow: TextOverflow.visible,
+    );
   }
 }
 
 class HealthSanityIcon extends StatelessWidget {
-  static const healthColor = Color(0xFF8D181E);
-  static const sanityColor = Color(0xFF165385);
   final String numberHealth;
   final String numberSanity;
 
@@ -314,22 +332,30 @@ class HealthSanityIcon extends StatelessWidget {
           Stack(
             alignment: Alignment.center,
             children: [
-              IconManager().getIcon('health', size: 40, color: healthColor),
+              IconManager().getIcon(
+                'health',
+                size: 40,
+                color: AppColors.health,
+              ),
               IconManager().getIcon('$numberHealth-fill', color: Colors.white),
               IconManager().getIcon(
                 '$numberHealth-outline',
-                color: healthColor,
+                color: AppColors.health,
               ),
             ],
           ),
           Stack(
             alignment: Alignment.center,
             children: [
-              IconManager().getIcon('sanity', size: 40, color: sanityColor),
+              IconManager().getIcon(
+                'sanity',
+                size: 40,
+                color: AppColors.sanity,
+              ),
               IconManager().getIcon('$numberSanity-fill', color: Colors.white),
               IconManager().getIcon(
                 '$numberSanity-outline',
-                color: sanityColor,
+                color: AppColors.sanity,
               ),
             ],
           ),
@@ -354,12 +380,12 @@ class InvestigatorStats extends StatelessWidget {
           value,
         ) {
           final name = CardView.commitSkillNames[index];
-          final color = CardView.commitSkillColors[index];
+          final color = AppColors.stats[index];
           return Container(
             width: 50,
             height: 30,
             decoration: BoxDecoration(
-              color: CardView.skillBackgroundColor,
+              color: Theme.of(context).colorScheme.surfaceDim,
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -480,7 +506,12 @@ class CardText extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
           ),
-          Expanded(child: TextWithIcons(text: card.text!)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: TextWithIcons(text: card.text!),
+            ),
+          ),
         ],
       ),
     );
@@ -512,17 +543,26 @@ class TextWithIcons extends StatelessWidget {
       extensions: [
         TagExtension(
           tagsToExtend: {'icon'},
-          builder: (extentionContext) {
-            final iconName = extentionContext.element?.attributes['name'];
+          builder: (extensionContext) {
+            final iconName = extensionContext.element?.attributes['name'];
 
             return Padding(
-              padding: const EdgeInsets.only(right: 2.5),
+              padding: const EdgeInsets.only(right: 2.5, bottom: 2.5),
               child: IconManager().getIcon(
                 iconName!,
                 size: 18,
-                color: Theme.of(context).colorScheme.onPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             );
+          },
+        ),
+
+        TagExtension(
+          tagsToExtend: {'cite'},
+          builder: (extensionContext) {
+            final text = '  --  ${extensionContext.element!.text}';
+
+            return Text(text);
           },
         ),
       ],
@@ -536,14 +576,18 @@ class TextWithIcons extends StatelessWidget {
 
 class CardFlavor extends StatelessWidget {
   final ArkhamCard card;
+  final String text;
 
-  const CardFlavor({super.key, required this.card});
+  CardFlavor({super.key, required this.card})
+    : text = card.flavor!
+          .replaceAll('<cite>', '\n- ')
+          .replaceAll('</cite>', '');
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 15.0),
-      child: Text(card.flavor!, style: Theme.of(context).textTheme.bodySmall),
+      child: Text(text, style: Theme.of(context).textTheme.bodySmall!),
     );
   }
 }
@@ -568,12 +612,10 @@ class CardListTile extends StatelessWidget {
     return ListTile(
       leading: CostLevelCircle(card: card),
       title: Text(card.name),
-      subtitle: Text(
-        card.subname ?? '',
-        style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12.0),
-      ),
-      titleAlignment: ListTileTitleAlignment.top,
+      subtitle: Text(card.subname ?? ''),
       trailing: trailing,
+      minVerticalPadding: 0.0,
+      visualDensity: VisualDensity(horizontal: 0.0, vertical: -4.0),
       onTap: () {
         Navigator.push(
           context,
@@ -597,7 +639,7 @@ class CustomizationTable extends StatelessWidget {
       children: [
         DividerWithText(text: 'Customization'),
         BoxBorder(
-          color: card.faction.color,
+          color: AppColors.factions[card.faction]!.dark,
           thickTop: false,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
@@ -607,11 +649,7 @@ class CustomizationTable extends StatelessWidget {
                 index,
               ) {
                 if (index.isOdd) {
-                  return Divider(
-                    color: Colors.black26,
-                    thickness: 0.75,
-                    height: 10,
-                  );
+                  return Divider(thickness: 0.75, height: 10);
                 } else {
                   return TextWithIcons(
                     text: card.customizationText[index ~/ 2],
@@ -640,10 +678,9 @@ class InvestigatorDetailScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 7.0,
+            spacing: 14.0,
             children: [
-              TypeAndSlots(card: card),
-              Traits(card: card),
+              TypeAndTraits(card: card),
               Image.network(
                 'https://arkhamdb.com/bundles/cards/${card.code}.png',
                 fit: BoxFit.cover,
@@ -665,6 +702,36 @@ class InvestigatorDetailScreen extends StatelessWidget {
               CardText(card: card),
               card.flavor != null ? CardFlavor(card: card) : SizedBox.shrink(),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class TypeAndTraits extends StatelessWidget {
+  final ArkhamCard card;
+
+  const TypeAndTraits({super.key, required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    final type = card.type[0].toUpperCase() + card.type.substring(1);
+
+    return Row(
+      children: [
+        Text(
+          '$type   •  ',
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            fontVariations: [FontVariation('wght', 800)],
+          ),
+        ),
+
+        Text(
+          card.traits!.join('  '),
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            fontStyle: FontStyle.italic,
+            fontVariations: [FontVariation('wght', 800)],
           ),
         ),
       ],

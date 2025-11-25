@@ -2,6 +2,7 @@ import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/expansions.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 
 class NewDeckScreen extends StatefulWidget {
@@ -90,8 +91,10 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
           final investigator = investigators[index];
           return Container(
             decoration: BoxDecoration(
-              color: investigator.faction.color,
-              border: Border.all(color: Colors.white, width: 3.0),
+              // TODO: ?
+              color: AppColors.factions[investigator.faction]!.dark,
+              // TODO: this border color
+              border: Border.all(width: 3.0),
             ),
             child: ListTile(
               title: Text(

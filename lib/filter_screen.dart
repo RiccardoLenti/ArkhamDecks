@@ -16,16 +16,21 @@ class FilterScreen extends StatelessWidget {
           appBar: AppBar(
             title: Row(
               children: [
-                Text('Filters'),
+                Text(
+                  'Filters',
+                  style: Theme.of(context).textTheme.headlineMedium!,
+                ),
                 ValueListenableBuilder(
                   valueListenable: filters.cardCount,
                   builder: (context, cardCount, _) {
                     return Padding(
                       padding: EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '\t\t[$cardCount cards]',
+                        '\t\t| $cardCount cards |',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12.0),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium!.copyWith(fontSize: 12.0),
                       ),
                     );
                   },

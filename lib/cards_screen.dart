@@ -15,7 +15,7 @@ class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key, required this.searchFilters});
 
   @override
-  _CardsScreenState createState() => _CardsScreenState();
+  State<CardsScreen> createState() => _CardsScreenState();
 }
 
 class _CardsScreenState extends State<CardsScreen> {
@@ -69,7 +69,7 @@ class _CardsScreenState extends State<CardsScreen> {
                 ),
               );
             },
-            icon: Icon(Icons.filter_alt, color: Colors.black),
+            icon: Icon(Icons.filter_alt),
           ),
         ],
       ),
@@ -77,27 +77,46 @@ class _CardsScreenState extends State<CardsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    _searchController.clear();
-                    _searchFilters.updateSearchText('');
-                  },
-                  icon: Icon(Icons.clear),
+            child: SizedBox(
+              height: 40.0,
+              child: TextField(
+                controller: _searchController,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.search),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      _searchController.clear();
+                      _searchFilters.updateSearchText('');
+                    },
+                    icon: Icon(Icons.clear),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                  isDense: true,
                 ),
+                onChanged:
+                    (searchText) => _searchFilters.updateSearchText(searchText),
               ),
-              onChanged:
-                  (searchText) => _searchFilters.updateSearchText(searchText),
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            /*child: ListView.builder(
               itemCount: _cards.length,
+              itemBuilder: (context, index) {
+                final card = _cards[index];
+                return CardListTile(
+                  card: card,
+                  cards: _cards,
+                  index: index,
+                  trailing: _deck == null ? null : AddCardButton(card: card),
+                );
+              },
+            ), */
+            child: ListView.separated(
+              itemCount: _cards.length,
+              separatorBuilder: (_, _) => const Divider(height: 0.0),
+              padding: EdgeInsets.zero,
               itemBuilder: (context, index) {
                 final card = _cards[index];
                 return CardListTile(
