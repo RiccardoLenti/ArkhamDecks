@@ -144,7 +144,7 @@ class FactionFilter extends BaseFilter {
 
 //TODO: export this somewhere decent
 enum Type {
-  investigator('investigator'),
+  //investigator('investigator'),
   asset('asset'),
   event('event'),
   skill('skill'),
@@ -324,6 +324,12 @@ class PackFilter extends BaseFilter {
         res.add(cycle.name);
       } else {
         res.addAll(packs.map((p) => p.name));
+      }
+
+      // 100 character limit for this field
+      if (res.fold<int>(0, (prev, el) => prev + el.length) >= 100) {
+        res.add('...');
+        break;
       }
     }
 

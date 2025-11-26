@@ -9,8 +9,8 @@ class FactionColors {
 
 abstract class AppColors {
   static const _nord0 = Color(0xFF2E3440);
-  static const _nord1 = Color(0xFF3B4252);
   static const _nordPoint5 = Color(0xFF353B49);
+  static const _nord1 = Color(0xFF3B4252);
   static const _nord2 = Color(0xFF434C5E);
   static const _nord3 = Color(0xFF4C566A);
   static const _nord4 = Color(0xFFD8DEE9);
@@ -42,7 +42,6 @@ abstract class AppColors {
     light: Color(0xFFF5F0E1),
     dark: Color(0xFF475259),
   );
-
   static const _multi = FactionColors(
     light: Color(0xFFE9D06C),
     dark: Color(0xFFcfb13a),
@@ -84,7 +83,7 @@ class AppTheme {
 
     const ColorScheme colorScheme = ColorScheme(
       brightness: Brightness.dark,
-      primary: AppColors._nord5, //Color(0xFFBBC3FF),
+      primary: AppColors._nord5,
       onPrimary: Color(0xFF232C61),
       primaryContainer: Color(0xFF3A4279),
       onPrimaryContainer: Color(0xFFDFE0FF),
@@ -94,7 +93,7 @@ class AppTheme {
       onPrimaryFixedVariant: Color(0xFF3A4279),
       secondary: Color(0xFFC4C5DD),
       onSecondary: Color(0xFF2D2F42),
-      secondaryContainer: Color(0xFF434559),
+      secondaryContainer: AppColors._nord2,
       onSecondaryContainer: AppColors._nord6,
       secondaryFixed: Color(0xFFE0E1F9),
       secondaryFixedDim: Color(0xFFC4C5DD),
@@ -176,6 +175,14 @@ class AppTheme {
       }),
     );
 
+    final filledButtonTheme = FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: Size(130.0, 40.0),
+        elevation: 1.0,
+        textStyle: textTheme.bodyMedium!.copyWith(fontSize: 18.0),
+      ),
+    );
+
     return base.copyWith(
       colorScheme: colorScheme,
       textTheme: textTheme,
@@ -183,6 +190,7 @@ class AppTheme {
       listTileTheme: listTileTheme,
       scaffoldBackgroundColor: colorScheme.surface,
       navigationBarTheme: navigationBarTheme,
+      filledButtonTheme: filledButtonTheme,
     );
   }
 }

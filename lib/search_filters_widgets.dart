@@ -143,21 +143,32 @@ class TypeFilterWidget extends StatelessWidget {
           title: 'Type',
           isActive: filter.isActive,
           clear: filter.clear,
-          child: SegmentedButton(
-            multiSelectionEnabled: true,
-            emptySelectionAllowed: true,
-            showSelectedIcon: false,
-            segments: [
-              ...Type.values.map((type) {
-                return ButtonSegment<Type>(
-                  value: type,
-                  label: Text(type.name, style: TextStyle(fontSize: 9.5)),
-                );
-              }),
-            ],
-            selected: filter.selected,
-            onSelectionChanged:
-                (Set<Type> newSelection) => filter.setActives(newSelection),
+          child: Center(
+            child: SegmentedButton(
+              multiSelectionEnabled: true,
+              emptySelectionAllowed: true,
+              showSelectedIcon: false,
+              segments: [
+                ...Type.values.map((type) {
+                  return ButtonSegment<Type>(
+                    value: type,
+                    label: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        '${type.name[0].toUpperCase()}${type.name.substring(1)}',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium!.copyWith(fontSize: 14.0),
+                        maxLines: 1,
+                      ),
+                    ),
+                  );
+                }),
+              ],
+              selected: filter.selected,
+              onSelectionChanged:
+                  (Set<Type> newSelection) => filter.setActives(newSelection),
+            ),
           ),
         );
       },
@@ -172,10 +183,6 @@ class LevelFilterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttonStyle = ElevatedButton.styleFrom(
-      minimumSize: Size(130.0, 40.0),
-    );
-
     return AnimatedBuilder(
       animation: filter,
       builder: (context, _) {
@@ -191,17 +198,15 @@ class LevelFilterWidget extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ElevatedButton(
+                    FilledButton.tonal(
                       onPressed:
                           () => filter.updateValues(RangeValues(0.0, 0.0)),
-                      style: buttonStyle,
                       child: Text('0'),
                     ),
-                    ElevatedButton(
+                    FilledButton.tonal(
                       onPressed:
                           () => filter.updateValues(RangeValues(1.0, 5.0)),
-                      style: buttonStyle,
-                      child: Text('1-5'),
+                      child: Text('1 - 5'),
                     ),
                   ],
                 ),
@@ -273,22 +278,13 @@ class TraitFilterWidget extends StatelessWidget {
               Expanded(
                 child: Wrap(
                   children: [
-                    filter.traits.isEmpty
-                        ? Text(
-                          'None',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        )
-                        : Text(
-                          filter.traits.join(', '),
-                          softWrap: true,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
+                    Text(
+                      filter.traits.isEmpty ? 'None' : filter.traits.join(', '),
+                      softWrap: true,
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -410,22 +406,13 @@ class ExpansionFilterWidget extends StatelessWidget {
               Expanded(
                 child: Wrap(
                   children: [
-                    filter.isEmpty
-                        ? Text(
-                          'None',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        )
-                        : Text(
-                          filter.selectedText(),
-                          softWrap: true,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
+                    Text(
+                      filter.isEmpty ? 'None' : filter.selectedText(),
+                      softWrap: true,
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
