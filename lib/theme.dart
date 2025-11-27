@@ -85,7 +85,7 @@ class AppTheme {
       brightness: Brightness.dark,
       primary: AppColors._nord5,
       onPrimary: Color(0xFF232C61),
-      primaryContainer: Color(0xFF3A4279),
+      primaryContainer: AppColors._nord3,
       onPrimaryContainer: Color(0xFFDFE0FF),
       primaryFixed: Color(0xFFDFE0FF),
       primaryFixedDim: Color(0xFFBBC3FF),
@@ -164,6 +164,8 @@ class AppTheme {
         fontSize: 14.0,
         color: colorScheme.onSurface,
       ),
+      minVerticalPadding: 0.0,
+      visualDensity: VisualDensity(horizontal: 0.0, vertical: -4.0),
     );
 
     final navigationBarTheme = NavigationBarThemeData(
@@ -183,6 +185,10 @@ class AppTheme {
       ),
     );
 
+    final textButtonTheme = TextButtonThemeData(
+      style: TextButton.styleFrom(textStyle: textTheme.bodyMedium),
+    );
+
     return base.copyWith(
       colorScheme: colorScheme,
       textTheme: textTheme,
@@ -191,6 +197,7 @@ class AppTheme {
       scaffoldBackgroundColor: colorScheme.surface,
       navigationBarTheme: navigationBarTheme,
       filledButtonTheme: filledButtonTheme,
+      textButtonTheme: textButtonTheme,
     );
   }
 }

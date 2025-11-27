@@ -614,8 +614,6 @@ class CardListTile extends StatelessWidget {
       title: Text(card.name),
       subtitle: Text(card.subname ?? ''),
       trailing: trailing,
-      minVerticalPadding: 0.0,
-      visualDensity: VisualDensity(horizontal: 0.0, vertical: -4.0),
       onTap: () {
         Navigator.push(
           context,

@@ -58,9 +58,7 @@ class _DeckScreenState extends State<DeckScreen> {
 
                 return Scaffold(
                   appBar: AppBar(
-                    title: Text(
-                      deck.name,
-                    ),
+                    title: Text(deck.name),
 
                     actions: [
                       IconButton(
@@ -111,7 +109,10 @@ class _DeckScreenState extends State<DeckScreen> {
       useRootNavigator: false,
       builder:
           (context) => AlertDialog(
-            title: Text('Delete Deck?'),
+            title: Text(
+              'Delete Deck?',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             actions: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

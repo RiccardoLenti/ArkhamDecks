@@ -91,102 +91,93 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
           final investigator = investigators[index];
           return Container(
             decoration: BoxDecoration(
-              // TODO: ?
               color: AppColors.factions[investigator.faction]!.dark,
-              // TODO: this border color
-              border: Border.all(width: 3.0),
+              border: Border.all(
+                width: 3.0,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
-              title: Text(
-                investigator.name,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              subtitle: Text(investigator.code.toString()),
-              dense: true,
-              visualDensity: VisualDensity.compact,
+              title: Text(investigator.name),
+              subtitle: Text(investigator.code),
               contentPadding: EdgeInsets.only(left: 22.0),
-              onTap: () {
-                showDialog(
-                  context: context,
-                  useRootNavigator: false,
-                  builder: (context) {
-                    String? errorText;
-
-                    return StatefulBuilder(
-                      builder: (context, setState) {
-                        return AlertDialog(
-                          title: Text('New ${investigator.name} Deck'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (errorText != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 6.0),
-                                  child: Text(
-                                    errorText!,
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-
-                              TextField(
-                                controller: textEditingController,
-                                decoration: InputDecoration(
-                                  hintText: 'Deck name:',
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    textEditingController.clear();
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    final name =
-                                        textEditingController.text.trim();
-                                    if (name.isEmpty) {
-                                      setState(() {
-                                        errorText = 'Name cannot be empty';
-                                      });
-                                      return; // dialog is not closed
-                                    }
-
-                                    final db = await DatabaseHelper.instance.db;
-                                    await db.insert('decks', {
-                                      'name': name,
-                                      'investigator_code': investigator.code,
-                                    });
-
-                                    textEditingController.clear();
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('Confirm'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+              onTap: () => _newDeckDialog(investigator, textEditingController),
             ),
           );
         },
       ),
     ];
+  }
+
+  Future<dynamic> _newDeckDialog(
+    SimplifiedCard investigator,
+    TextEditingController controller,
+  ) {
+    return showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (context) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'New ${investigator.name} Deck',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              content: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: 'Deck name:',
+                  hintStyle: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium!.copyWith(fontStyle: FontStyle.italic),
+                  errorText: errorText,
+                ),
+              ),
+
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        controller.clear();
+                        Navigator.pop(context);
+                      },
+                      child: Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final name = controller.text.trim();
+                        if (name.isEmpty) {
+                          setState(() {
+                            errorText = 'Name cannot be empty';
+                          });
+                          return; // dialog is not closed
+                        }
+
+                        final db = await DatabaseHelper.instance.db;
+                        await db.insert('decks', {
+                          'name': name,
+                          'investigator_code': investigator.code,
+                        });
+
+                        controller.clear();
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Text('Confirm'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }
