@@ -489,8 +489,10 @@ class BoxBorder extends StatelessWidget {
 // TODO: make bullet points text indented on multiple rows (ex: Gray's anatomy)
 class CardText extends StatelessWidget {
   final ArkhamCard card;
+  final bool buildBar;
 
-  const CardText({super.key, required this.card});
+  const CardText({super.key, required this.card, bool? buildBar})
+    : buildBar = buildBar ?? true;
 
   @override
   Widget build(BuildContext context) {
@@ -498,14 +500,15 @@ class CardText extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 3,
-            margin: EdgeInsets.only(right: 8, left: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius: BorderRadius.circular(4),
+          if (buildBar)
+            Container(
+              width: 3,
+              margin: EdgeInsets.only(right: 8, left: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
-          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 4.0),

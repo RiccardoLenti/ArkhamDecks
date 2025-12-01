@@ -100,7 +100,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
             ),
             child: ListTile(
               title: Text(investigator.name),
-              subtitle: Text(investigator.code),
+              subtitle: Text(investigator.subname!),
               contentPadding: EdgeInsets.only(left: 22.0),
               onTap: () => _newDeckDialog(investigator, textEditingController),
             ),

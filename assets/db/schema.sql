@@ -59,3 +59,5 @@ CREATE TABLE packs (
     cycle_code TEXT NOT NULL,
     name TEXT NOT NULL
 );
+
+CREATE INDEX idx_cards_type ON cards(type_code);

@@ -3,7 +3,9 @@ import 'package:arkham_decks/card_view.dart';
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
+import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/search_filters.dart';
+import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -58,7 +60,18 @@ class _DeckScreenState extends State<DeckScreen> {
 
                 return Scaffold(
                   appBar: AppBar(
-                    title: Text(deck.name),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(deck.name),
+                        Text(
+                          deck.investigatorName,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium!.copyWith(fontSize: 12.0),
+                        ),
+                      ],
+                    ),
 
                     actions: [
                       IconButton(
@@ -67,17 +80,84 @@ class _DeckScreenState extends State<DeckScreen> {
                       ),
                     ],
                   ),
-                  body: ListView.builder(
-                    itemCount: deck.cards.length,
-                    itemBuilder: (context, index) {
-                      final deckCard = deck.deckCards[index];
-                      return CardListTile(
-                        card: deckCard.card,
-                        cards: deck.cards,
-                        index: index,
-                        trailing: Text('${deckCard.count.toString()}x'),
-                      );
-                    },
+                  body: Column(
+                    children: [
+                      InvestigatorDetail(investigator: deck.investigator),
+                      Divider(height: 0.0),
+                      SizedBox(height: 16.0),
+                      Container(
+                        height: 40.0,
+                        decoration: BoxDecoration(
+                          color:
+                              AppColors
+                                  .factions[deck.investigator.faction]!
+                                  .dark,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 16.0),
+                            IconManager().getIcon(
+                              'xp-bold',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            Text('${deck.xpCount} XP'),
+                            const SizedBox(width: 16.0),
+                            IconManager().getIcon(
+                              'upgrade',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            const Text('0 XP'),
+                            SizedBox(width: 16.0),
+                            IconManager().getIcon(
+                              'card-outline-bold',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            Text('x ${deck.cardsCount}'),
+
+                            const Spacer(),
+
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color:
+                                      Theme.of(context).colorScheme.surfaceDim,
+                                ),
+                                child: IconButton(
+                                  icon: IconManager().getIcon(
+                                    'upgrade',
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  onPressed: () {},
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16.0),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16.0),
+                      Divider(height: 0.0),
+                      SizedBox(height: 12.0),
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: deck.cards.length,
+                          separatorBuilder: (_, _) => Divider(height: 0.0),
+                          itemBuilder: (context, index) {
+                            final deckCard = deck.deckCards[index];
+                            return CardListTile(
+                              card: deckCard.card,
+                              cards: deck.cards,
+                              index: index,
+                              trailing: Text('${deckCard.count.toString()}x'),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
 
                   floatingActionButton: FloatingActionButton(
@@ -181,6 +261,30 @@ class AddCardButton extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class InvestigatorDetail extends StatelessWidget {
+  final ArkhamCard investigator;
+
+  const InvestigatorDetail({super.key, required this.investigator});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(12.0),
+      child: Column(
+        spacing: 14.0,
+        children: [
+          InvestigatorStats(card: investigator),
+          HealthSanityIcon(
+            valueHealth: investigator.health,
+            valueSanity: investigator.sanity,
+          ),
+          CardText(card: investigator, buildBar: false),
+        ],
+      ),
     );
   }
 }

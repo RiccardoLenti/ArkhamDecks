@@ -357,14 +357,19 @@ class _TraitsSelectorScreenState extends State<TraitsSelectorScreen> {
             child: AnimatedBuilder(
               animation: widget.filter,
               builder: (context, _) {
-                return ListView.builder(
+                return ListView.separated(
                   itemCount: filtered.length,
+                  separatorBuilder: (_, _) => Divider(height: 0.0),
                   itemBuilder: (context, index) {
                     final trait = filtered[index];
                     final checked = widget.filter.contains(trait);
 
                     return CheckboxListTile(
                       title: Text(trait),
+                      visualDensity: VisualDensity(
+                        horizontal: 0.0,
+                        vertical: -2.5,
+                      ),
                       value: checked,
                       onChanged: (bool? value) {
                         if (value == true) {
@@ -460,14 +465,16 @@ class _ExpansionsSelectorScreenState extends State<ExpansionsSelectorScreen> {
       body: AnimatedBuilder(
         animation: widget.filter,
         builder: (context, _) {
-          return ListView.builder(
+          return ListView.separated(
             itemCount: _cycles.length,
+            separatorBuilder: (_, _) => Divider(height: 0.0),
             itemBuilder: (context, index) {
               final cycle = _cycles[index];
               final checked = widget.filter.contains(cycle);
 
               return ListTile(
                 title: Text(cycle.name),
+                visualDensity: VisualDensity(horizontal: 0.0, vertical: -2.5),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -540,14 +547,16 @@ class _PacksSelectorScreenState extends State<PacksSelectorScreen> {
       body: AnimatedBuilder(
         animation: widget.filter,
         builder: (context, _) {
-          return ListView.builder(
+          return ListView.separated(
             itemCount: _packs.length,
+            separatorBuilder: (_, _) => Divider(height: 0),
             itemBuilder: (context, index) {
               final pack = _packs[index];
               final checked = widget.filter.containsPack(widget.cycle, pack);
 
               return CheckboxListTile(
                 title: Text(pack.name),
+                visualDensity: VisualDensity(horizontal: 0.0, vertical: -2.5),
                 value: checked,
                 onChanged: (bool? value) {
                   if (value == true) {

@@ -17,6 +17,7 @@ dependencies:
   flutter_html: ^3.0.0
   collection: ^1.19.1
   provider: ^6.1.5+1
+  flutter_sticky_header: ^0.8.0
 
 dev_dependencies:
   flutter_test:

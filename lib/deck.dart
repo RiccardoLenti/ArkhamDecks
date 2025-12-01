@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 class Deck extends ChangeNotifier {
   final int id;
   final String name;
-  final String investigatorName;
+  final ArkhamCard investigator;
   final String deckOptions;
   List<DeckCard> deckCards = [];
 
   Deck({
     required this.id,
     required this.name,
-    required this.investigatorName,
+    required this.investigator,
     required this.deckOptions,
   });
 
@@ -23,9 +23,9 @@ class Deck extends ChangeNotifier {
   factory Deck.fromMap(Map<String, dynamic> map) {
     return Deck(
       id: map['id'],
-      name: map['name'],
-      investigatorName: map['investigator_name'],
+      name: map['deck_name'],
       deckOptions: map['deck_options'],
+      investigator: ArkhamCard.fromMap(map),
     );
   }
 
@@ -65,6 +65,13 @@ class Deck extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  String get investigatorName => investigator.name;
+
+  int get cardsCount => deckCards.fold(0, (acc, el) => acc + el.count);
+
+  int get xpCount =>
+      deckCards.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
 
   Future<void> fetchCards() async {
     final db = await DatabaseHelper.instance.db;

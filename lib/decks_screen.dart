@@ -94,11 +94,10 @@ class _DecksScreenState extends State<DecksScreen> {
   Future<List<Deck>> fetchDecks() async {
     final db = await DatabaseHelper.instance.db;
 
-    final rows = await db.rawQuery('''
-      SELECT decks.id, decks.name, decks.investigator_code, cards.name AS investigator_name, cards.deck_options
-      FROM decks
-      JOIN cards ON decks.investigator_code = cards.code
-    ''');
+    final rows = await db.rawQuery(
+      '''SELECT decks.id, decks.name AS deck_name, 
+      investigator.* FROM decks join cards AS investigator ON decks.investigator_code = investigator.code''',
+    );
 
     return rows.map((map) => Deck.fromMap(map)).toList();
   }

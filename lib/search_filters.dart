@@ -1,5 +1,4 @@
-import 'package:arkham_decks/arkham_card.dart';
-import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/card_list.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/investigator_filter.dart';
@@ -58,9 +57,7 @@ class SearchFilters extends ChangeNotifier {
 
   String get searchText => _searchText;
 
-  Future<List<SimplifiedCard>> queryDb() async {
-    final db = await DatabaseHelper.instance.db;
-
+  Future<CardList> queryDb() async {
     List<String> whereConditions = [];
     List<String> whereArgs = [];
 
@@ -77,17 +74,13 @@ class SearchFilters extends ChangeNotifier {
       }
     }
 
-    final cardMaps = await db.query(
-      'cards',
-      where: whereConditions.isNotEmpty ? whereConditions.join(' AND ') : null,
-      whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
-      orderBy: 'type_code = "investigator" desc',
+    final cardList = await CardList.queryDb(
+      whereConditions.join(' AND '),
+      whereArgs,
     );
 
-    cardCount.value = cardMaps.length;
-    //notifyListeners();
-
-    return cardMaps.map((cardMap) => SimplifiedCard.fromMap(cardMap)).toList();
+    cardCount.value = cardList.length;
+    return cardList;
   }
 }
 
