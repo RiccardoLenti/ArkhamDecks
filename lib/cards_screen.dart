@@ -5,6 +5,7 @@ import 'package:arkham_decks/card_view.dart';
 import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/deck_screen.dart';
 import 'package:arkham_decks/filter_screen.dart';
+import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
@@ -100,66 +101,106 @@ class _CardsScreenState extends State<CardsScreen> {
           _isLoading
               ? CircularProgressIndicator()
               : Expanded(
-                child: CustomScrollView(
-                  slivers:
-                      _cardList.sections
-                          .where((section) => section.cards.isNotEmpty)
-                          .map((section) {
-                            if (section.cards.isEmpty) {
-                              return SizedBox.shrink();
-                            }
-
-                            return SliverStickyHeader(
-                              header: Container(
-                                height: 40.0,
-                                color: Theme.of(context).colorScheme.surfaceDim,
-                                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    section.name,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium!.copyWith(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              sliver: SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  childCount: section.cards.length,
-                                  (context, i) {
-                                    final card = section.cards[i];
-                                    return Column(
-                                      children: [
-                                        if (i != 0) Divider(height: 0),
-                                        CardListTile(
-                                          key: ValueKey(card.code),
-                                          card: card,
-                                          cards: _cardList.cards,
-                                          index: _cardList.globalIndex(
-                                            section.name,
-                                            i,
-                                          ),
-                                          trailing:
-                                              _deck == null
-                                                  ? null
-                                                  : AddCardButton(card: card),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ),
-                            );
-                          })
-                          .toList(),
-                ),
+                child: CardsListWidget(cardList: _cardList, deck: _deck),
               ),
         ],
       ),
+    );
+  }
+}
+
+class CardsListWidget extends StatelessWidget {
+  final CardList cardList;
+  final Deck? deck;
+  final bool sticky;
+
+  const CardsListWidget({
+    super.key,
+    required this.cardList,
+    this.deck,
+    bool? sticky,
+  }) : sticky = sticky ?? true;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(slivers: buildSlivers(context));
+  }
+
+  List<Widget> buildSlivers(BuildContext context) {
+    return cardList.sections.where((section) => section.cards.isNotEmpty).map((
+      sectionCards,
+    ) {
+      return SliverStickyHeader(
+        sticky: sticky,
+        header: Container(
+          height: 40.0,
+          color: Theme.of(context).colorScheme.surfaceDim,
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _SectionHeader(
+              name: sectionCards.section.name,
+              slots: sectionCards.section.slots,
+            ),
+          ),
+        ),
+
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            childCount: sectionCards.cards.length,
+            (context, i) {
+              final card = sectionCards.cards[i];
+              return Column(
+                children: [
+                  if (i != 0) Divider(height: 0),
+                  CardListTile(
+                    key: ValueKey(card.code),
+                    card: card,
+                    cards: cardList.cards,
+                    index: i + cardList.offset(sectionCards.section),
+                    trailing: deck == null ? null : AddCardButton(card: card),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String name;
+  final List<String>? slots;
+
+  const _SectionHeader({super.key, required this.name, this.slots});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(
+      context,
+    ).textTheme.bodyMedium!.copyWith(fontSize: 18, fontWeight: FontWeight.bold);
+
+    if (slots == null || slots!.isEmpty) {
+      return Text(name, style: style);
+    }
+
+    return Row(
+      children: [
+        Text('$name  •  ${slots!.join(' - ')}', style: style),
+        Spacer(),
+        ...slots!.map((slotName) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: IconManager().getIcon(
+              '${slotName.toLowerCase().replaceAll(' ', '_')}_inverted',
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 30,
+            ),
+          );
+        }),
+      ],
     );
   }
 }

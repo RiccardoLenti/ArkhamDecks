@@ -2,41 +2,100 @@ import 'dart:core';
 
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class CardList {
-  final List<SimplifiedCard> investigators;
-  final List<SimplifiedCard> assets;
-  final List<SimplifiedCard> events;
-  final List<SimplifiedCard> skills;
-  final List<SimplifiedCard> others;
+  final List<SectionCards> _sections;
 
-  const CardList({
-    List<SimplifiedCard>? investigators,
-    List<SimplifiedCard>? assets,
-    List<SimplifiedCard>? events,
-    List<SimplifiedCard>? skills,
-    List<SimplifiedCard>? others,
-  }) : investigators = investigators ?? const [],
-       assets = assets ?? const [],
-       events = events ?? const [],
-       skills = skills ?? const [],
-       others = others ?? const [];
+  const CardList({List<SectionCards>? sections})
+    : _sections = sections ?? const [];
 
-  List<SimplifiedCard> get cards => [
-    ...investigators,
-    ...assets,
-    ...events,
-    ...skills,
-    ...others,
-  ];
+  factory CardList.fromLists(
+    List<SimplifiedCard> investigators,
+    List<SimplifiedCard> assets,
+    List<SimplifiedCard> events,
+    List<SimplifiedCard> skills,
+    List<SimplifiedCard> others,
+  ) {
+    final assetsSplit = _splitAssets(assets, investigators.length);
+    final cards = [investigators, ...assetsSplit, events, skills, others];
+    final List<SectionCards> sectionCards = [];
+
+    for (final (index, section) in Section.values.indexed) {
+      sectionCards.add(
+        SectionCards(
+          section: section,
+          cards: cards[index],
+          offset:
+              index == 0
+                  ? 0
+                  : sectionCards[index - 1].offset +
+                      sectionCards[index - 1].cards.length,
+        ),
+      );
+    }
+
+    return CardList(sections: sectionCards);
+  }
+
+  factory CardList.fromList(List<SimplifiedCard> cards) {
+    final List<SimplifiedCard> investigators = [],
+        assets = [],
+        events = [],
+        skills = [],
+        others = [];
+
+    for (final card in cards) {
+      switch (card.type) {
+        case 'investigator':
+          investigators.add(card);
+          break;
+
+        case 'asset':
+          assets.add(card);
+          break;
+
+        case 'event':
+          events.add(card);
+          break;
+
+        case 'skill':
+          skills.add(card);
+          break;
+
+        default:
+          others.add(card);
+          break;
+      }
+    }
+
+    return CardList.fromLists(investigators, assets, events, skills, others);
+  }
+
+  static List<List<SimplifiedCard>> _splitAssets(
+    List<SimplifiedCard> assets,
+    int startingOffset,
+  ) {
+    final Map<String, List<SimplifiedCard>> map = {for (final section in Section.assets()) section.slots!.join('|') : []};
+
+
+    for(final card in assets) {
+      if(card.slots == null) {
+        continue;
+      }
+
+      map[card.slots!.join('|')]!.add(card);
+    }
+
+    return Section.assets().map((section) => map[section.slots!.join('|')]!).toList(growable: false);
+  }
+
+  List<SimplifiedCard> get cards =>
+      _sections.fold([], (acc, el) => [...acc, ...el.cards]);
 
   int get length =>
-      investigators.length +
-      assets.length +
-      events.length +
-      skills.length +
-      others.length;
+      _sections.fold(0, (value, element) => value + element.cards.length);
 
   static Future<CardList> queryDb(String query, List<String> args) async {
     final db = await DatabaseHelper.instance.db;
@@ -49,13 +108,7 @@ class CardList {
       _queryOthers(db, query, args),
     ]);
 
-    return CardList(
-      investigators: res[0],
-      assets: res[1],
-      events: res[2],
-      skills: res[3],
-      others: res[4],
-    );
+    return CardList.fromLists(res[0], res[1], res[2], res[3], res[4]);
   }
 
   static Future<List<SimplifiedCard>> _queryType(
@@ -95,48 +148,64 @@ class CardList {
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
   }
 
-  List<Section> get sections {
-    return [
-      Section(name: 'Investigator', cards: investigators),
-      Section(name: 'Asset', cards: assets),
-      Section(name: 'Event', cards: events),
-      Section(name: 'Skill', cards: skills),
-      Section(name: 'Other', cards: others),
-    ];
-  }
+  List<SectionCards> get sections => List.unmodifiable(_sections);
 
-  int globalIndex(String sectionName, int index) {
-    int offset = 0;
-
-    switch (sectionName) {
-      case 'Asset':
-        offset = investigators.length;
-        break;
-
-      case 'Event':
-        offset = investigators.length + assets.length;
-        break;
-
-      case 'Skill':
-        offset = investigators.length + assets.length + events.length;
-        break;
-
-      case 'Other':
-        offset =
-            investigators.length +
-            assets.length +
-            events.length +
-            skills.length;
-        break;
-    }
-
-    return index + offset;
+  int offset(Section section) {
+    return _sections.firstWhere((s) => s.section == section).offset;
   }
 }
 
-class Section {
-  final String name;
+class SectionCards {
+  final Section section;
   final List<SimplifiedCard> cards;
+  final int offset;
 
-  const Section({required this.name, required this.cards});
+  const SectionCards({
+    required this.section,
+    required this.cards,
+    required this.offset,
+  });
+}
+
+enum Section {
+  investigator('Investigator', null),
+  hand('Asset', ['Hand']),
+  handx2('Asset', ['Hand x2']),
+  accessory('Asset', ['Accessory']),
+  ally('Asset', ['Ally']),
+  arcane('Asset', ['Arcane']),
+  arcanex2('Asset', ['Arcane x2']),
+  body('Asset', ['Body']),
+  tarot('Asset', ['Tarot']),
+  bodyArcane('Asset', ['Body', 'Arcane']),
+  bodyHandx2('Asset', ['Body', 'Hand x2']),
+  handArcane('Asset', ['Hand', 'Arcane']),
+  handx2Arcane('Asset', ['Hand x2', 'Arcane']),
+  allyArcane('Asset', ['Ally', 'Arcane']),
+  asset('Asset', []),
+  event('Event', null),
+  skill('Skill', null),
+  other('Other', null);
+
+  const Section(this.name, this.slots);
+
+  final String name;
+  final List<String>? slots;
+
+  static List<Section> assets() => [
+    hand,
+    handx2,
+    accessory,
+    ally,
+    arcane,
+    arcanex2,
+    body,
+    tarot,
+    bodyArcane,
+    bodyHandx2,
+    handArcane,
+    handx2Arcane,
+    allyArcane,
+    asset,
+  ];
 }

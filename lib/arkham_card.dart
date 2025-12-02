@@ -12,6 +12,7 @@ class SimplifiedCard {
   final Faction faction;
   final List<Faction> multiFactions;
   final String type;
+  final List<String>? slots;
   final int? level;
   final int deckLimit;
 
@@ -22,10 +23,11 @@ class SimplifiedCard {
     required this.subname,
     required this.faction,
     required this.type,
+    List<String>? slots,
     required this.level,
     required this.deckLimit,
     this.multiFactions = const [],
-  });
+  }) : slots = slots ?? const [];
 
   factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
     if (map['faction2_code'] != null) {
@@ -45,6 +47,7 @@ class SimplifiedCard {
         faction: Faction.multi,
         multiFactions: multiFactions.nonNulls.toList(growable: false),
         type: map['type_code'],
+        slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
       );
@@ -56,6 +59,7 @@ class SimplifiedCard {
         subname: map['subname'],
         faction: Faction.fromString(map['faction_code'])!,
         type: map['type_code'],
+        slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
       );
@@ -67,7 +71,6 @@ class ArkhamCard extends SimplifiedCard {
   final String? text;
   final String? flavor;
   final List<String>? traits;
-  final List<String>? slots;
   final int? health, sanity;
   final bool isUnique;
   final List<String> customizationText;
@@ -84,11 +87,11 @@ class ArkhamCard extends SimplifiedCard {
     required super.level,
     required super.deckLimit,
     super.multiFactions,
+    super.slots,
 
     this.text,
     this.flavor,
     List<String>? traits,
-    List<String>? slots,
     this.health,
     this.sanity,
     this.isUnique = false,
@@ -96,7 +99,6 @@ class ArkhamCard extends SimplifiedCard {
     List<String>? additionalCards,
     required this.commitSkills,
   }) : traits = traits ?? const [],
-       slots = slots ?? const [],
        customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
 
@@ -128,15 +130,15 @@ class ArkhamCard extends SimplifiedCard {
       faction: simplified.faction,
       multiFactions: simplified.multiFactions,
       type: simplified.type,
+      slots: simplified.slots,
       level: simplified.level,
       deckLimit: simplified.deckLimit,
 
       text: map['text'] as String?,
-      traits: (map['traits'] as String?)?.split(' '),
-      slots: (map['slot'] as String?)?.split('. '),
       health: map['health'] as int?,
       sanity: map['sanity'] as int?,
       flavor: map['flavor'] as String?,
+      traits: (map['traits'] as String?)?.split(' '),
       isUnique: isUnique,
       customizationText: customizationText,
       additionalCards: [...?restrictedCards],

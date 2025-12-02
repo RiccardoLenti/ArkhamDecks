@@ -1,4 +1,5 @@
 import 'package:arkham_decks/arkham_card.dart';
+import 'package:arkham_decks/card_list.dart';
 import 'package:arkham_decks/card_view.dart';
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/database.dart';
@@ -80,82 +81,99 @@ class _DeckScreenState extends State<DeckScreen> {
                       ),
                     ],
                   ),
-                  body: Column(
-                    children: [
-                      InvestigatorDetail(investigator: deck.investigator),
-                      Divider(height: 0.0),
-                      SizedBox(height: 16.0),
-                      Container(
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors
-                                  .factions[deck.investigator.faction]!
-                                  .dark,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 16.0),
-                            IconManager().getIcon(
-                              'xp-bold',
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            Text('${deck.xpCount} XP'),
-                            const SizedBox(width: 16.0),
-                            IconManager().getIcon(
-                              'upgrade',
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            const Text('0 XP'),
-                            SizedBox(width: 16.0),
-                            IconManager().getIcon(
-                              'card-outline-bold',
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            Text('x ${deck.cardsCount}'),
 
-                            const Spacer(),
-
-                            Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
+                  body: CustomScrollView(
+                    slivers: [
+                      SliverMainAxisGroup(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                InvestigatorDetail(
+                                  investigator: deck.investigator,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: DeckHeaderDelegate(
+                          height: 40.0, // needs to match the container
+                          child: Container(
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors
+                                      .factions[deck.investigator.faction]!
+                                      .dark,
+                            ),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 16.0),
+                                IconManager().getIcon(
+                                  'xp-bold',
                                   color:
-                                      Theme.of(context).colorScheme.surfaceDim,
+                                      Theme.of(context).colorScheme.onSurface,
                                 ),
-                                child: IconButton(
-                                  icon: IconManager().getIcon(
-                                    'upgrade',
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
+                                Text('${deck.xpCount} XP'),
+                                const SizedBox(width: 16.0),
+                                IconManager().getIcon(
+                                  'upgrade',
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                                const Text('0 XP'),
+                                SizedBox(width: 16.0),
+                                IconManager().getIcon(
+                                  'card-outline-bold',
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                                Text('x ${deck.cardsCount}'),
+
+                                const Spacer(),
+
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.primaryContainer,
+                                    ),
+                                    child: IconButton(
+                                      icon: IconManager().getIcon(
+                                        'upgrade',
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimaryContainer,
+                                      ),
+                                      onPressed: () => _showUpgradeDialog(context, deck),
+                                    ),
                                   ),
-                                  onPressed: () {},
                                 ),
-                              ),
+                                const SizedBox(width: 16.0),
+                              ],
                             ),
-                            const SizedBox(width: 16.0),
-                          ],
+                          ),
                         ),
                       ),
-                      SizedBox(height: 16.0),
-                      Divider(height: 0.0),
-                      SizedBox(height: 12.0),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: deck.cards.length,
-                          separatorBuilder: (_, _) => Divider(height: 0.0),
-                          itemBuilder: (context, index) {
-                            final deckCard = deck.deckCards[index];
-                            return CardListTile(
-                              card: deckCard.card,
-                              cards: deck.cards,
-                              index: index,
-                              trailing: Text('${deckCard.count.toString()}x'),
-                            );
-                          },
-                        ),
+                      SliverMainAxisGroup(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: const SizedBox(height: 16.0),
+                          ),
+                          ...CardsListWidget(
+                            cardList: CardList.fromList(deck.cards),
+                            deck: deck,
+                            sticky: false,
+                          ).buildSlivers(context),
+                        ],
                       ),
                     ],
                   ),
@@ -181,6 +199,10 @@ class _DeckScreenState extends State<DeckScreen> {
             ),
           ),
     );
+  }
+
+  void _showUpgradeDialog(BuildContext context, Deck deck) {
+    
   }
 
   void _showDeleteDeckDialog(BuildContext context, Deck deck) {
@@ -287,4 +309,27 @@ class InvestigatorDetail extends StatelessWidget {
       ),
     );
   }
+}
+
+class DeckHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  DeckHeaderDelegate({required this.child, required this.height});
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => child;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(covariant DeckHeaderDelegate old) => old.child != child;
 }

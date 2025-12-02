@@ -86,7 +86,7 @@ class AppTheme {
       primary: AppColors._nord5,
       onPrimary: Color(0xFF232C61),
       primaryContainer: AppColors._nord3,
-      onPrimaryContainer: Color(0xFFDFE0FF),
+      onPrimaryContainer: AppColors._nord6,
       primaryFixed: Color(0xFFDFE0FF),
       primaryFixedDim: Color(0xFFBBC3FF),
       onPrimaryFixed: Color(0xFF0C154B),
