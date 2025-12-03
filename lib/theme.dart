@@ -233,6 +233,7 @@ class CustomSearchBar extends StatelessWidget {
           isDense: true,
         ),
         onChanged: (searchText) => onChanged(searchText),
+        onTapOutside: (_) => FocusScope.of(context).unfocus(),
       ),
     );
   }
