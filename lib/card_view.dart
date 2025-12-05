@@ -128,6 +128,8 @@ class CardView extends StatelessWidget {
                             ],
                           ),
                         ),
+
+                        Footer(card: card),
                       ],
                     ),
           ),
@@ -591,6 +593,52 @@ class CardFlavor extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 15.0),
       child: Text(text, style: Theme.of(context).textTheme.bodySmall!),
+    );
+  }
+}
+
+class Footer extends StatelessWidget {
+  final ArkhamCard card;
+
+  const Footer({super.key, required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(
+      context,
+    ).textTheme.bodyMedium!.copyWith(fontSize: 14.0);
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 6.0, right: 6.0, bottom: 6.0),
+      child: Column(
+        children: [
+          const Divider(height: 0.0),
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0, right: 4.0),
+            child: Row(
+              spacing: 2.0,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(card.cycle.name, style: textTheme),
+                IconManager().getIcon(
+                  card.cycle.code,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 18.0,
+                ),
+                Text('${card.position}', style: textTheme),
+                const SizedBox(width: 2.0),
+                IconManager().getIcon(
+                  'card-outline',
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 18.0,
+                ),
+
+                Text('x${card.quantity}', style: textTheme),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

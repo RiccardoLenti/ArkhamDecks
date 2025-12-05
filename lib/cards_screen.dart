@@ -152,7 +152,6 @@ class CardsListWidget extends StatelessWidget {
               final card = sectionCards.cards[i];
               return Column(
                 children: [
-                  if (i != 0) Divider(height: 0),
                   CardListTile(
                     key: ValueKey(card.code),
                     card: card,
@@ -160,6 +159,8 @@ class CardsListWidget extends StatelessWidget {
                     index: i + cardList.offset(sectionCards.section),
                     trailing: deck == null ? null : AddCardButton(card: card),
                   ),
+                  // TODO: bad solution but works for now
+                  Divider(height: 0),
                 ],
               );
             },

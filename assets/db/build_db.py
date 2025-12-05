@@ -28,8 +28,8 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                     pack_code, traits, text, flavor, cost, health,
                     sanity, xp, slot, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
-                    restrictions, is_unique, customization_text, deck_limit, quantity
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    restrictions, is_unique, customization_text, deck_limit, quantity, position
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -58,7 +58,8 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 1 if card.get("is_unique") else 0,
                 card.get("customization_text"),
                 card.get("deck_limit"),
-                card.get("quantity")
+                card.get("quantity"),
+                card.get("position"),
             ))
 
 cycles_path = os.path.join(JSON_DIR, "cycles.json")

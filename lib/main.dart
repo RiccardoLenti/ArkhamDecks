@@ -16,6 +16,7 @@ void main() async {
   final iconManager = IconManager();
   await iconManager.loadIcons('assets/icons/app.json');
   await iconManager.loadIcons('assets/icons/investigator_cards.json');
+  await iconManager.loadIcons('assets/icons/expansions.json');
 
   runApp(App());
 }

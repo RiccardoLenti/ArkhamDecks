@@ -1,4 +1,5 @@
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:arkham_decks/factions.dart';
@@ -72,10 +73,13 @@ class ArkhamCard extends SimplifiedCard {
   final String? flavor;
   final List<String>? traits;
   final int? health, sanity;
+  final int position;
+  final int quantity;
   final bool isUnique;
   final List<String> customizationText;
   final List<String> additionalCards;
   final List<int?> commitSkills;
+  final Cycle cycle;
 
   ArkhamCard({
     required super.code,
@@ -98,6 +102,9 @@ class ArkhamCard extends SimplifiedCard {
     List<String>? customizationText,
     List<String>? additionalCards,
     required this.commitSkills,
+    required this.position,
+    required this.quantity,
+    required this.cycle,
   }) : traits = traits ?? const [],
        customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
@@ -143,6 +150,9 @@ class ArkhamCard extends SimplifiedCard {
       customizationText: customizationText,
       additionalCards: [...?restrictedCards],
       commitSkills: commitSkillNames.map((name) => map[name] as int?).toList(),
+      quantity: map['quantity'] as int,
+      position: map['position'] as int,
+      cycle: Cycle.fromPackCode(map['pack_code'])
     );
   }
 

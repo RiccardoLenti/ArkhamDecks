@@ -37,15 +37,27 @@ class Cycle {
 
   @override
   bool operator ==(Object other) {
-    if (other is !Cycle) {
+    if (other is! Cycle) {
       return false;
     }
     return code == other.code;
   }
-  
+
   @override
   int get hashCode => code.hashCode;
-  
+
+  static Cycle fromPackCode(String code) {
+    for (final cycle in _values) {
+      for (final pack in cycle.packs) {
+        if (pack.code == code) {
+          return cycle;
+        }
+      }
+    }
+
+    // should never get here
+    return _values[0];
+  }
 }
 
 class Pack {
@@ -53,4 +65,16 @@ class Pack {
   final String name;
 
   Pack({required this.code, required this.name});
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Pack) {
+      return false;
+    }
+
+    return code == other.code;
+  }
+
+  @override
+  int get hashCode => code.hashCode;
 }

@@ -153,7 +153,9 @@ class _DeckScreenState extends State<DeckScreen> {
                                               context,
                                             ).colorScheme.onPrimaryContainer,
                                       ),
-                                      onPressed: () => _showUpgradeDialog(context, deck),
+                                      onPressed:
+                                          () =>
+                                              _showUpgradeDialog(context, deck),
                                     ),
                                   ),
                                 ),
@@ -173,6 +175,9 @@ class _DeckScreenState extends State<DeckScreen> {
                             deck: deck,
                             sticky: false,
                           ).buildSlivers(context),
+                          SliverToBoxAdapter(
+                            child: const SizedBox(height: 75.0),
+                          ),
                         ],
                       ),
                     ],
@@ -201,9 +206,7 @@ class _DeckScreenState extends State<DeckScreen> {
     );
   }
 
-  void _showUpgradeDialog(BuildContext context, Deck deck) {
-    
-  }
+  void _showUpgradeDialog(BuildContext context, Deck deck) {}
 
   void _showDeleteDeckDialog(BuildContext context, Deck deck) {
     showDialog(

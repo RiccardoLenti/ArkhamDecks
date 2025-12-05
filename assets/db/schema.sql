@@ -30,7 +30,8 @@ CREATE TABLE cards (
     is_unique BOOLEAN,
     customization_text TEXT,
     deck_limit INTEGER,
-    quantity INTEGER
+    quantity INTEGER,
+    position INTEGER
 );
 
 CREATE TABLE decks (

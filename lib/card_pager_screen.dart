@@ -33,7 +33,7 @@ class _CardPagerScreenState extends State<CardPagerScreen> {
         itemCount: widget.cards.length,
         itemBuilder: (context, index) {
           final card = widget.cards[index];
-          return CardDetailScreen(code: card.code);
+          return CardDetailScreen(key: ValueKey(card.code), code: card.code);
         },
       ),
     );
