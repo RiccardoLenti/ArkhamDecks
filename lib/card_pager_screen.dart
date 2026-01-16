@@ -28,6 +28,7 @@ class _CardPagerScreenState extends State<CardPagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: PageView.builder(
         controller: _pageController,
         itemCount: widget.cards.length,

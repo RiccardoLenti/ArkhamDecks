@@ -19,7 +19,6 @@ class CardDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
       body: FutureBuilder<List<ArkhamCard>>(
         future: _loadAllCards(),
         builder: (context, snapshot) {
