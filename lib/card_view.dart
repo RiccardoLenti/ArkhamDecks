@@ -754,6 +754,8 @@ class InvestigatorDetailScreen extends StatelessWidget {
             ],
           ),
         ),
+
+        Footer(card: card),
       ],
     );
   }
