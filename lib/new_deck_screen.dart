@@ -39,13 +39,12 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
       // the group by is needed so that it returns only 1 Hank Samson
       // TODO: this also returns only one agatha crane...
-      final maps = (await db.query(
-        'cards',
-        where: 'type_code = ? AND pack_code IN (${placeholders.join(', ')})',
-        whereArgs: ['investigator', ...packs],
-        groupBy: 'name',
-        orderBy: 'code',
-      ));
+      final maps = await db.rawQuery(
+        '''
+        SELECT * FROM cards JOIN printings on cards.code = printings.canonical_code where type_code = ? 
+        AND pack_code in (${placeholders.join(', ')}) GROUP BY name ORDER BY code''',
+        ['investigator', ...packs],
+      );
 
       res[expansion] = maps.map((map) => SimplifiedCard.fromMap(map)).toList();
     }
