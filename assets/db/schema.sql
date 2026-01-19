@@ -1,6 +1,9 @@
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS decks;
 DROP TABLE IF EXISTS deck_cards;
+DROP TABLE IF EXISTS printings;
+DROP TABLE IF EXISTS cycles;
+DROP TABLE IF EXISTS packs;
 
 CREATE TABLE cards (
     code TEXT PRIMARY KEY,
@@ -10,7 +13,6 @@ CREATE TABLE cards (
     faction_code TEXT,
     faction2_code TEXT,
     faction3_code TEXT,
-    pack_code TEXT,
     traits TEXT,
     text TEXT,
     flavor TEXT,
@@ -29,9 +31,18 @@ CREATE TABLE cards (
     restrictions TEXT,
     is_unique BOOLEAN,
     customization_text TEXT,
-    deck_limit INTEGER,
+    deck_limit INTEGER
+);
+
+--TODO: add references for pack_code?
+
+CREATE TABLE printings (
+    code TEXT PRIMARY KEY,
+    canonical_code TEXT NOT NULL,
+    pack_code TEXT,
     quantity INTEGER,
-    position INTEGER
+    position INTEGER,
+    FOREIGN KEY(canonical_code) REFERENCES cards(code)
 );
 
 CREATE TABLE decks (

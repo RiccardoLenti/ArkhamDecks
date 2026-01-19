@@ -535,7 +535,10 @@ class TextWithIcons extends StatelessWidget {
     final processedText = text
         .replaceAll('\n- ', '\n<icon name="bullet"/></icon>')
         .replaceAll('\n', '<br>')
-        .replaceAll('[fast]', '[free]')
+        .replaceAll(
+          '[fast]',
+          '[free]',
+        ) // new version of json data doesn't have free anymore
         .replaceAll('[[', '<b><i>')
         .replaceAll(']]', '</i></b>')
         .replaceAllMapped(
@@ -615,25 +618,31 @@ class Footer extends StatelessWidget {
           const Divider(height: 0.0),
           Padding(
             padding: const EdgeInsets.only(top: 4.0, left: 4.0, right: 4.0),
-            child: Row(
-              spacing: 2.0,
-              mainAxisAlignment: MainAxisAlignment.end,
+            child: Column(
               children: [
-                Text(card.cycle.name, style: textTheme),
-                IconManager().getIcon(
-                  card.cycle.code,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 18.0,
-                ),
-                Text('${card.position}', style: textTheme),
-                const SizedBox(width: 2.0),
-                IconManager().getIcon(
-                  'card-outline',
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 18.0,
-                ),
+                ...card.printings!.map((printing) {
+                  return Row(
+                    spacing: 2.0,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(printing.pack.name, style: textTheme),
+                      IconManager().getIcon(
+                        printing.pack.cycle.code,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 18.0,
+                      ),
+                      Text('${printing.position}', style: textTheme),
+                      const SizedBox(width: 2.0),
+                      IconManager().getIcon(
+                        'card-outline',
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 18.0,
+                      ),
 
-                Text('x${card.quantity}', style: textTheme),
+                      Text('x${printing.quantity}', style: textTheme),
+                    ],
+                  );
+                }),
               ],
             ),
           ),

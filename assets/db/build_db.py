@@ -19,17 +19,32 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
     with open(path, "r", encoding="utf-8") as f:
         cards = json.load(f)
         for card in cards:
-            if card.get('faction_code') is None:
+            dup = card.get('duplicate_of')
+            if dup is not None:
+                cur.execute("""
+                    INSERT INTO printings (
+                        code, canonical_code, pack_code, quantity, position    
+                    ) VALUES (?, ?, ?, ?, ?)
+                """, (
+                    card.get('code'),
+                    card.get('duplicate_of'),
+                    card.get('pack_code'),
+                    card.get('quantity'),
+                    card.get('position'))
+                )
+
                 continue
 
+
+            # if we're here then it's not a duplicate
             cur.execute("""
                 INSERT INTO cards (
-                    code, name, subname, type_code, faction_code, faction2_code, faction3_code,
-                    pack_code, traits, text, flavor, cost, health,
+                    code, name, subname, type_code, faction_code, faction2_code, 
+                    faction3_code, traits, text, flavor, cost, health,
                     sanity, xp, slot, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
-                    restrictions, is_unique, customization_text, deck_limit, quantity, position
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    restrictions, is_unique, customization_text, deck_limit
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -38,7 +53,6 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 card.get("faction_code"),
                 card.get("faction2_code"),
                 card.get("faction3_code"),
-                card.get("pack_code"),
                 card.get("traits"),
                 card.get("text"),
                 card.get("flavor"),
@@ -58,9 +72,19 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 1 if card.get("is_unique") else 0,
                 card.get("customization_text"),
                 card.get("deck_limit"),
-                card.get("quantity"),
-                card.get("position"),
             ))
+
+            cur.execute("""
+                INSERT INTO printings (
+                    code, canonical_code, pack_code, quantity, position
+                ) VALUES (?, ?, ?, ?, ?)
+                """, (
+                card.get("code"),
+                card.get("code"),
+                card.get("pack_code"),
+                card.get("quantity"),
+                card.get("position"))
+            )
 
 cycles_path = os.path.join(JSON_DIR, "cycles.json")
 if os.path.exists(cycles_path):

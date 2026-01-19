@@ -73,13 +73,11 @@ class ArkhamCard extends SimplifiedCard {
   final String? flavor;
   final List<String>? traits;
   final int? health, sanity;
-  final int position;
-  final int quantity;
   final bool isUnique;
   final List<String> customizationText;
   final List<String> additionalCards;
   final List<int?> commitSkills;
-  final Cycle cycle;
+  final List<Printing>? printings;
 
   ArkhamCard({
     required super.code,
@@ -102,9 +100,7 @@ class ArkhamCard extends SimplifiedCard {
     List<String>? customizationText,
     List<String>? additionalCards,
     required this.commitSkills,
-    required this.position,
-    required this.quantity,
-    required this.cycle,
+    this.printings,
   }) : traits = traits ?? const [],
        customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
@@ -112,6 +108,7 @@ class ArkhamCard extends SimplifiedCard {
   ///calling this constructor directly DOES NOT handle bonded cards
   factory ArkhamCard.fromMap(
     Map<String, dynamic> map, {
+    List<Printing>? printings,
     List<String>? restrictedCards,
   }) {
     const commitSkillNames = [
@@ -140,6 +137,7 @@ class ArkhamCard extends SimplifiedCard {
       slots: simplified.slots,
       level: simplified.level,
       deckLimit: simplified.deckLimit,
+      printings: printings,
 
       text: map['text'] as String?,
       health: map['health'] as int?,
@@ -150,20 +148,30 @@ class ArkhamCard extends SimplifiedCard {
       customizationText: customizationText,
       additionalCards: [...?restrictedCards],
       commitSkills: commitSkillNames.map((name) => map[name] as int?).toList(),
-      quantity: map['quantity'] as int,
-      position: map['position'] as int,
-      cycle: Cycle.fromPackCode(map['pack_code'])
     );
   }
 
   static Future<ArkhamCard> fromDb(String code) async {
     final db = await DatabaseHelper.instance.db;
-    final rows = await db.query(
-      'cards',
-      where: 'code = ?',
-      whereArgs: [code],
-      limit: 1,
+    final rows = await db.rawQuery(
+      '''SELECT cards.*, 
+                printing.pack_code, printing.quantity, printing.position
+         FROM cards JOIN printings AS printing ON 
+         cards.code = printing.canonical_code where cards.code = ?''',
+      [code],
     );
+
+    final printings =
+        rows.map((row) {
+          final packCode = row['pack_code'] as String;
+          final pack = Pack.fromCode(packCode);
+
+          return Printing(
+            pack: pack,
+            position: row['position'] as int,
+            quantity: row['quantity'] as int,
+          );
+        }).toList();
 
     // TODO: actual bonded cards
     // for now we only grab investigators' signature and weakness
@@ -177,10 +185,23 @@ class ArkhamCard extends SimplifiedCard {
 
     return ArkhamCard.fromMap(
       rows.first,
+      printings: printings,
       restrictedCards:
           additionalCards.map((map) => map['code'] as String).toList(),
     );
   }
+}
+
+class Printing {
+  final int position;
+  final int quantity;
+  final Pack pack;
+
+  const Printing({
+    required this.position,
+    required this.quantity,
+    required this.pack,
+  });
 }
 
 class CostLevelCircle extends StatelessWidget {

@@ -75,6 +75,31 @@ class Pack {
     return code == other.code;
   }
 
+  Cycle get cycle {
+    for (final cycle in Cycle._values) {
+      for (final pack in cycle.packs) {
+        if (pack.code == code) {
+          return cycle;
+        }
+      }
+    }
+
+    // should never get here
+    return Cycle._values[0];
+  }
+
   @override
   int get hashCode => code.hashCode;
+
+  static Pack fromCode(String code) {
+    for (final cycle in Cycle._values) {
+      for (final pack in cycle.packs) {
+        if (pack.code == code) {
+          return pack;
+        }
+      }
+    }
+    // should never get here
+    return Cycle._values[0].packs[0];
+  }
 }

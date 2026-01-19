@@ -1,4 +1,5 @@
 import 'package:arkham_decks/expansions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'dart:io';
 
@@ -32,7 +33,7 @@ class DatabaseHelper {
 
     final exists = await databaseExists(path);
 
-    if (!exists) {
+    if (!exists || kDebugMode) {
       try {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
