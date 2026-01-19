@@ -621,13 +621,15 @@ class Footer extends StatelessWidget {
             child: Column(
               children: [
                 ...card.printings!.map((printing) {
+                  final iconName = printing.pack.cycle.code != 'investigator' ? printing.pack.cycle.code : printing.pack.code;
+
                   return Row(
                     spacing: 2.0,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(printing.pack.name, style: textTheme),
                       IconManager().getIcon(
-                        printing.pack.cycle.code,
+                        iconName,
                         color: Theme.of(context).colorScheme.onSurface,
                         size: 18.0,
                       ),
