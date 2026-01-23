@@ -266,22 +266,28 @@ class AddCardButton extends StatelessWidget {
     return Consumer<Deck>(
       builder: (context, deck, _) {
         final deckCard = deck.getDeckCard(card);
+        final canRemove = deckCard.count > 0;
+        final canAdd = deckCard.count < deckCard.card.deckLimit;
         return Row(
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: Icon(Icons.remove),
-              onPressed:
-                  deckCard.count <= 0 ? null : () => deck.removeCard(deckCard),
+              onPressed: () {
+                if (!canRemove) return;
+                deck.removeCard(deckCard);
+              },
+              color: canRemove ? Theme.of(context).colorScheme.onSurface : Theme.of(context).disabledColor,
             ),
             Text('${deckCard.count}x'),
             IconButton(
               icon: Icon(Icons.add),
-              onPressed:
-                  deckCard.count >= deckCard.card.deckLimit
-                      ? null
-                      : () => deck.addCard(deckCard),
+              onPressed: () {
+                if (!canAdd) return;
+                deck.addCard(deckCard);
+              },
+              color: canAdd ? Theme.of(context).colorScheme.onSurface : Theme.of(context).disabledColor,
             ),
           ],
         );
