@@ -122,9 +122,10 @@ class CardList {
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
     final maps = await db.query(
-      'cards',
+      'cards JOIN printings AS printing on cards.code = printing.canonical_code',
       where: where,
       whereArgs: [...args, type],
+      groupBy: 'cards.code'
     );
 
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
@@ -140,9 +141,10 @@ class CardList {
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
     final maps = await db.query(
-      'cards',
+      'cards JOIN printings AS printing on cards.code = printing.canonical_code',
       where: where,
       whereArgs: [...args, 'investigator', 'asset', 'event', 'skill'],
+      groupBy: 'cards.code'
     );
 
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
