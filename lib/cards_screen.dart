@@ -14,8 +14,10 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 class CardsScreen extends StatefulWidget {
   final SearchFilters searchFilters;
+  final bool sideDeck;
 
-  const CardsScreen({super.key, required this.searchFilters});
+  const CardsScreen({super.key, required this.searchFilters, bool? sideDeck})
+    : sideDeck = sideDeck ?? false;
 
   @override
   State<CardsScreen> createState() => _CardsScreenState();
@@ -101,7 +103,11 @@ class _CardsScreenState extends State<CardsScreen> {
           _isLoading
               ? CircularProgressIndicator()
               : Expanded(
-                child: CardsListWidget(cardList: _cardList, deck: _deck),
+                child: CardsListWidget(
+                  cardList: _cardList,
+                  deck: _deck,
+                  side: widget.sideDeck,
+                ),
               ),
         ],
       ),
@@ -113,17 +119,66 @@ class CardsListWidget extends StatelessWidget {
   final CardList cardList;
   final Deck? deck;
   final bool sticky;
+  final bool side;
 
   const CardsListWidget({
     super.key,
     required this.cardList,
     this.deck,
     bool? sticky,
-  }) : sticky = sticky ?? true;
+    bool? side,
+  }) : sticky = sticky ?? true,
+       side = side ?? false;
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(slivers: buildSlivers(context));
+    if (!sticky) {
+      return _buildColumn(context);
+    } else {
+      return CustomScrollView(slivers: buildSlivers(context));
+    }
+  }
+
+  Widget _buildColumn(BuildContext context) {
+    return Column(
+      children:
+          cardList.sections.where((section) => section.cards.isNotEmpty).map((
+            sectionCards,
+          ) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  height: 40.0,
+                  color: Theme.of(context).colorScheme.surfaceDim,
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _SectionHeader(
+                      name: sectionCards.section.name,
+                      slots: sectionCards.section.slots,
+                    ),
+                  ),
+                ),
+
+                ...sectionCards.cards.map((card) {
+                  return Column(
+                    children: [
+                      CardListTile(
+                        key: ValueKey(card.code),
+                        card: card,
+                        cards: cardList.cards,
+                        index: cardList.cards.indexOf(card), //TODO: ?
+                        trailing: AddCardButton(card: card, side: side),
+                      ),
+                      const Divider(height: 0),
+                    ],
+                  );
+                }),
+              ],
+            );
+          }).toList(),
+    );
   }
 
   List<Widget> buildSlivers(BuildContext context) {
@@ -157,7 +212,10 @@ class CardsListWidget extends StatelessWidget {
                     card: card,
                     cards: cardList.cards,
                     index: i + cardList.offset(sectionCards.section),
-                    trailing: deck == null ? null : AddCardButton(card: card),
+                    trailing:
+                        deck == null
+                            ? null
+                            : AddCardButton(card: card, side: side),
                   ),
                   // TODO: bad solution but works for now
                   Divider(height: 0),

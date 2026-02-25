@@ -7,7 +7,7 @@ import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:arkham_decks/theme.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide BoxBorder;
 import 'package:provider/provider.dart';
 
 class DeckScreen extends StatefulWidget {
@@ -82,105 +82,146 @@ class _DeckScreenState extends State<DeckScreen> {
                     ],
                   ),
 
-                  body: CustomScrollView(
-                    slivers: [
-                      SliverMainAxisGroup(
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: Column(
-                              children: [
-                                InvestigatorDetail(
-                                  investigator: deck.investigator,
-                                ),
-                              ],
-                            ),
+                  body: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        InvestigatorDetail(investigator: deck.investigator),
+                        Container(
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                            color:
+                                AppColors
+                                    .factions[deck.investigator.faction]!
+                                    .dark,
                           ),
-                        ],
-                      ),
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: DeckHeaderDelegate(
-                          height: 40.0, // needs to match the container
-                          child: Container(
-                            height: 40.0,
-                            decoration: BoxDecoration(
-                              color:
-                                  AppColors
-                                      .factions[deck.investigator.faction]!
-                                      .dark,
-                            ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16.0),
-                                IconManager().getIcon(
-                                  'xp-bold',
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                Text('${deck.xpCount} XP'),
-                                const SizedBox(width: 16.0),
-                                IconManager().getIcon(
-                                  'upgrade',
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                const Text('0 XP'),
-                                SizedBox(width: 16.0),
-                                IconManager().getIcon(
-                                  'card-outline-bold',
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                Text('x ${deck.cardsCount}'),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 12.0),
+                              IconManager().getIcon(
+                                'xp-bold',
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              Text('${deck.xpCount} XP'),
+                              const SizedBox(width: 16.0),
+                              IconManager().getIcon(
+                                'upgrade',
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              const Text('0 XP'),
+                              SizedBox(width: 16.0),
+                              IconManager().getIcon(
+                                'card-outline-bold',
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              Text('x ${deck.cardsCount}'),
 
-                                const Spacer(),
+                              const Spacer(),
 
-                                Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.primaryContainer,
+                                  ),
+                                  child: IconButton(
+                                    icon: IconManager().getIcon(
+                                      'upgrade',
                                       color:
                                           Theme.of(
                                             context,
-                                          ).colorScheme.primaryContainer,
+                                          ).colorScheme.onPrimaryContainer,
                                     ),
-                                    child: IconButton(
-                                      icon: IconManager().getIcon(
-                                        'upgrade',
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimaryContainer,
-                                      ),
-                                      onPressed:
-                                          () =>
-                                              _showUpgradeDialog(context, deck),
-                                    ),
+                                    onPressed:
+                                        () => _showUpgradeDialog(context, deck),
                                   ),
                                 ),
-                                const SizedBox(width: 16.0),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 20.0),
+                            ],
                           ),
                         ),
-                      ),
-                      SliverMainAxisGroup(
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: const SizedBox(height: 16.0),
+
+                        const SizedBox(height: 16.0),
+                        // TODO: do I want an horizontal padding from here down?
+                        BoxBorder(
+                          color:
+                              AppColors
+                                  .factions[deck.investigator.faction]!
+                                  .dark,
+                          thickTop: true,
+                          center: Text(
+                            "Deck",
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
-                          ...CardsListWidget(
-                            cardList: CardList.fromList(deck.cards),
+                          trailing: Padding(
+                            padding: const EdgeInsetsGeometry.only(right: 16.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed:
+                                  () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => ChangeNotifierProvider.value(
+                                            value: deck,
+                                            child: CardsScreen(
+                                              searchFilters: _searchFilters,
+                                            ),
+                                          ),
+                                    ),
+                                  ),
+                            ),
+                          ),
+                          child: CardsListWidget(
+                            cardList: CardList.fromList(deck.deckCards),
                             deck: deck,
                             sticky: false,
-                          ).buildSlivers(context),
-                          SliverToBoxAdapter(
-                            child: const SizedBox(height: 75.0),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const Divider(height: 64.0),
+                        BoxBorder(
+                          color:
+                              AppColors
+                                  .factions[deck.investigator.faction]!
+                                  .dark,
+                          thickTop: true,
+                          center: Text(
+                            "Side Deck",
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          trailing: Padding(
+                            padding: const EdgeInsetsGeometry.only(right: 16.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed:
+                                  () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => ChangeNotifierProvider.value(
+                                            value: deck,
+                                            child: CardsScreen(
+                                              searchFilters: _searchFilters,
+                                              sideDeck: true,
+                                            ),
+                                          ),
+                                    ),
+                                  ),
+                            ),
+                          ),
+                          child: CardsListWidget(
+                            cardList: CardList.fromList(deck.sideCards),
+                            deck: deck,
+                            sticky: false,
+                          ),
+                        ),
+                        const SizedBox(height: 75.0),
+                      ],
+                    ),
                   ),
 
                   floatingActionButton: FloatingActionButton(
@@ -259,13 +300,14 @@ class _DeckScreenState extends State<DeckScreen> {
 
 class AddCardButton extends StatelessWidget {
   final SimplifiedCard card;
-  const AddCardButton({super.key, required this.card});
+  final bool side;
+  const AddCardButton({super.key, required this.card, required this.side});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<Deck>(
       builder: (context, deck, _) {
-        final deckCard = deck.getDeckCard(card);
+        final deckCard = deck.lookup(card, side: side);
         final canRemove = deckCard.count > 0;
         final canAdd = deckCard.count < deckCard.card.deckLimit;
         return Row(
@@ -278,7 +320,10 @@ class AddCardButton extends StatelessWidget {
                 if (!canRemove) return;
                 deck.removeCard(deckCard);
               },
-              color: canRemove ? Theme.of(context).colorScheme.onSurface : Theme.of(context).disabledColor,
+              color:
+                  canRemove
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).disabledColor,
             ),
             Text('${deckCard.count}x'),
             IconButton(
@@ -287,7 +332,10 @@ class AddCardButton extends StatelessWidget {
                 if (!canAdd) return;
                 deck.addCard(deckCard);
               },
-              color: canAdd ? Theme.of(context).colorScheme.onSurface : Theme.of(context).disabledColor,
+              color:
+                  canAdd
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).disabledColor,
             ),
           ],
         );
@@ -318,27 +366,4 @@ class InvestigatorDetail extends StatelessWidget {
       ),
     );
   }
-}
-
-class DeckHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double height;
-
-  DeckHeaderDelegate({required this.child, required this.height});
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) => child;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  bool shouldRebuild(covariant DeckHeaderDelegate old) => old.child != child;
 }

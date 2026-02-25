@@ -420,6 +420,7 @@ class InvestigatorStats extends StatelessWidget {
 }
 
 //TODO: add texture
+// TODO: move this in a widgets.dart file with custom widgets
 class BoxBorder extends StatelessWidget {
   final Widget child;
   final Color color;
@@ -455,7 +456,8 @@ class BoxBorder extends StatelessWidget {
                   right: BorderSide(color: color, width: 4),
                 ),
               ),
-              child: child,
+              width: MediaQuery.of(context).size.width,
+              child: child, 
             ),
           ),
         ),

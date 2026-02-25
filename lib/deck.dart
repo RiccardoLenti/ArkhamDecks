@@ -1,6 +1,5 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class Deck extends ChangeNotifier {
@@ -8,7 +7,8 @@ class Deck extends ChangeNotifier {
   final String name;
   final ArkhamCard investigator;
   final String deckOptions;
-  List<DeckCard> deckCards = [];
+  final Map<String, DeckCard> _main = {};
+  final Map<String, DeckCard> _side = {};
 
   Deck({
     required this.id,
@@ -17,8 +17,11 @@ class Deck extends ChangeNotifier {
     required this.deckOptions,
   });
 
-  List<SimplifiedCard> get cards =>
-      deckCards.map((deckCard) => deckCard.card).toList();
+  List<SimplifiedCard> get deckCards =>
+      _main.values.map((card) => card.card).toList(growable: false);
+
+  List<SimplifiedCard> get sideCards =>
+      _side.values.map((card) => card.card).toList(growable: false);
 
   factory Deck.fromMap(Map<String, dynamic> map) {
     return Deck(
@@ -29,38 +32,32 @@ class Deck extends ChangeNotifier {
     );
   }
 
-  // TODO: make deckCards a map for O(1) lookup
-  DeckCard getDeckCard(SimplifiedCard card) {
-    // TODO: override equality operator for this type
-    return deckCards.firstWhereOrNull(
-          (deckCard) => deckCard.card.code == card.code,
-        ) ??
-        DeckCard(card, 0);
-  }
+  DeckCard lookup(SimplifiedCard card, {required bool side}) =>
+      (side ? _side[card.code] : _main[card.code]) ?? DeckCard(card, 0, side);
 
   void addCard(DeckCard cardToAdd) {
-    final deckCard = deckCards.firstWhereOrNull(
-      (d) => d.card.code == cardToAdd.card.code,
-    );
+    final collection = cardToAdd.side ? _side : _main;
+    final deckCard = collection[cardToAdd.card.code];
     if (deckCard == null) {
-      deckCards.add(DeckCard(cardToAdd.card, 1));
+      collection[cardToAdd.card.code] = DeckCard(cardToAdd.card, 1, cardToAdd.side);
     } else if (deckCard.count < deckCard.card.deckLimit) {
       deckCard.count++;
     }
+
     notifyListeners();
   }
 
   void removeCard(DeckCard cardToRemove) {
-    final deckCard = deckCards.firstWhereOrNull(
-      (d) => d.card.code == cardToRemove.card.code,
-    );
+    final collection = cardToRemove.side ? _side : _main;
+    final deckCard = collection[cardToRemove.card.code];
+
     if (deckCard == null) {
       return;
     }
     if (deckCard.count > 1) {
       deckCard.count--;
     } else {
-      deckCards.remove(cardToRemove);
+      collection.remove(cardToRemove.card.code);
     }
 
     notifyListeners();
@@ -68,10 +65,10 @@ class Deck extends ChangeNotifier {
 
   String get investigatorName => investigator.name;
 
-  int get cardsCount => deckCards.fold(0, (acc, el) => acc + el.count);
+  int get cardsCount => _main.values.fold(0, (acc, el) => acc + el.count);
 
   int get xpCount =>
-      deckCards.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
+      _main.values.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
 
   Future<void> fetchCards() async {
     final db = await DatabaseHelper.instance.db;
@@ -80,7 +77,16 @@ class Deck extends ChangeNotifier {
       [id],
     );
 
-    deckCards = rows.map((map) => DeckCard.fromMap(map)).toList();
+    _main.clear();
+    _side.clear();
+
+    rows.map((map) => DeckCard.fromMap(map)).forEach((deckCard) {
+      if (deckCard.side) {
+        _side[deckCard.card.code] = deckCard;
+      } else {
+        _main[deckCard.card.code] = deckCard;
+      }
+    });
   }
 
   Future<void> storeCardsToDb() async {
@@ -88,25 +94,36 @@ class Deck extends ChangeNotifier {
     await db.delete('deck_cards', where: 'deck_id = ?', whereArgs: [id]);
     final batch = db.batch();
 
-    for (final card in deckCards) {
-      batch.insert('deck_cards', {
-        'deck_id': id,
-        'card_code': card.card.code,
-        'count': card.count,
-      });
+    for (final card in _main.values) {
+      batch.insert('deck_cards', card.toMap(id));
     }
 
-    await batch.commit();
+    for (final card in _side.values) {
+      batch.insert('deck_cards', card.toMap(id));
+    }
+
+    await batch.commit(noResult: true);
   }
 }
 
 class DeckCard {
   final SimplifiedCard card;
   int count;
+  final bool side;
 
-  DeckCard(this.card, this.count);
+  DeckCard(this.card, this.count, this.side);
 
   DeckCard.fromMap(Map<String, dynamic> map)
     : card = SimplifiedCard.fromMap(map),
-      count = map['count'];
+      count = map['count'],
+      side = map['side_deck'] == 1;
+
+  Map<String, dynamic> toMap(int deckId) {
+    return {
+      'deck_id': deckId,
+      'card_code': card.code,
+      'count': count,
+      'side_deck': side ? 1 : 0,
+    };
+  }
 }
