@@ -77,18 +77,21 @@ class CardList {
     List<SimplifiedCard> assets,
     int startingOffset,
   ) {
-    final Map<String, List<SimplifiedCard>> map = {for (final section in Section.assets()) section.slots!.join('|') : []};
+    final Map<String, List<SimplifiedCard>> map = {
+      for (final section in Section.assets()) section.slots!.join('|'): [],
+    };
 
-
-    for(final card in assets) {
-      if(card.slots == null) {
+    for (final card in assets) {
+      if (card.slots == null) {
         continue;
       }
 
       map[card.slots!.join('|')]!.add(card);
     }
 
-    return Section.assets().map((section) => map[section.slots!.join('|')]!).toList(growable: false);
+    return Section.assets()
+        .map((section) => map[section.slots!.join('|')]!)
+        .toList(growable: false);
   }
 
   List<SimplifiedCard> get cards =>
@@ -123,9 +126,25 @@ class CardList {
 
     final maps = await db.query(
       'cards JOIN printings AS printing on cards.code = printing.canonical_code',
+      columns: [
+        'cards.code',
+        'cards.name',
+        'cards.subname',
+        'cards.type_code',
+        'cards.faction_code',
+        'cards.faction2_code',
+        'cards.faction3_code',
+        'cards.cost',
+        'cards.xp',
+        'cards.deck_limit',
+        'cards.slot',
+        'printing.pack_code',
+        'printing.position',
+        'printing.quantity',
+      ],
       where: where,
       whereArgs: [...args, type],
-      groupBy: 'cards.code'
+      groupBy: 'cards.code',
     );
 
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
@@ -144,7 +163,7 @@ class CardList {
       'cards JOIN printings AS printing on cards.code = printing.canonical_code',
       where: where,
       whereArgs: [...args, 'investigator', 'asset', 'event', 'skill'],
-      groupBy: 'cards.code'
+      groupBy: 'cards.code',
     );
 
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
