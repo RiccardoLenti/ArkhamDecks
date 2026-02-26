@@ -115,6 +115,8 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 }
 
+/// If sticky this uses slivers.
+/// If !sticky this uses a column.
 class CardsListWidget extends StatelessWidget {
   final CardList cardList;
   final Deck? deck;

@@ -325,7 +325,7 @@ class AddCardButton extends StatelessWidget {
                       ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).disabledColor,
             ),
-            Text('${deckCard.count}x'),
+            Text('${deckCard.count}x', style: Theme.of(context).textTheme.bodySmall),
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
