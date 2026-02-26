@@ -161,6 +161,22 @@ class CardList {
 
     final maps = await db.query(
       'cards JOIN printings AS printing on cards.code = printing.canonical_code',
+      columns: [
+        'cards.code',
+        'cards.name',
+        'cards.subname',
+        'cards.type_code',
+        'cards.faction_code',
+        'cards.faction2_code',
+        'cards.faction3_code',
+        'cards.cost',
+        'cards.xp',
+        'cards.deck_limit',
+        'cards.slot',
+        'printing.pack_code',
+        'printing.position',
+        'printing.quantity',
+      ],
       where: where,
       whereArgs: [...args, 'investigator', 'asset', 'event', 'skill'],
       groupBy: 'cards.code',
