@@ -37,12 +37,10 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
       final List<String> placeholders = List.filled(packs.length, '?');
 
-      // the group by is needed so that it returns only 1 Hank Samson
-      // TODO: this also returns only one agatha crane...
       final maps = await db.rawQuery(
         '''
         SELECT * FROM cards JOIN printings on cards.code = printings.canonical_code where type_code = ? 
-        AND pack_code in (${placeholders.join(', ')}) GROUP BY name ORDER BY code''',
+        AND pack_code in (${placeholders.join(', ')}) AND bonded_to IS NULL GROUP BY canonical_code ORDER BY code''',
         ['investigator', ...packs],
       );
 
