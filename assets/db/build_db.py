@@ -41,10 +41,10 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 INSERT INTO cards (
                     code, name, subname, type_code, faction_code, faction2_code, 
                     faction3_code, traits, text, flavor, cost, health,
-                    sanity, xp, slot, skill_intellect, skill_combat,
+                    sanity, xp, slot, bonded_to, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
                     restrictions, is_unique, customization_text, deck_limit
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -61,6 +61,7 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 card.get("sanity"),
                 card.get("xp"),
                 card.get("slot"),
+                card.get("bonded_to"),
                 card.get("skill_intellect"),
                 card.get("skill_combat"),
                 card.get("skill_agility"),

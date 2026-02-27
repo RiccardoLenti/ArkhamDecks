@@ -173,14 +173,12 @@ class ArkhamCard extends SimplifiedCard {
           );
         }).toList();
 
-    // TODO: actual bonded cards
-    // for now we only grab investigators' signature and weakness
     final additionalCards = await db.query(
       'cards',
       distinct: true,
       columns: ['code'],
-      where: "restrictions LIKE 'investigator:' || ? || '%'",
-      whereArgs: [code],
+      where: "restrictions LIKE 'investigator:' || ? || '%' OR bonded_to LIKE ?",
+      whereArgs: [code, rows.first['name']],
     );
 
     return ArkhamCard.fromMap(

@@ -21,6 +21,7 @@ CREATE TABLE cards (
     sanity INTEGER,
     xp INTEGER,
     slot TEXT,
+    bonded_to TEXT,
     skill_intellect INTEGER,
     skill_combat INTEGER,
     skill_agility INTEGER,
