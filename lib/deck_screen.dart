@@ -76,6 +76,10 @@ class _DeckScreenState extends State<DeckScreen> {
 
                     actions: [
                       IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () => _showRenameDeckDialog(context, deck),
+                      ),
+                      IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () => _showDeleteDeckDialog(context, deck),
                       ),
@@ -284,8 +288,60 @@ class _DeckScreenState extends State<DeckScreen> {
 
                       setState(() => _isDeckDeleted = true);
 
-                      Navigator.pop(context, true);
-                      Navigator.pop(context, true);
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    label: const Text('Confirm'),
+                    icon: Icon(Icons.check),
+                  ),
+                ],
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showRenameDeckDialog(BuildContext context, Deck deck) {
+    final controller = TextEditingController(text: deck.name);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              "Rename Deck",
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: "Deck Name",
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (value) async {
+                if (value.trim().isNotEmpty) {
+                  await deck.updateName(value.trim());
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    label: const Text('Cancel'),
+                    icon: Icon(Icons.close),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final newName = controller.text.trim();
+                      if(newName.isNotEmpty) {
+                        await deck.updateName(newName);
+                        Navigator.pop(context);
+                      }
                     },
                     label: const Text('Confirm'),
                     icon: Icon(Icons.check),
@@ -325,7 +381,10 @@ class AddCardButton extends StatelessWidget {
                       ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).disabledColor,
             ),
-            Text('${deckCard.count}x', style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              '${deckCard.count}x',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {

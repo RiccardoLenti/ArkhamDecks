@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class Deck extends ChangeNotifier {
   final int id;
-  final String name;
+  String _name;
   final ArkhamCard investigator;
   final String deckOptions;
   final Map<String, DeckCard> _main = {};
@@ -12,10 +12,25 @@ class Deck extends ChangeNotifier {
 
   Deck({
     required this.id,
-    required this.name,
+    required String name,
     required this.investigator,
     required this.deckOptions,
-  });
+  }) : _name = name;
+
+  String get name => _name;
+
+  Future<void> updateName(String newName) async {
+    _name = newName;
+    notifyListeners();
+
+    final db = await DatabaseHelper.instance.db;
+    await db.update(
+      'decks',
+      {'name': newName},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 
   List<SimplifiedCard> get deckCards =>
       _main.values.map((card) => card.card).toList(growable: false);
@@ -39,7 +54,11 @@ class Deck extends ChangeNotifier {
     final collection = cardToAdd.side ? _side : _main;
     final deckCard = collection[cardToAdd.card.code];
     if (deckCard == null) {
-      collection[cardToAdd.card.code] = DeckCard(cardToAdd.card, 1, cardToAdd.side);
+      collection[cardToAdd.card.code] = DeckCard(
+        cardToAdd.card,
+        1,
+        cardToAdd.side,
+      );
     } else if (deckCard.count < deckCard.card.deckLimit) {
       deckCard.count++;
     }

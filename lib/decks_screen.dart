@@ -48,7 +48,7 @@ class _DecksScreenState extends State<DecksScreen> {
                 ),
                 subtitle: Text(deck.investigatorName),
                 onTap: () async {
-                  final bool? res = await Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder:
@@ -59,11 +59,9 @@ class _DecksScreenState extends State<DecksScreen> {
                     ),
                   );
 
-                  if (res != null && res) {
-                    setState(() {
-                      _decksFuture = fetchDecks();
-                    }); // rebuilds
-                  }
+                  setState(() {
+                    _decksFuture = fetchDecks();
+                  }); // rebuilds
                 },
               );
             },
