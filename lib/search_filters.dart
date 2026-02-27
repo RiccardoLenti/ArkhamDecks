@@ -74,6 +74,8 @@ class SearchFilters extends ChangeNotifier {
       }
     }
 
+    whereConditions.add('NOT hidden');
+
     final cardList = await CardList.queryDb(
       whereConditions.join(' AND '),
       whereArgs,

@@ -71,6 +71,8 @@ class SimplifiedCard {
 class ArkhamCard extends SimplifiedCard {
   final String? text;
   final String? flavor;
+  final String? backText;
+  final String? backFlavor;
   final List<String>? traits;
   final int? health, sanity;
   final bool isUnique;
@@ -101,6 +103,8 @@ class ArkhamCard extends SimplifiedCard {
     List<String>? additionalCards,
     required this.commitSkills,
     this.printings,
+    this.backText,
+    this.backFlavor,
   }) : traits = traits ?? const [],
        customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
@@ -144,6 +148,8 @@ class ArkhamCard extends SimplifiedCard {
       sanity: map['sanity'] as int?,
       flavor: map['flavor'] as String?,
       traits: (map['traits'] as String?)?.split(' '),
+      backText: map['back_text'] as String?,
+      backFlavor: map['back_flavor'] as String?,
       isUnique: isUnique,
       customizationText: customizationText,
       additionalCards: [...?restrictedCards],

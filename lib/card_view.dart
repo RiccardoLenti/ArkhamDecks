@@ -124,7 +124,7 @@ class CardView extends StatelessWidget {
                                   : CardText(card: card),
                               card.flavor == null
                                   ? SizedBox.shrink()
-                                  : CardFlavor(card: card),
+                                  : CardFlavor(text: card.flavor!),
                             ],
                           ),
                         ),
@@ -134,6 +134,10 @@ class CardView extends StatelessWidget {
                     ),
           ),
         ),
+        
+        // the check on backFlavor literally exists only for the multiple Hank Samson backs
+        if (card.type == 'investigator' && card.backFlavor != null) InvestigatorBack(investigator: card),
+
         if (card.customizationText.isNotEmpty) CustomizationTable(card: card),
       ],
     );
@@ -457,7 +461,7 @@ class BoxBorder extends StatelessWidget {
                 ),
               ),
               width: MediaQuery.of(context).size.width,
-              child: child, 
+              child: child,
             ),
           ),
         ),
@@ -504,15 +508,7 @@ class CardText extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (buildBar)
-            Container(
-              width: 3,
-              margin: EdgeInsets.only(right: 8, left: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
+          if (buildBar) _TextLeftBar(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 4.0),
@@ -585,18 +581,15 @@ class TextWithIcons extends StatelessWidget {
 }
 
 class CardFlavor extends StatelessWidget {
-  final ArkhamCard card;
   final String text;
 
-  CardFlavor({super.key, required this.card})
-    : text = card.flavor!
-          .replaceAll('<cite>', '\n- ')
-          .replaceAll('</cite>', '');
+  CardFlavor({super.key, required String text})
+    : text = text.replaceAll('<cite>', '\n- ').replaceAll('</cite>', '');
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 15.0),
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
       child: Text(text, style: Theme.of(context).textTheme.bodySmall!),
     );
   }
@@ -623,7 +616,10 @@ class Footer extends StatelessWidget {
             child: Column(
               children: [
                 ...card.printings!.map((printing) {
-                  final iconName = printing.pack.cycle.code != 'investigator' ? printing.pack.cycle.code : printing.pack.code;
+                  final iconName =
+                      printing.pack.cycle.code != 'investigator'
+                          ? printing.pack.cycle.code
+                          : printing.pack.code;
 
                   return Row(
                     spacing: 2.0,
@@ -763,13 +759,54 @@ class InvestigatorDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CardText(card: card),
-              card.flavor != null ? CardFlavor(card: card) : SizedBox.shrink(),
+              card.flavor != null
+                  ? CardFlavor(text: card.flavor!)
+                  : SizedBox.shrink(),
             ],
           ),
         ),
 
         Footer(card: card),
       ],
+    );
+  }
+}
+
+class InvestigatorBack extends StatelessWidget {
+  final ArkhamCard investigator;
+  const InvestigatorBack({super.key, required this.investigator});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsGeometry.only(top: 16.0),
+      child: BoxBorder(
+        color: AppColors.factions[investigator.faction]!.dark,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Column(
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _TextLeftBar(),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: TextWithIcons(text: investigator.backText!),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 8.0),
+              CardFlavor(text: investigator.backFlavor!),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -800,6 +837,20 @@ class TypeAndTraits extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _TextLeftBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 2,
+      margin: EdgeInsets.only(right: 8, left: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey,
+        borderRadius: BorderRadius.circular(4),
+      ),
     );
   }
 }

@@ -143,6 +143,7 @@ class AppTheme {
         fontStyle: FontStyle.italic,
         fontSize: 15.0,
         fontVariations: [FontVariation('wght', 450)],
+        letterSpacing: -0.1,
       ),
     );
 
