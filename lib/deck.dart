@@ -19,6 +19,7 @@ class Deck extends ChangeNotifier {
 
   String get name => _name;
 
+
   Future<void> updateName(String newName) async {
     _name = newName;
     notifyListeners();

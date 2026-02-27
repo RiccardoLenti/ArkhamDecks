@@ -306,50 +306,58 @@ class _DeckScreenState extends State<DeckScreen> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              "Rename Deck",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: "Deck Name",
-                border: OutlineInputBorder(),
+      builder: (context) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                "Rename Deck",
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
-              onSubmitted: (value) async {
-                if (value.trim().isNotEmpty) {
-                  await deck.updateName(value.trim());
-                  Navigator.pop(context);
-                }
-              },
-            ),
-            actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    label: const Text('Cancel'),
-                    icon: Icon(Icons.close),
-                  ),
-                  TextButton.icon(
-                    onPressed: () async {
-                      final newName = controller.text.trim();
-                      if(newName.isNotEmpty) {
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: "Deck Name",
+                  border: const OutlineInputBorder(),
+                  errorText: errorText,
+                ),
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => Navigator.pop(context),
+                      label: const Text('Cancel'),
+                      icon: Icon(Icons.close),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final newName = controller.text.trim();
+                        if (newName.isEmpty) {
+                          setState(() {
+                            errorText = "Name cannot be empty";
+                          });
+                          return;
+                        }
+
                         await deck.updateName(newName);
+
                         Navigator.pop(context);
-                      }
-                    },
-                    label: const Text('Confirm'),
-                    icon: Icon(Icons.check),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                      },
+                      label: const Text('Confirm'),
+                      icon: Icon(Icons.check),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
