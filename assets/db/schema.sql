@@ -52,7 +52,8 @@ CREATE TABLE printings (
 CREATE TABLE decks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    investigator_code TEXT, 
+    investigator_code TEXT,
+    size INT NOT NULL, 
     FOREIGN KEY(investigator_code) REFERENCES cards(code)
 );
 

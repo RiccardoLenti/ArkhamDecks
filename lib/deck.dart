@@ -7,6 +7,7 @@ class Deck extends ChangeNotifier {
   String _name;
   final ArkhamCard investigator;
   final String deckOptions;
+  final int size;
   final Map<String, DeckCard> _main = {};
   final Map<String, DeckCard> _side = {};
 
@@ -15,6 +16,7 @@ class Deck extends ChangeNotifier {
     required String name,
     required this.investigator,
     required this.deckOptions,
+    required this.size,
   }) : _name = name;
 
   String get name => _name;
@@ -44,6 +46,7 @@ class Deck extends ChangeNotifier {
       id: map['id'],
       name: map['deck_name'],
       deckOptions: map['deck_options'],
+      size: map['size'],
       investigator: ArkhamCard.fromMap(map),
     );
   }
