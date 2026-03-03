@@ -8,6 +8,7 @@ class Deck extends ChangeNotifier {
   final ArkhamCard investigator;
   final String deckOptions;
   final int size;
+  final int signaturesCount;
   final Map<String, DeckCard> _main = {};
   final Map<String, DeckCard> _side = {};
 
@@ -17,10 +18,52 @@ class Deck extends ChangeNotifier {
     required this.investigator,
     required this.deckOptions,
     required this.size,
+    required this.signaturesCount,
   }) : _name = name;
 
   String get name => _name;
 
+  static Future<void> initInDb(String name, SimplifiedCard investigator) async {
+    final db = await DatabaseHelper.instance.db;
+    final deckRequirements =
+        (await db.query(
+              'cards',
+              columns: ['deck_requirements'],
+              where: 'code = ?',
+              whereArgs: [investigator.code],
+            )).first['deck_requirements']
+            as String;
+    final parts = deckRequirements.split(',').map((s) => s.trim());
+    int size = 0;
+    List<String> cards = ['01000'];
+
+    for (final part in parts) {
+      if (part.startsWith('size:')) {
+        size = int.parse(part.substring(5));
+      } else if (part.startsWith('card:')) {
+        final codes = part.split(':');
+        cards.add(codes[1]);
+      }
+    }
+
+    final deckId = await db.insert('decks', {
+      'name': name,
+      'investigator_code': investigator.code,
+      'size': size,
+      'signatures_count': cards.length,
+    });
+
+    await Future.wait(
+      cards.map(
+        (cardCode) => db.insert('deck_cards', {
+          'deck_id': deckId,
+          'card_code': cardCode,
+          'count': 1,
+          'side_deck': 0,
+        }),
+      ),
+    );
+  }
 
   Future<void> updateName(String newName) async {
     _name = newName;
@@ -47,6 +90,7 @@ class Deck extends ChangeNotifier {
       name: map['deck_name'],
       deckOptions: map['deck_options'],
       size: map['size'],
+      signaturesCount: map['signatures_count'],
       investigator: ArkhamCard.fromMap(map),
     );
   }
@@ -92,6 +136,8 @@ class Deck extends ChangeNotifier {
 
   int get xpCount =>
       _main.values.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
+
+  int get nonExtraCardsCount => cardsCount - signaturesCount;
 
   Future<void> fetchCards() async {
     final db = await DatabaseHelper.instance.db;

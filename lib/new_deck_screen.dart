@@ -1,6 +1,7 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
@@ -156,47 +157,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                           return; // dialog is not closed
                         }
 
-                        final db = await DatabaseHelper.instance.db;
-
-                        final deckRequirements =
-                            (await db.query(
-                                  'cards',
-                                  columns: ['deck_requirements'],
-                                  where: 'code = ?',
-                                  whereArgs: [investigator.code],
-                                )).first['deck_requirements']
-                                as String;
-                        final parts = deckRequirements
-                            .split(',')
-                            .map((s) => s.trim());
-                        int size = 0;
-                        List<String> cards = ['01000'];
-
-                        for (final part in parts) {
-                          if (part.startsWith('size:')) {
-                            size = int.parse(part.substring(5));
-                          } else if (part.startsWith('card:')) {
-                            final codes = part.split(':');
-                            cards.add(codes[1]);
-                          }
-                        }
-
-                        final deckId = await db.insert('decks', {
-                          'name': name,
-                          'investigator_code': investigator.code,
-                          'size': size,
-                        });
-
-                        await Future.wait(
-                          cards.map(
-                            (cardCode) => db.insert('deck_cards', {
-                              'deck_id': deckId,
-                              'card_code': cardCode,
-                              'count': 1,
-                              'side_deck': 0,
-                            }),
-                          ),
-                        );
+                        await Deck.initInDb(name, investigator);
 
                         controller.clear();
                         Navigator.pop(context);

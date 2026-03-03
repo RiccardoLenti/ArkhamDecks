@@ -117,7 +117,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                 'card-outline-bold',
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
-                              Text('x ${deck.cardsCount}'),
+                              Text('x ${deck.nonExtraCardsCount} (${deck.cardsCount})'),
 
                               const Spacer(),
 
