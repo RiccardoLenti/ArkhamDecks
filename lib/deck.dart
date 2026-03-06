@@ -139,6 +139,16 @@ class Deck extends ChangeNotifier {
 
   int get nonExtraCardsCount => cardsCount - signaturesCount;
 
+  DeckError? validate() {
+    if (nonExtraCardsCount > size) {
+      return DeckError.tooManyCards;
+    } else if (nonExtraCardsCount < size) {
+      return DeckError.notEnoughCards;
+    }
+
+    return null;
+  }
+
   Future<void> fetchCards() async {
     final db = await DatabaseHelper.instance.db;
     final rows = await db.rawQuery(
@@ -195,4 +205,14 @@ class DeckCard {
       'side_deck': side ? 1 : 0,
     };
   }
+}
+
+enum DeckError {
+  notEnoughCards("Deck contains too few cards"),
+  tooManyCards("Deck contains too many cards"),
+  generic("");
+
+  const DeckError(this.text);
+
+  final String text;
 }

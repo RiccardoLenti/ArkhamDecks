@@ -89,7 +89,10 @@ class _DeckScreenState extends State<DeckScreen> {
                   body: SingleChildScrollView(
                     child: Column(
                       children: [
-                        InvestigatorDetail(investigator: deck.investigator),
+                        _InvestigatorDetail(investigator: deck.investigator),
+
+                        _DeckInvalidError(error: deck.validate()),
+
                         Container(
                           height: 40.0,
                           decoration: BoxDecoration(
@@ -117,7 +120,9 @@ class _DeckScreenState extends State<DeckScreen> {
                                 'card-outline-bold',
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
-                              Text('x ${deck.nonExtraCardsCount} (${deck.cardsCount})'),
+                              Text(
+                                'x ${deck.nonExtraCardsCount} (${deck.cardsCount})',
+                              ),
 
                               const Spacer(),
 
@@ -411,10 +416,10 @@ class AddCardButton extends StatelessWidget {
   }
 }
 
-class InvestigatorDetail extends StatelessWidget {
+class _InvestigatorDetail extends StatelessWidget {
   final ArkhamCard investigator;
 
-  const InvestigatorDetail({super.key, required this.investigator});
+  const _InvestigatorDetail({required this.investigator});
 
   @override
   Widget build(BuildContext context) {
@@ -430,6 +435,47 @@ class InvestigatorDetail extends StatelessWidget {
           ),
           CardText(card: investigator, buildBar: false),
         ],
+      ),
+    );
+  }
+}
+
+class _DeckInvalidError extends StatelessWidget {
+  final DeckError? error;
+
+  const _DeckInvalidError({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    if (error == null) return const SizedBox.shrink();
+
+    final scheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsetsGeometry.only(bottom: 12.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: scheme.errorContainer,
+          border: Border.all(color: scheme.error, width: 1.0),
+          borderRadius: BorderRadiusGeometry.circular(8.0),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+        child: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, size: 18.0),
+            const SizedBox(width: 10.0),
+            Expanded(
+              child: Text(
+                error!.text,
+                style: TextStyle(
+                  color: scheme.onErrorContainer,
+                  fontSize: 13.0,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
