@@ -129,14 +129,18 @@ class CardView extends StatelessWidget {
                           ),
                         ),
 
+                        if (card.taboo != null && card.taboo!.text != null)
+                          TabooText(taboo: card.taboo!),
+
                         Footer(card: card),
                       ],
                     ),
           ),
         ),
-        
+
         // the check on backFlavor literally exists only for the multiple Hank Samson backs
-        if (card.type == 'investigator' && card.backFlavor != null) InvestigatorBack(investigator: card),
+        if (card.type == 'investigator' && card.backFlavor != null)
+          InvestigatorBack(investigator: card),
 
         if (card.customizationText.isNotEmpty) CustomizationTable(card: card),
       ],
@@ -695,7 +699,7 @@ class CustomizationTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        DividerWithText(text: 'Customization'),
+        DividerWithText(text: 'Customization Table'),
         BoxBorder(
           color: AppColors.factions[card.faction]!.dark,
           thickTop: false,
@@ -842,14 +846,60 @@ class TypeAndTraits extends StatelessWidget {
 }
 
 class _TextLeftBar extends StatelessWidget {
+  final Color? color;
+
+  const _TextLeftBar({this.color});
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 2,
       margin: EdgeInsets.only(right: 8, left: 4),
       decoration: BoxDecoration(
-        color: Colors.grey,
+        color: color ?? Colors.grey,
         borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+}
+
+class TabooText extends StatelessWidget {
+  final Taboo taboo;
+
+  const TabooText({super.key, required this.taboo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _TextLeftBar(color: AppColors.taboo),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: Column(
+                  children: [
+                    Row(
+                      spacing: 4.0,
+                      children: [
+                        IconManager().getIcon(
+                          "tablet",
+                          color: AppColors.taboo,
+                          size: 16,
+                        ),
+                        Text("Taboo list"),
+                      ],
+                    ),
+                    TextWithIcons(text: taboo.text!),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -56,6 +56,8 @@ abstract class AppColors {
   static const health = Color(0xFF8D181E);
   static const sanity = Color(0xFF165385);
 
+  static const taboo = Color(0xFF9869F5);
+
   // TODO: maybe define operator [] directly for AppColors
   // instead of having to AppColors.factions[] ?
   static const Map<Faction, FactionColors> factions = {

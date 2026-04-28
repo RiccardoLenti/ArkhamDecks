@@ -112,5 +112,22 @@ if os.path.exists(packs_path):
                 VALUES (?, ?, ?)
             """, (pack.get("code"), pack.get("cycle_code"), pack.get("name")))
 
+taboos_path = os.path.join(JSON_DIR, "taboos.json")
+if os.path.exists(taboos_path):
+    with open(taboos_path, 'r', encoding="utf-8") as f:
+        taboos = json.load(f)
+        for taboo_list in taboos:
+            taboo_code = taboo_list.get("code")
+            cur.execute("INSERT INTO taboos (code, date_start) VALUES (?, ?)",
+                        (taboo_code, taboo_list.get("date_start")))
+            for card in taboo_list.get("cards"):
+                try:
+                    cur.execute("""
+                            INSERT INTO taboo_cards(taboo_list, code, xp, text)
+                            VALUES (?, ?, ?, ?)""",
+                            (taboo_code, card.get("code"), card.get("xp"), card.get("text")))
+                except:
+                    print(f"{taboo_code=} | {card.get('code')=}")
+
 conn.commit()
 conn.close()

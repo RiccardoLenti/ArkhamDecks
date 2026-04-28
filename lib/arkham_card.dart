@@ -80,6 +80,7 @@ class ArkhamCard extends SimplifiedCard {
   final List<String> additionalCards;
   final List<int?> commitSkills;
   final List<Printing>? printings;
+  final Taboo? taboo;
 
   ArkhamCard({
     required super.code,
@@ -105,6 +106,7 @@ class ArkhamCard extends SimplifiedCard {
     this.printings,
     this.backText,
     this.backFlavor,
+    this.taboo,
   }) : traits = traits ?? const [],
        customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
@@ -154,6 +156,7 @@ class ArkhamCard extends SimplifiedCard {
       customizationText: customizationText,
       additionalCards: [...?restrictedCards],
       commitSkills: commitSkillNames.map((name) => map[name] as int?).toList(),
+      taboo: Taboo.fromMap(map),
     );
   }
 
@@ -161,9 +164,12 @@ class ArkhamCard extends SimplifiedCard {
     final db = await DatabaseHelper.instance.db;
     final rows = await db.rawQuery(
       '''SELECT cards.*, 
-                printing.pack_code, printing.quantity, printing.position
-         FROM cards JOIN printings AS printing ON 
-         cards.code = printing.canonical_code where cards.code = ?''',
+                printing.pack_code, printing.quantity, printing.position,
+                taboo_cards.xp AS "taboo.xp", taboo_cards.text AS "taboo.text"
+         FROM cards JOIN printings AS printing ON cards.code = printing.canonical_code 
+         LEFT JOIN taboo_cards ON cards.code = taboo_cards.code 
+         AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)
+         where cards.code = ?''',
       [code],
     );
 
@@ -183,7 +189,8 @@ class ArkhamCard extends SimplifiedCard {
       'cards',
       distinct: true,
       columns: ['code'],
-      where: "restrictions LIKE 'investigator:' || ? || '%' OR bonded_to LIKE ?",
+      where:
+          "restrictions LIKE 'investigator:' || ? || '%' OR bonded_to LIKE ?",
       whereArgs: [code, rows.first['name']],
     );
 
@@ -206,6 +213,23 @@ class Printing {
     required this.quantity,
     required this.pack,
   });
+}
+
+class Taboo {
+  final int? xp;
+  final String? text;
+
+  const Taboo({required this.xp, required this.text});
+
+  static Taboo? fromMap(Map<String, dynamic> map) {
+    final xp = map['taboo.xp'] as int?;
+    final text = map['taboo.text'];
+
+    if (xp == null && text == null) {
+      return null;
+    }
+    return Taboo(text: text, xp: xp);
+  }
 }
 
 class CostLevelCircle extends StatelessWidget {

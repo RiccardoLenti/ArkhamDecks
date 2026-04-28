@@ -79,4 +79,19 @@ CREATE TABLE packs (
     name TEXT NOT NULL
 );
 
+CREATE TABLE taboos (
+    code TEXT PRIMARY KEY,
+    date_start TEXT NOT NULL
+);
+
+CREATE TABLE taboo_cards (
+    taboo_list TEXT NOT NULL,
+    code TEXT NOT NULL,
+    xp INTEGER,
+    text TEXT,
+    FOREIGN KEY(taboo_list) REFERENCES taboos(code),
+    FOREIGN KEY(code) REFERENCES cards(code),
+    PRIMARY KEY(taboo_list, code)
+);
+
 CREATE INDEX idx_cards_type ON cards(type_code);
