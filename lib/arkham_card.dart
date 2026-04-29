@@ -170,7 +170,7 @@ class ArkhamCard extends SimplifiedCard {
       '''SELECT cards.*, 
                 printing.pack_code, printing.quantity, printing.position,
                 taboo_cards.xp AS "taboo.xp", taboo_cards.text AS "taboo.text",
-                taboo_cards.text AS "taboo.text"
+                taboo_cards.code AS "taboo.code"
          FROM cards JOIN printings AS printing ON cards.code = printing.canonical_code 
          LEFT JOIN taboo_cards ON cards.code = taboo_cards.code 
          AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)
