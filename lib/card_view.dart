@@ -129,8 +129,8 @@ class CardView extends StatelessWidget {
                           ),
                         ),
 
-                        if (card.taboo != null && card.taboo!.text != null)
-                          TabooText(taboo: card.taboo!),
+                        if (card.taboo != null)
+                          TabooTextBox(taboo: card.taboo!),
 
                         Footer(card: card),
                       ],
@@ -516,7 +516,7 @@ class CardText extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 4.0),
-              child: TextWithIcons(text: card.text!),
+              child: TextWithIcons(text: card.taboo?.replacementText ?? card.text!),
             ),
           ),
         ],
@@ -829,13 +829,26 @@ class _TextLeftBar extends StatelessWidget {
   }
 }
 
-class TabooText extends StatelessWidget {
+class TabooTextBox extends StatelessWidget {
   final Taboo taboo;
 
-  const TabooText({super.key, required this.taboo});
+  const TabooTextBox({super.key, required this.taboo});
 
   @override
   Widget build(BuildContext context) {
+    final String text;
+
+    if (taboo.xp != null) {
+      final prefix = taboo.xp! > 0 ? "Chained" : "Unchained"; 
+      text = "$prefix: ${taboo.xp} xp.";
+    } else if (taboo.replacementText != null) {
+      text = "Mutated.";
+    } else if (taboo.text != null) {
+      text = taboo.text!;
+    } else {
+      text = "";
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: IntrinsicHeight(
@@ -859,7 +872,7 @@ class TabooText extends StatelessWidget {
                         Text("Taboo list"),
                       ],
                     ),
-                    TextWithIcons(text: taboo.text!),
+                    TextWithIcons(text: text),
                   ],
                 ),
               ),

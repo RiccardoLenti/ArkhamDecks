@@ -64,7 +64,7 @@ class FactionConstraint implements OptionConstraint {
     final placeholders = List.filled(factions.length, '? ').join(', ');
 
     return (
-      "(cards.faction_code IN ($placeholders) OR cards.faction2_code IN ($placeholders) OR cards.faction3_code IN ($placeholders))",
+      "(faction_code IN ($placeholders) OR faction2_code IN ($placeholders) OR faction3_code IN ($placeholders))",
       [...factions, ...factions, ...factions],
     );
   }
@@ -78,7 +78,7 @@ class LevelConstraint implements OptionConstraint {
     final minXp = level['min'] as int;
     final maxXp = level['max'] as int;
 
-    return ("(cards.xp BETWEEN ? AND ?)", ['$minXp', '$maxXp']);
+    return ("(xp BETWEEN ? AND ?)", ['$minXp', '$maxXp']);
   }
 }
 
@@ -90,7 +90,7 @@ class TraitConstraint implements OptionConstraint {
 
     final condition = List.filled(
       traits.length,
-      'cards.traits LIKE ?',
+      'traits LIKE ?',
     ).join(' OR ');
     final args = traits.map((trait) => '%$trait%').toList();
 
@@ -105,6 +105,6 @@ class TypeConstraint implements OptionConstraint {
 
     final placeholders = List.filled(types.length, '?').join(', ');
 
-    return ('(cards.type_code IN ($placeholders))', types);
+    return ('(type_code IN ($placeholders))', types);
   }
 }

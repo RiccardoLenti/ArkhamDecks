@@ -89,9 +89,52 @@ CREATE TABLE taboo_cards (
     code TEXT NOT NULL,
     xp INTEGER,
     text TEXT,
+    replacement_text TEXT,
     FOREIGN KEY(taboo_list) REFERENCES taboos(code),
     FOREIGN KEY(code) REFERENCES cards(code),
     PRIMARY KEY(taboo_list, code)
 );
 
+CREATE VIEW card_details AS
+SELECT 
+    cards.*,
+    printing.pack_code,
+    printing.quantity,
+    printing.position,
+    taboo_cards.code AS "taboo.code",
+    taboo_cards.xp AS "taboo.xp",
+    taboo_cards.text AS "taboo.text",
+    taboo_cards.replacement_text AS "taboo.replacement_text"
+FROM cards 
+JOIN printings AS printing ON cards.code = printing.canonical_code
+LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
+    AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos);
+
+CREATE VIEW card_simplified AS
+SELECT
+    cards.code,
+    cards.name,
+    cards.subname,
+    cards.type_code,
+    cards.faction_code,
+    cards.faction2_code,
+    cards.faction3_code,
+    cards.cost,
+    cards.xp,
+    cards.deck_limit,
+    cards.slot,
+    cards.hidden,
+    cards.traits,
+    printing.pack_code,
+    printing.position,
+    printing.quantity,
+    taboo_cards.code AS "taboo.code",
+    taboo_cards.xp AS "taboo.xp"
+FROM cards
+JOIN printings AS printing ON cards.code = printing.canonical_code
+LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
+    AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)
+GROUP BY cards.code;
+
 CREATE INDEX idx_cards_type ON cards(type_code);
+CREATE INDEX idx_printings_canonical_code ON printings(canonical_code);

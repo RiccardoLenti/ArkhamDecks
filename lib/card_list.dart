@@ -124,30 +124,9 @@ class CardList {
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
     final maps = await db.query(
-      '''cards JOIN printings AS printing on cards.code = printing.canonical_code
-         LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
-         AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)''',
-      columns: [
-        'cards.code',
-        'cards.name',
-        'cards.subname',
-        'cards.type_code',
-        'cards.faction_code',
-        'cards.faction2_code',
-        'cards.faction3_code',
-        'cards.cost',
-        'cards.xp',
-        'cards.deck_limit',
-        'cards.slot',
-        'printing.pack_code',
-        'printing.position',
-        'printing.quantity',
-        'taboo_cards.code AS "taboo.code"',
-        'taboo_cards.xp AS "taboo.xp"',
-      ],
+      'card_simplified',
       where: where,
       whereArgs: [...args, type],
-      groupBy: 'cards.code',
     );
 
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
@@ -163,32 +142,10 @@ class CardList {
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
     final maps = await db.query(
-      '''cards JOIN printings AS printing ON cards.code = printing.canonical_code 
-         LEFT JOIN taboo_cards ON cards.code = taboo_cards.code 
-         AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)''',
-      columns: [
-        'cards.code',
-        'cards.name',
-        'cards.subname',
-        'cards.type_code',
-        'cards.faction_code',
-        'cards.faction2_code',
-        'cards.faction3_code',
-        'cards.cost',
-        'cards.xp',
-        'cards.deck_limit',
-        'cards.slot',
-        'printing.pack_code',
-        'printing.position',
-        'printing.quantity',
-        'taboo_cards.code AS "taboo.code"',
-        'taboo_cards.xp AS "taboo.xp"',
-      ],
+      'card_simplified',
       where: where,
       whereArgs: [...args, 'investigator', 'asset', 'event', 'skill'],
-      groupBy: 'cards.code',
     );
-
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
   }
 

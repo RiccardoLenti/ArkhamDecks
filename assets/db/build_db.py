@@ -44,7 +44,8 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                     sanity, xp, slot, bonded_to, hidden, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
                     back_text, back_flavor, restrictions, is_unique, customization_text, deck_limit
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                          ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -123,9 +124,11 @@ if os.path.exists(taboos_path):
             for card in taboo_list.get("cards"):
                 try:
                     cur.execute("""
-                            INSERT INTO taboo_cards(taboo_list, code, xp, text)
-                            VALUES (?, ?, ?, ?)""",
-                            (taboo_code, card.get("code"), card.get("xp"), card.get("text")))
+                            INSERT INTO taboo_cards(taboo_list, code, xp, text, 
+                                                    replacement_text)
+                            VALUES (?, ?, ?, ?, ?)""",
+                            (taboo_code, card.get("code"), card.get("xp"), 
+                             card.get("text"), card.get("replacement_text")))
                 except:
                     print(f"{taboo_code=} | {card.get('code')=}")
 

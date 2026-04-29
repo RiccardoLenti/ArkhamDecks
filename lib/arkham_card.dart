@@ -167,14 +167,7 @@ class ArkhamCard extends SimplifiedCard {
   static Future<ArkhamCard> fromDb(String code) async {
     final db = await DatabaseHelper.instance.db;
     final rows = await db.rawQuery(
-      '''SELECT cards.*, 
-                printing.pack_code, printing.quantity, printing.position,
-                taboo_cards.xp AS "taboo.xp", taboo_cards.text AS "taboo.text",
-                taboo_cards.code AS "taboo.code"
-         FROM cards JOIN printings AS printing ON cards.code = printing.canonical_code 
-         LEFT JOIN taboo_cards ON cards.code = taboo_cards.code 
-         AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)
-         where cards.code = ?''',
+      'SELECT * FROM card_details WHERE code = ?',
       [code],
     );
 
@@ -223,8 +216,9 @@ class Printing {
 class Taboo {
   final int? xp;
   final String? text;
+  final String? replacementText;
 
-  const Taboo({required this.xp, this.text});
+  const Taboo({required this.xp, this.text, this.replacementText});
 
   static Taboo? fromSimplifiedMap(Map<String, dynamic> map) {
     if (map['taboo.code'] == null) return null;
@@ -235,7 +229,11 @@ class Taboo {
   static Taboo? fromFullMap(Map<String, dynamic> map) {
     if (map['taboo.code'] == null) return null;
 
-    return Taboo(text: map['taboo.text'], xp: map['taboo.xp'] as int?);
+    return Taboo(
+      text: map['taboo.text'],
+      xp: map['taboo.xp'] as int?,
+      replacementText: map['taboo.replacement_text'],
+    );
   }
 }
 

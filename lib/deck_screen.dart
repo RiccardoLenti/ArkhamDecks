@@ -1,7 +1,7 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_list.dart';
 import 'package:arkham_decks/card_view.dart';
-import 'package:arkham_decks/cards_list_widget.dart';
+import 'package:arkham_decks/card_list_widget.dart';
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
@@ -186,7 +186,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                   ),
                             ),
                           ),
-                          child: CardsListWidget(
+                          child: CardListWidget(
                             cardList: CardList.fromList(deck.deckCards),
                             deck: deck,
                             sticky: false,
@@ -223,7 +223,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                   ),
                             ),
                           ),
-                          child: CardsListWidget(
+                          child: CardListWidget(
                             cardList: CardList.fromList(deck.sideCards),
                             deck: deck,
                             sticky: false,

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:arkham_decks/card_list.dart';
-import 'package:arkham_decks/cards_list_widget.dart';
+import 'package:arkham_decks/card_list_widget.dart';
 import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/filter_screen.dart';
 import 'package:arkham_decks/search_filters.dart';
@@ -100,7 +100,7 @@ class _CardsScreenState extends State<CardsScreen> {
           _isLoading
               ? CircularProgressIndicator()
               : Expanded(
-                child: CardsListWidget(
+                child: CardListWidget(
                   cardList: _cardList,
                   deck: _deck,
                   side: widget.sideDeck,

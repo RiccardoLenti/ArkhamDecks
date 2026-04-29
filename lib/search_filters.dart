@@ -62,7 +62,7 @@ class SearchFilters extends ChangeNotifier {
     List<String> whereArgs = [];
 
     if (_searchText.isNotEmpty) {
-      whereConditions.add('(LOWER(cards.name) LIKE ?)');
+      whereConditions.add('(LOWER(name) LIKE ?)');
       whereArgs.add('%${_searchText.toLowerCase()}%');
     }
 
@@ -131,7 +131,7 @@ class FactionFilter extends BaseFilter {
     final args = selected.map((faction) => faction.name).toList();
 
     return SqlClause(
-      '(cards.faction_code IN ($placeholders) OR cards.faction2_code IN ($placeholders) OR cards.faction3_code IN ($placeholders))',
+      '(faction_code IN ($placeholders) OR faction2_code IN ($placeholders) OR faction3_code IN ($placeholders))',
       [...args, ...args, ...args],
     );
   }
@@ -179,7 +179,7 @@ class TypeFilter extends BaseFilter {
           return type.name;
         }).toList();
 
-    return SqlClause('(cards.type_code IN ($placeholders))', args);
+    return SqlClause('(type_code IN ($placeholders))', args);
   }
 }
 
@@ -208,7 +208,7 @@ class LevelFilter extends BaseFilter {
   @override
   SqlClause get whereClause {
     //TODO: this should not be called xp
-    return SqlClause('(cards.xp BETWEEN ? AND ?)', [
+    return SqlClause('(xp BETWEEN ? AND ?)', [
       _min.toString(),
       _max.toString(),
     ]);
@@ -240,7 +240,7 @@ class CostFilter extends BaseFilter {
 
   @override
   SqlClause get whereClause {
-    return SqlClause('(cards.cost <= ? AND cards.cost >= ?)', [
+    return SqlClause('(cost <= ? AND cost >= ?)', [
       _max.toString(),
       _min.toString(),
     ]);
@@ -277,7 +277,7 @@ class TraitFilter extends BaseFilter {
 
   @override
   SqlClause get whereClause {
-    final condition = List.filled(_traits.length, 'cards.traits LIKE ?').join(' OR ');
+    final condition = List.filled(_traits.length, 'traits LIKE ?').join(' OR ');
     final args = _traits.map((trait) => '%$trait%').toList();
 
     return SqlClause('($condition)', args);

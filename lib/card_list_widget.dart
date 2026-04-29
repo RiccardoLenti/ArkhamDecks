@@ -10,13 +10,13 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 /// If sticky this uses slivers.
 /// If !sticky this uses a column.
-class CardsListWidget extends StatelessWidget {
+class CardListWidget extends StatelessWidget {
   final CardList cardList;
   final Deck? deck;
   final bool sticky;
   final bool side;
 
-  const CardsListWidget({
+  const CardListWidget({
     super.key,
     required this.cardList,
     this.deck,
@@ -216,8 +216,8 @@ class _CardListTileSubtitle extends StatelessWidget {
             : Padding(
               padding: const EdgeInsets.only(right: 2.0),
               child: Text(
-                "•" * card.taboo!.xp!,
-                style: TextStyle(color: AppColors.taboo),
+                (card.taboo!.xp! > 0 ? '•' : '-') * card.taboo!.xp!.abs(),
+                style: TextStyle(color: AppColors.taboo, fontSize: 14.0),
               ),
             ),
         Text(card.subname ?? ''),
