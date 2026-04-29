@@ -16,6 +16,7 @@ class SimplifiedCard {
   final List<String>? slots;
   final int? level;
   final int deckLimit;
+  final Taboo? taboo;
 
   SimplifiedCard({
     required this.code,
@@ -28,6 +29,7 @@ class SimplifiedCard {
     required this.level,
     required this.deckLimit,
     this.multiFactions = const [],
+    this.taboo,
   }) : slots = slots ?? const [];
 
   factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
@@ -51,6 +53,7 @@ class SimplifiedCard {
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
+        taboo: Taboo.fromSimplifiedMap(map),
       );
     } else {
       return SimplifiedCard(
@@ -63,6 +66,7 @@ class SimplifiedCard {
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
+        taboo: Taboo.fromSimplifiedMap(map),
       );
     }
   }
@@ -156,7 +160,7 @@ class ArkhamCard extends SimplifiedCard {
       customizationText: customizationText,
       additionalCards: [...?restrictedCards],
       commitSkills: commitSkillNames.map((name) => map[name] as int?).toList(),
-      taboo: Taboo.fromMap(map),
+      taboo: Taboo.fromFullMap(map),
     );
   }
 
@@ -165,7 +169,8 @@ class ArkhamCard extends SimplifiedCard {
     final rows = await db.rawQuery(
       '''SELECT cards.*, 
                 printing.pack_code, printing.quantity, printing.position,
-                taboo_cards.xp AS "taboo.xp", taboo_cards.text AS "taboo.text"
+                taboo_cards.xp AS "taboo.xp", taboo_cards.text AS "taboo.text",
+                taboo_cards.text AS "taboo.text"
          FROM cards JOIN printings AS printing ON cards.code = printing.canonical_code 
          LEFT JOIN taboo_cards ON cards.code = taboo_cards.code 
          AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)
@@ -219,16 +224,18 @@ class Taboo {
   final int? xp;
   final String? text;
 
-  const Taboo({required this.xp, required this.text});
+  const Taboo({required this.xp, this.text});
 
-  static Taboo? fromMap(Map<String, dynamic> map) {
-    final xp = map['taboo.xp'] as int?;
-    final text = map['taboo.text'];
+  static Taboo? fromSimplifiedMap(Map<String, dynamic> map) {
+    if (map['taboo.code'] == null) return null;
 
-    if (xp == null && text == null) {
-      return null;
-    }
-    return Taboo(text: text, xp: xp);
+    return Taboo(xp: map['taboo.xp'] as int?);
+  }
+
+  static Taboo? fromFullMap(Map<String, dynamic> map) {
+    if (map['taboo.code'] == null) return null;
+
+    return Taboo(text: map['taboo.text'], xp: map['taboo.xp'] as int?);
   }
 }
 

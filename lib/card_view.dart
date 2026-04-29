@@ -656,40 +656,6 @@ class Footer extends StatelessWidget {
   }
 }
 
-//TODO: is this the right place for this?
-class CardListTile extends StatelessWidget {
-  const CardListTile({
-    super.key,
-    required this.card,
-    required this.cards,
-    required this.index,
-    this.trailing,
-  });
-
-  final SimplifiedCard card;
-  final List<SimplifiedCard> cards;
-  final int index;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: CostLevelCircle(card: card),
-      title: Text(card.name),
-      subtitle: Text(card.subname ?? ''),
-      trailing: trailing,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CardPagerScreen(cards: cards, initialIndex: index),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class CustomizationTable extends StatelessWidget {
   final ArkhamCard card;
 

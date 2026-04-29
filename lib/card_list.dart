@@ -2,7 +2,6 @@ import 'dart:core';
 
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
-import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class CardList {
@@ -125,7 +124,9 @@ class CardList {
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
     final maps = await db.query(
-      'cards JOIN printings AS printing on cards.code = printing.canonical_code',
+      '''cards JOIN printings AS printing on cards.code = printing.canonical_code
+         LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
+         AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)''',
       columns: [
         'cards.code',
         'cards.name',
@@ -141,6 +142,8 @@ class CardList {
         'printing.pack_code',
         'printing.position',
         'printing.quantity',
+        'taboo_cards.code AS "taboo.code"',
+        'taboo_cards.xp AS "taboo.xp"',
       ],
       where: where,
       whereArgs: [...args, type],
@@ -160,7 +163,9 @@ class CardList {
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
     final maps = await db.query(
-      'cards JOIN printings AS printing on cards.code = printing.canonical_code',
+      '''cards JOIN printings AS printing ON cards.code = printing.canonical_code 
+         LEFT JOIN taboo_cards ON cards.code = taboo_cards.code 
+         AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)''',
       columns: [
         'cards.code',
         'cards.name',
@@ -176,6 +181,8 @@ class CardList {
         'printing.pack_code',
         'printing.position',
         'printing.quantity',
+        'taboo_cards.code AS "taboo.code"',
+        'taboo_cards.xp AS "taboo.xp"',
       ],
       where: where,
       whereArgs: [...args, 'investigator', 'asset', 'event', 'skill'],

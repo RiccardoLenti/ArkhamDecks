@@ -1,6 +1,7 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_list.dart';
 import 'package:arkham_decks/card_view.dart';
+import 'package:arkham_decks/cards_list_widget.dart';
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
