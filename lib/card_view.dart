@@ -516,7 +516,9 @@ class CardText extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 4.0),
-              child: TextWithIcons(text: card.taboo?.replacementText ?? card.text!),
+              child: TextWithIcons(
+                text: card.taboo?.replacementText ?? card.text!,
+              ),
             ),
           ),
         ],
@@ -588,7 +590,11 @@ class CardFlavor extends StatelessWidget {
   final String text;
 
   CardFlavor({super.key, required String text})
-    : text = text.replaceAll('<cite>', '\n- ').replaceAll('</cite>', '');
+    : text = text
+          .replaceAll('<cite>', '\n- ')
+          .replaceAll('</cite>', '')
+          .replaceAll('<u>', '')    // TODO: actually do something about this (curiosity)
+          .replaceAll('</u>', '');
 
   @override
   Widget build(BuildContext context) {
@@ -839,7 +845,7 @@ class TabooTextBox extends StatelessWidget {
     final String text;
 
     if (taboo.xp != null) {
-      final prefix = taboo.xp! > 0 ? "Chained" : "Unchained"; 
+      final prefix = taboo.xp! > 0 ? "Chained" : "Unchained";
       text = "$prefix: ${taboo.xp} xp.";
     } else if (taboo.replacementText != null) {
       text = "Mutated.";
