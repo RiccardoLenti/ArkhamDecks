@@ -593,7 +593,10 @@ class CardFlavor extends StatelessWidget {
     : text = text
           .replaceAll('<cite>', '\n- ')
           .replaceAll('</cite>', '')
-          .replaceAll('<u>', '')    // TODO: actually do something about this (curiosity)
+          .replaceAll(
+            '<u>',
+            '',
+          ) // TODO: actually do something about this (curiosity)
           .replaceAll('</u>', '');
 
   @override
@@ -741,6 +744,8 @@ class InvestigatorDetailScreen extends StatelessWidget {
             ],
           ),
         ),
+
+        if (card.taboo != null) TabooTextBox(taboo: card.taboo!),
 
         Footer(card: card),
       ],
