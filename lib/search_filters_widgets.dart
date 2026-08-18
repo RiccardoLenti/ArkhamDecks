@@ -1,3 +1,4 @@
+import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
@@ -96,32 +97,36 @@ class FactionFilterWidget extends StatelessWidget {
           title: 'Faction',
           isActive: filter.isActive,
           clear: filter.clear,
-          child: SegmentedButton(
-            multiSelectionEnabled: true,
-            emptySelectionAllowed: true,
-            showSelectedIcon: false,
-            segments: [
-              ...Faction.valuesWithoutMulti().map((faction) {
-                return ButtonSegment<Faction>(
-                  value: faction,
-                  icon:
-                      filter.selected.contains(faction)
-                          ? IconManager().getIcon(
-                            faction.name,
-                            color: AppColors.factions[faction]!.light,
-                            size: 36,
-                          )
-                          : IconManager().getIcon(
-                            faction.name,
-                            size: 36,
-                            color: Colors.white70,
-                          ),
-                );
-              }),
-            ],
-            selected: filter.selected,
-            onSelectionChanged:
-                (Set<Faction> newSelection) => filter.setActives(newSelection),
+          child: SizedBox(
+            width: double.infinity,
+            child: SegmentedButton(
+              multiSelectionEnabled: true,
+              emptySelectionAllowed: true,
+              showSelectedIcon: false,
+              segments: [
+                ...Faction.valuesWithoutMulti().map((faction) {
+                  return ButtonSegment<Faction>(
+                    value: faction,
+                    icon:
+                        filter.selected.contains(faction)
+                            ? IconManager().getIcon(
+                              faction.name,
+                              color: AppColors.factions[faction]!.light,
+                              size: 36,
+                            )
+                            : IconManager().getIcon(
+                              faction.name,
+                              size: 36,
+                              color: Colors.white70,
+                            ),
+                  );
+                }),
+              ],
+              selected: filter.selected,
+              onSelectionChanged:
+                  (Set<Faction> newSelection) =>
+                      filter.setActives(newSelection),
+            ),
           ),
         );
       },
@@ -143,7 +148,8 @@ class TypeFilterWidget extends StatelessWidget {
           title: 'Type',
           isActive: filter.isActive,
           clear: filter.clear,
-          child: Center(
+          child: SizedBox(
+            width: double.infinity,
             child: SegmentedButton(
               multiSelectionEnabled: true,
               emptySelectionAllowed: true,
@@ -168,6 +174,55 @@ class TypeFilterWidget extends StatelessWidget {
               selected: filter.selected,
               onSelectionChanged:
                   (Set<Type> newSelection) => filter.setActives(newSelection),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class WeaknessFilterWidget extends StatelessWidget {
+  final WeaknessFilter filter;
+
+  const WeaknessFilterWidget({super.key, required this.filter});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: filter,
+      builder: (context, _) {
+        return FilterBox(
+          title: 'Weakness',
+          isActive: filter.isActive,
+          clear: filter.clear,
+          child: SizedBox(
+            width: double.infinity,
+            child: SegmentedButton(
+              multiSelectionEnabled: true,
+              emptySelectionAllowed: true,
+              showSelectedIcon: false,
+              segments: [
+                ...Subtype.values.map((subtype) {
+                  return ButtonSegment<Subtype>(
+                    value: subtype,
+                    label: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        subtype.label,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium!.copyWith(fontSize: 14.0),
+                        maxLines: 1,
+                      ),
+                    ),
+                  );
+                }),
+              ],
+              selected: filter.selected,
+              onSelectionChanged:
+                  (Set<Subtype> newSelection) =>
+                      filter.setActives(newSelection),
             ),
           ),
         );

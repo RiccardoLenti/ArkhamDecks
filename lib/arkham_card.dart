@@ -1,6 +1,7 @@
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/theme.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
@@ -13,6 +14,7 @@ class SimplifiedCard {
   final Faction faction;
   final List<Faction> multiFactions;
   final String type;
+  final Subtype? subtype;
   final List<String>? slots;
   final int? level;
   final int deckLimit;
@@ -29,6 +31,7 @@ class SimplifiedCard {
     required this.level,
     required this.deckLimit,
     this.multiFactions = const [],
+    this.subtype,
     this.taboo,
   }) : slots = slots ?? const [];
 
@@ -50,6 +53,7 @@ class SimplifiedCard {
         faction: Faction.multi,
         multiFactions: multiFactions.nonNulls.toList(growable: false),
         type: map['type_code'],
+        subtype: Subtype.fromString(map['subtype_code']),
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
@@ -63,6 +67,7 @@ class SimplifiedCard {
         subname: map['subname'],
         faction: Faction.fromString(map['faction_code'])!,
         type: map['type_code'],
+        subtype: Subtype.fromString(map['subtype_code']),
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
@@ -96,6 +101,7 @@ class ArkhamCard extends SimplifiedCard {
     required super.level,
     required super.deckLimit,
     super.multiFactions,
+    super.subtype,
     super.slots,
 
     this.text,
@@ -144,6 +150,7 @@ class ArkhamCard extends SimplifiedCard {
       faction: simplified.faction,
       multiFactions: simplified.multiFactions,
       type: simplified.type,
+      subtype: simplified.subtype,
       slots: simplified.slots,
       level: simplified.level,
       deckLimit: simplified.deckLimit,
@@ -211,6 +218,19 @@ class Printing {
     required this.quantity,
     required this.pack,
   });
+}
+
+enum Subtype {
+  weakness('weakness', 'Weakness'),
+  basicWeakness('basicweakness', 'Basic Weakness');
+
+  const Subtype(this.name, this.label);
+
+  final String name;
+  final String label;
+
+  static Subtype? fromString(String? value) =>
+      Subtype.values.firstWhereOrNull((subtype) => subtype.name == value);
 }
 
 class Taboo {

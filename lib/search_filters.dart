@@ -1,3 +1,4 @@
+import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_list.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/factions.dart';
@@ -9,6 +10,7 @@ class SearchFilters extends ChangeNotifier {
   final ValueNotifier<int> cardCount = ValueNotifier<int>(0);
   final FactionFilter factionFilter = FactionFilter();
   final TypeFilter typeFilter = TypeFilter();
+  final WeaknessFilter weaknessFilter = WeaknessFilter();
   final LevelFilter levelFilter = LevelFilter();
   final CostFilter costFilter = CostFilter();
   final TraitFilter traitFilter = TraitFilter();
@@ -18,6 +20,7 @@ class SearchFilters extends ChangeNotifier {
   Iterable<BaseFilter> get filters => [
     factionFilter,
     typeFilter,
+    weaknessFilter,
     levelFilter,
     costFilter,
     traitFilter,
@@ -142,8 +145,7 @@ enum Type {
   //investigator('investigator'),
   asset('asset'),
   event('event'),
-  skill('skill'),
-  weakness('treachery');
+  skill('skill');
 
   const Type(this.name);
 
@@ -180,6 +182,36 @@ class TypeFilter extends BaseFilter {
         }).toList();
 
     return SqlClause('(type_code IN ($placeholders))', args);
+  }
+}
+
+class WeaknessFilter extends BaseFilter {
+  final Set<Subtype> _selected = {};
+
+  Set<Subtype> get selected => Set.unmodifiable(_selected);
+
+  @override
+  bool get isActive => _selected.isNotEmpty;
+
+  void setActives(Set<Subtype> actives) {
+    _selected
+      ..clear()
+      ..addAll(actives);
+    notifyListeners();
+  }
+
+  @override
+  void clear() {
+    _selected.clear();
+    notifyListeners();
+  }
+
+  @override
+  SqlClause get whereClause {
+    final placeholders = List.filled(selected.length, '?').join(',');
+    final args = selected.map((subtype) => subtype.name).toList();
+
+    return SqlClause('(subtype_code IN ($placeholders))', args);
   }
 }
 

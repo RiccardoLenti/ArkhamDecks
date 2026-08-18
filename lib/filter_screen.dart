@@ -51,6 +51,7 @@ class FilterScreen extends StatelessWidget {
               children: [
                 FactionFilterWidget(filter: filters.factionFilter),
                 TypeFilterWidget(filter: filters.typeFilter),
+                WeaknessFilterWidget(filter: filters.weaknessFilter),
                 LevelFilterWidget(filter: filters.levelFilter),
                 CostFilterWidget(filter: filters.costFilter),
                 TraitFilterWidget(filter: filters.traitFilter),

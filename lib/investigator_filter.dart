@@ -88,10 +88,7 @@ class TraitConstraint implements OptionConstraint {
   (String, List<String>) buildQuery(dynamic value) {
     final traits = (value as List).cast<String>();
 
-    final condition = List.filled(
-      traits.length,
-      'traits LIKE ?',
-    ).join(' OR ');
+    final condition = List.filled(traits.length, 'traits LIKE ?').join(' OR ');
     final args = traits.map((trait) => '%$trait%').toList();
 
     return ('($condition)', args);

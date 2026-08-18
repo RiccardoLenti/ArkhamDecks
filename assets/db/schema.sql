@@ -10,6 +10,7 @@ CREATE TABLE cards (
     name TEXT,
     subname TEXT,
     type_code TEXT,
+    subtype_code TEXT,
     faction_code TEXT,
     faction2_code TEXT,
     faction3_code TEXT,
@@ -116,6 +117,7 @@ SELECT
     cards.name,
     cards.subname,
     cards.type_code,
+    cards.subtype_code,
     cards.faction_code,
     cards.faction2_code,
     cards.faction3_code,
@@ -137,4 +139,5 @@ LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
 GROUP BY cards.code;
 
 CREATE INDEX idx_cards_type ON cards(type_code);
+CREATE INDEX idx_cards_subtype ON cards(subtype_code);
 CREATE INDEX idx_printings_canonical_code ON printings(canonical_code);

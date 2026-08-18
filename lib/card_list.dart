@@ -46,6 +46,11 @@ class CardList {
         others = [];
 
     for (final card in cards) {
+      if (card.subtype != null) {
+        others.add(card);
+        continue;
+      }
+
       switch (card.type) {
         case 'investigator':
           investigators.add(card);
@@ -119,7 +124,7 @@ class CardList {
     List<String> args,
     String type,
   ) async {
-    final String extraWhere = 'type_code =  ?';
+    final String extraWhere = 'type_code = ? AND subtype_code IS NULL';
     final String where =
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
@@ -137,7 +142,8 @@ class CardList {
     String baseWhere,
     List<String> args,
   ) async {
-    final String extraWhere = 'type_code NOT IN (?, ?, ?, ?)';
+    final String extraWhere =
+        '(type_code NOT IN (?, ?, ?, ?) OR subtype_code IS NOT NULL)';
     final String where =
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 

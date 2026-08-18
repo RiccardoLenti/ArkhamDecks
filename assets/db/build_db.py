@@ -39,18 +39,19 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
             # if we're here then it's not a duplicate
             cur.execute("""
                 INSERT INTO cards (
-                    code, name, subname, type_code, faction_code, faction2_code, 
+                    code, name, subname, type_code, subtype_code, faction_code, faction2_code,
                     faction3_code, traits, text, flavor, cost, health,
                     sanity, xp, slot, bonded_to, hidden, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
                     back_text, back_flavor, restrictions, is_unique, customization_text, deck_limit
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                          ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                          ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
                 card.get("subname"),
                 card.get("type_code"),
+                card.get("subtype_code"),
                 card.get("faction_code"),
                 card.get("faction2_code"),
                 card.get("faction3_code"),
