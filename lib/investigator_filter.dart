@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 class InvestigatorFilter extends BaseFilter {
   final String? deckOptions;
   final Map<String, OptionConstraint> _constraints;
+  List<String> _extraOptions = const [];
 
   InvestigatorFilter(this.deckOptions)
     : _constraints = {
@@ -14,6 +15,9 @@ class InvestigatorFilter extends BaseFilter {
         'level': LevelConstraint(),
         'trait': TraitConstraint(),
         'type': TypeConstraint(),
+        'tag': TagConstraint(),
+        'uses': UsesConstraint(),
+        'slot': SlotConstraint(),
       };
 
   @override
@@ -23,31 +27,75 @@ class InvestigatorFilter extends BaseFilter {
   @override
   bool get isActive => deckOptions != null;
 
+  void setExtraOptions(List<String> options) {
+    if (listEquals(_extraOptions, options)) {
+      return;
+    }
+
+    _extraOptions = options;
+    notifyListeners();
+  }
+
   @override
   SqlClause get whereClause {
+    final List<String> allowed = [], forbidden = [];
+    final List<String> allowedArgs = [], forbiddenArgs = [];
+
+    for (final option in _options) {
+      final (condition, args) = _buildOption(option);
+
+      if (condition == null) {
+        continue;
+      }
+
+      if (option['not'] == true) {
+        forbidden.add('NOT IFNULL($condition, 0)');
+        forbiddenArgs.addAll(args);
+      } else {
+        allowed.add(condition);
+        allowedArgs.addAll(args);
+      }
+    }
+
+    final conditions = [
+      if (allowed.isNotEmpty) allowed.join(' OR '),
+      ...forbidden,
+    ];
+
+    return SqlClause(conditions.map((c) => '($c)').join(' AND '), [
+      ...allowedArgs,
+      ...forbiddenArgs,
+    ]);
+  }
+
+  List<Map<String, dynamic>> get _options =>
+      [
+        ...jsonDecode(deckOptions!),
+        for (final extra in _extraOptions) ...jsonDecode(extra),
+      ].cast<Map<String, dynamic>>();
+
+  (String?, List<String>) _buildOption(Map<String, dynamic> option) {
     final List<String> conditions = [];
     final List<String> args = [];
 
-    for (final Map<String, dynamic> option in jsonDecode(deckOptions!)) {
-      final List<String> optionConditions = [];
+    for (final optionEntry in option.entries) {
+      final constraint = _constraints[optionEntry.key];
+      // TODO: remove this check as it's useless when all constraints will be supported
+      if (constraint != null) {
+        final (constraintCondition, constraintArgs) = constraint.buildQuery(
+          optionEntry.value,
+        );
 
-      for (final optionEntry in option.entries) {
-        final constraint = _constraints[optionEntry.key];
-        // TODO: remove this check as it's useless when all constraints will be supported
-        if (constraint != null) {
-          final (constraintCondition, constraintArgs) = constraint.buildQuery(
-            optionEntry.value,
-          );
-
-          optionConditions.add(constraintCondition);
-          args.addAll(constraintArgs);
-        }
+        conditions.add(constraintCondition);
+        args.addAll(constraintArgs);
       }
-
-      conditions.add(optionConditions.join(' AND '));
     }
 
-    return SqlClause(conditions.join(' OR '), args);
+    if (conditions.isEmpty) {
+      return (null, const []);
+    }
+
+    return ('(${conditions.join(' AND ')})', args);
   }
 }
 
@@ -103,5 +151,40 @@ class TypeConstraint implements OptionConstraint {
     final placeholders = List.filled(types.length, '?').join(', ');
 
     return ('(type_code IN ($placeholders))', types);
+  }
+}
+
+class TagConstraint implements OptionConstraint {
+  @override
+  (String, List<String>) buildQuery(dynamic value) {
+    final tags = (value as List).cast<String>();
+
+    final condition = List.filled(tags.length, 'tags LIKE ?').join(' OR ');
+    final args = tags.map((tag) => '%$tag%').toList();
+
+    return ('($condition)', args);
+  }
+}
+
+class UsesConstraint implements OptionConstraint {
+  @override
+  (String, List<String>) buildQuery(dynamic value) {
+    final uses = (value as List).cast<String>();
+
+    final placeholders = List.filled(uses.length, '?').join(', ');
+
+    return ('(uses IN ($placeholders))', uses);
+  }
+}
+
+class SlotConstraint implements OptionConstraint {
+  @override
+  (String, List<String>) buildQuery(dynamic value) {
+    final slots = (value as List).cast<String>();
+
+    final condition = List.filled(slots.length, 'slot LIKE ?').join(' OR ');
+    final args = slots.map((slot) => '%$slot%').toList();
+
+    return ('($condition)', args);
   }
 }

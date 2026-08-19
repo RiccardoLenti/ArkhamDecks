@@ -15,6 +15,8 @@ CREATE TABLE cards (
     faction2_code TEXT,
     faction3_code TEXT,
     traits TEXT,
+    tags TEXT,
+    uses TEXT, -- like "Uses (3 charges)"
     text TEXT,
     flavor TEXT,
     cost INTEGER,
@@ -127,6 +129,9 @@ SELECT
     cards.slot,
     cards.hidden,
     cards.traits,
+    cards.tags,
+    cards.uses,
+    cards.deck_options,
     printing.pack_code,
     printing.position,
     printing.quantity,

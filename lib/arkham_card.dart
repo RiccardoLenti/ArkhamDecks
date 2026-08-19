@@ -19,6 +19,7 @@ class SimplifiedCard {
   final int? level;
   final int deckLimit;
   final Taboo? taboo;
+  final String? deckOptions;
 
   SimplifiedCard({
     required this.code,
@@ -33,6 +34,7 @@ class SimplifiedCard {
     this.multiFactions = const [],
     this.subtype,
     this.taboo,
+    this.deckOptions,
   }) : slots = slots ?? const [];
 
   factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
@@ -58,6 +60,7 @@ class SimplifiedCard {
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
         taboo: Taboo.fromSimplifiedMap(map),
+        deckOptions: map['deck_options'],
       );
     } else {
       return SimplifiedCard(
@@ -72,6 +75,7 @@ class SimplifiedCard {
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
         taboo: Taboo.fromSimplifiedMap(map),
+        deckOptions: map['deck_options'],
       );
     }
   }

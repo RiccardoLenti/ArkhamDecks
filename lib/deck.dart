@@ -81,6 +81,12 @@ class Deck extends ChangeNotifier {
   List<SimplifiedCard> get deckCards =>
       _main.values.map((card) => card.card).toList(growable: false);
 
+  List<String> get extraDeckOptions =>
+      _main.values
+          .map((deckCard) => deckCard.card.deckOptions)
+          .nonNulls
+          .toList();
+
   List<SimplifiedCard> get sideCards =>
       _side.values.map((card) => card.card).toList(growable: false);
 

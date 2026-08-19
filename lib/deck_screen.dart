@@ -29,7 +29,17 @@ class _DeckScreenState extends State<DeckScreen> {
   void initState() {
     super.initState();
     _searchFilters = SearchFilters(deckOptions: widget.deck.deckOptions);
-    _deckFuture = widget.deck.fetchCards();
+    _deckFuture = widget.deck.fetchCards().then(_updateExtraOptions);
+    widget.deck.addListener(_updateExtraOptions);
+  }
+
+  void _updateExtraOptions([_]) => _searchFilters.investigatorFilter
+      .setExtraOptions(widget.deck.extraDeckOptions);
+
+  @override
+  void dispose() {
+    widget.deck.removeListener(_updateExtraOptions);
+    super.dispose();
   }
 
   @override

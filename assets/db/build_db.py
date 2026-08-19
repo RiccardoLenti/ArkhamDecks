@@ -1,4 +1,16 @@
-import sqlite3, json, os, glob
+import sqlite3, json, os, glob, re
+
+def card_uses(text):
+    match = re.search(r"Uses \(([^)]*)\)", text or "")
+    if match is None:
+        return None
+
+    words = [w for w in match.group(1).split() if re.fullmatch(r"[a-z]+", w)]
+    if not words:
+        return None
+
+    return "charges" if words[0] == "charge" else words[0]
+
 
 DB_PATH = "app.db"
 SCHEMA_PATH = "schema.sql"
@@ -40,12 +52,12 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
             cur.execute("""
                 INSERT INTO cards (
                     code, name, subname, type_code, subtype_code, faction_code, faction2_code,
-                    faction3_code, traits, text, flavor, cost, health,
+                    faction3_code, traits, tags, uses, text, flavor, cost, health,
                     sanity, xp, slot, bonded_to, hidden, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
                     back_text, back_flavor, restrictions, is_unique, customization_text, deck_limit
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                          ?, ?, ?, ?, ?, ?, ?)
+                          ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -56,6 +68,8 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 card.get("faction2_code"),
                 card.get("faction3_code"),
                 card.get("traits"),
+                card.get("tags"),
+                card_uses(card.get("text")),
                 card.get("text"),
                 card.get("flavor"),
                 card.get("cost"),
