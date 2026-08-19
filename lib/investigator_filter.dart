@@ -1,15 +1,17 @@
 import 'dart:convert';
 
+import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/foundation.dart';
 
 //right now we handle factions (list), levels (json), traits (list), types (list)
 class InvestigatorFilter extends BaseFilter {
   final String? deckOptions;
+  final List<String> requiredCodes;
   final Map<String, OptionConstraint> _constraints;
   List<String> _extraOptions = const [];
 
-  InvestigatorFilter(this.deckOptions)
+  InvestigatorFilter(this.deckOptions, {this.requiredCodes = const []})
     : _constraints = {
         'faction': FactionConstraint(),
         'level': LevelConstraint(),
@@ -40,6 +42,15 @@ class InvestigatorFilter extends BaseFilter {
   SqlClause get whereClause {
     final List<String> allowed = [], forbidden = [];
     final List<String> allowedArgs = [], forbiddenArgs = [];
+
+    if (requiredCodes.isNotEmpty) {
+      final placeholders = List.filled(requiredCodes.length, '?').join(', ');
+      allowed.add('(code IN ($placeholders))');
+      allowedArgs.addAll(requiredCodes);
+    }
+
+    allowed.add('(subtype_code = ?)');
+    allowedArgs.add(Subtype.basicWeakness.name);
 
     for (final option in _options) {
       final (condition, args) = _buildOption(option);

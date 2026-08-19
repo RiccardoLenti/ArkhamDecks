@@ -7,6 +7,7 @@ class Deck extends ChangeNotifier {
   String _name;
   final ArkhamCard investigator;
   final String deckOptions;
+  final String deckRequirements;
   final int size;
   final int signaturesCount;
   final Map<String, DeckCard> _main = {};
@@ -17,11 +18,22 @@ class Deck extends ChangeNotifier {
     required String name,
     required this.investigator,
     required this.deckOptions,
+    required this.deckRequirements,
     required this.size,
     required this.signaturesCount,
   }) : _name = name;
 
   String get name => _name;
+
+  static Iterable<List<String>> requiredCards(String deckRequirements) =>
+      deckRequirements
+          .split(',')
+          .map((part) => part.trim())
+          .where((part) => part.startsWith('card:'))
+          .map((part) => part.split(':').skip(1).toList());
+
+  late final List<String> requiredCodes =
+      requiredCards(deckRequirements).expand((codes) => codes).toList();
 
   static Future<void> initInDb(String name, SimplifiedCard investigator) async {
     final db = await DatabaseHelper.instance.db;
@@ -35,14 +47,14 @@ class Deck extends ChangeNotifier {
             as String;
     final parts = deckRequirements.split(',').map((s) => s.trim());
     int size = 0;
-    List<String> cards = ['01000'];
+    final cards = [
+      '01000',
+      ...requiredCards(deckRequirements).map((codes) => codes.first),
+    ];
 
     for (final part in parts) {
       if (part.startsWith('size:')) {
         size = int.parse(part.substring(5));
-      } else if (part.startsWith('card:')) {
-        final codes = part.split(':');
-        cards.add(codes[1]);
       }
     }
 
@@ -95,6 +107,7 @@ class Deck extends ChangeNotifier {
       id: map['id'],
       name: map['deck_name'],
       deckOptions: map['deck_options'],
+      deckRequirements: map['deck_requirements'],
       size: map['size'],
       signaturesCount: map['signatures_count'],
       investigator: ArkhamCard.fromMap(map),
@@ -143,10 +156,27 @@ class Deck extends ChangeNotifier {
   int get xpCount =>
       _main.values.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
 
-  int get nonExtraCardsCount => cardsCount - signaturesCount;
+  bool _isExtra(SimplifiedCard card) =>
+      card.subtype != null || requiredCodes.contains(card.code);
+
+  // TODO: signaturesCount is dead now, drop the column
+  int get nonExtraCardsCount => _main.values
+      .where((deckCard) => !_isExtra(deckCard.card))
+      .fold(0, (acc, el) => acc + el.count);
+
+  bool get _hasRequiredCards =>
+      requiredCards(
+        deckRequirements,
+      ).every((codes) => codes.any(_main.containsKey)) &&
+      (!deckRequirements.contains('random:subtype:basicweakness') ||
+          _main.values.any(
+            (deckCard) => deckCard.card.subtype == Subtype.basicWeakness,
+          ));
 
   DeckError? validate() {
-    if (nonExtraCardsCount > size) {
+    if (!_hasRequiredCards) {
+      return DeckError.missingRequired;
+    } else if (nonExtraCardsCount > size) {
       return DeckError.tooManyCards;
     } else if (nonExtraCardsCount < size) {
       return DeckError.notEnoughCards;
@@ -216,6 +246,7 @@ class DeckCard {
 enum DeckError {
   notEnoughCards("Deck contains too few cards"),
   tooManyCards("Deck contains too many cards"),
+  missingRequired("Deck is missing a required card"),
   generic("");
 
   const DeckError(this.text);

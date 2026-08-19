@@ -28,7 +28,10 @@ class _DeckScreenState extends State<DeckScreen> {
   @override
   void initState() {
     super.initState();
-    _searchFilters = SearchFilters(deckOptions: widget.deck.deckOptions);
+    _searchFilters = SearchFilters(
+      deckOptions: widget.deck.deckOptions,
+      requiredCodes: widget.deck.requiredCodes,
+    );
     _deckFuture = widget.deck.fetchCards().then(_updateExtraOptions);
     widget.deck.addListener(_updateExtraOptions);
   }
