@@ -68,8 +68,9 @@ class SearchFilters extends ChangeNotifier {
     List<String> whereArgs = [];
 
     if (_searchText.isNotEmpty) {
-      whereConditions.add('(LOWER(name) LIKE ?)');
-      whereArgs.add('%${_searchText.toLowerCase()}%');
+      final pattern = '%${_searchText.toLowerCase()}%';
+      whereConditions.add('(LOWER(name) LIKE ? OR LOWER(subname) LIKE ?)');
+      whereArgs.addAll([pattern, pattern]);
     }
 
     for (final filter in filters) {
