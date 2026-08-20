@@ -139,11 +139,12 @@ if os.path.exists(taboos_path):
             for card in taboo_list.get("cards"):
                 try:
                     cur.execute("""
-                            INSERT INTO taboo_cards(taboo_list, code, xp, text, 
-                                                    replacement_text)
-                            VALUES (?, ?, ?, ?, ?)""",
-                            (taboo_code, card.get("code"), card.get("xp"), 
-                             card.get("text"), card.get("replacement_text")))
+                            INSERT INTO taboo_cards(taboo_list, code, xp, text,
+                                                    replacement_text, deck_limit)
+                            VALUES (?, ?, ?, ?, ?, ?)""",
+                            (taboo_code, card.get("code"), card.get("xp"),
+                             card.get("text"), card.get("replacement_text"),
+                             card.get("deck_limit")))
                 except:
                     print(f"{taboo_code=} | {card.get('code')=}")
 

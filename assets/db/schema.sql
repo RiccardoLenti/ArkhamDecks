@@ -93,6 +93,7 @@ CREATE TABLE taboo_cards (
     xp INTEGER,
     text TEXT,
     replacement_text TEXT,
+    deck_limit INTEGER,
     FOREIGN KEY(taboo_list) REFERENCES taboos(code),
     FOREIGN KEY(code) REFERENCES cards(code),
     PRIMARY KEY(taboo_list, code)
@@ -106,6 +107,7 @@ SELECT
     printing.position,
     taboo_cards.code AS "taboo.code",
     taboo_cards.xp AS "taboo.xp",
+    taboo_cards.deck_limit AS "taboo.deck_limit",
     taboo_cards.text AS "taboo.text",
     taboo_cards.replacement_text AS "taboo.replacement_text"
 FROM cards 
@@ -136,7 +138,8 @@ SELECT
     printing.position,
     printing.quantity,
     taboo_cards.code AS "taboo.code",
-    taboo_cards.xp AS "taboo.xp"
+    taboo_cards.xp AS "taboo.xp",
+    taboo_cards.deck_limit AS "taboo.deck_limit"
 FROM cards
 JOIN printings AS printing ON cards.code = printing.canonical_code
 LEFT JOIN taboo_cards ON cards.code = taboo_cards.code

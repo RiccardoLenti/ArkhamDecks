@@ -392,7 +392,7 @@ class AddCardButton extends StatelessWidget {
       builder: (context, deck, _) {
         final deckCard = deck.lookup(card, side: side);
         final canRemove = deckCard.count > 0;
-        final canAdd = deckCard.count < deckCard.card.deckLimit;
+        final canAdd = deck.canAdd(card, side: side);
         return Row(
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,

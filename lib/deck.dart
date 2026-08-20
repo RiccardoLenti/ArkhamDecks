@@ -117,7 +117,14 @@ class Deck extends ChangeNotifier {
   DeckCard lookup(SimplifiedCard card, {required bool side}) =>
       (side ? _side[card.code] : _main[card.code]) ?? DeckCard(card, 0, side);
 
+  bool canAdd(SimplifiedCard card, {required bool side}) =>
+      lookup(card, side: side).count < card.deckLimit;
+
   void addCard(DeckCard cardToAdd) {
+    if (!canAdd(cardToAdd.card, side: cardToAdd.side)) {
+      return;
+    }
+
     final collection = cardToAdd.side ? _side : _main;
     final deckCard = collection[cardToAdd.card.code];
     if (deckCard == null) {
@@ -126,7 +133,7 @@ class Deck extends ChangeNotifier {
         1,
         cardToAdd.side,
       );
-    } else if (deckCard.count < deckCard.card.deckLimit) {
+    } else {
       deckCard.count++;
     }
 
@@ -173,9 +180,16 @@ class Deck extends ChangeNotifier {
             (deckCard) => deckCard.card.subtype == Subtype.basicWeakness,
           ));
 
+  bool get _hasTooManyCopies => [
+    ..._main.values,
+    ..._side.values,
+  ].any((deckCard) => deckCard.count > deckCard.card.deckLimit);
+
   DeckError? validate() {
     if (!_hasRequiredCards) {
       return DeckError.missingRequired;
+    } else if (_hasTooManyCopies) {
+      return DeckError.tooManyCopies;
     } else if (nonExtraCardsCount > size) {
       return DeckError.tooManyCards;
     } else if (nonExtraCardsCount < size) {
@@ -188,7 +202,13 @@ class Deck extends ChangeNotifier {
   Future<void> fetchCards() async {
     final db = await DatabaseHelper.instance.db;
     final rows = await db.rawQuery(
-      'SELECT * FROM cards JOIN deck_cards on card_code = code WHERE deck_cards.deck_id = ?',
+      'SELECT cards.*, deck_cards.count, deck_cards.side_deck, '
+      'taboo_cards.code AS "taboo.code", taboo_cards.xp AS "taboo.xp", '
+      'taboo_cards.deck_limit AS "taboo.deck_limit" '
+      'FROM cards JOIN deck_cards ON card_code = cards.code '
+      'LEFT JOIN taboo_cards ON taboo_cards.code = cards.code '
+      'AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos) '
+      'WHERE deck_cards.deck_id = ?',
       [id],
     );
 
@@ -247,6 +267,7 @@ enum DeckError {
   notEnoughCards("Deck contains too few cards"),
   tooManyCards("Deck contains too many cards"),
   missingRequired("Deck is missing a required card"),
+  tooManyCopies("Deck contains too many copies of a card"),
   generic("");
 
   const DeckError(this.text);

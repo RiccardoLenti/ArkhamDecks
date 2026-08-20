@@ -58,7 +58,7 @@ class SimplifiedCard {
         subtype: Subtype.fromString(map['subtype_code']),
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
-        deckLimit: map['deck_limit'] ?? 1,
+        deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
       );
@@ -73,7 +73,7 @@ class SimplifiedCard {
         subtype: Subtype.fromString(map['subtype_code']),
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
-        deckLimit: map['deck_limit'] ?? 1,
+        deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
       );
@@ -239,15 +239,24 @@ enum Subtype {
 
 class Taboo {
   final int? xp;
+  final int? deckLimit;
   final String? text;
   final String? replacementText;
 
-  const Taboo({required this.xp, this.text, this.replacementText});
+  const Taboo({
+    required this.xp,
+    this.deckLimit,
+    this.text,
+    this.replacementText,
+  });
 
   static Taboo? fromSimplifiedMap(Map<String, dynamic> map) {
     if (map['taboo.code'] == null) return null;
 
-    return Taboo(xp: map['taboo.xp'] as int?);
+    return Taboo(
+      xp: map['taboo.xp'] as int?,
+      deckLimit: map['taboo.deck_limit'] as int?,
+    );
   }
 
   static Taboo? fromFullMap(Map<String, dynamic> map) {
@@ -256,6 +265,7 @@ class Taboo {
     return Taboo(
       text: map['taboo.text'],
       xp: map['taboo.xp'] as int?,
+      deckLimit: map['taboo.deck_limit'] as int?,
       replacementText: map['taboo.replacement_text'],
     );
   }
