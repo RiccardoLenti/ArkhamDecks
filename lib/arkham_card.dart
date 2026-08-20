@@ -20,6 +20,9 @@ class SimplifiedCard {
   final int deckLimit;
   final Taboo? taboo;
   final String? deckOptions;
+  final List<String> traits;
+  final String? tags;
+  final String? uses;
 
   SimplifiedCard({
     required this.code,
@@ -35,7 +38,11 @@ class SimplifiedCard {
     this.subtype,
     this.taboo,
     this.deckOptions,
-  }) : slots = slots ?? const [];
+    List<String>? traits,
+    this.tags,
+    this.uses,
+  }) : slots = slots ?? const [],
+       traits = traits ?? const [];
 
   factory SimplifiedCard.fromMap(Map<String, dynamic> map) {
     if (map['faction2_code'] != null) {
@@ -61,6 +68,9 @@ class SimplifiedCard {
         deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
+        traits: (map['traits'] as String?)?.split(' '),
+        tags: map['tags'],
+        uses: map['uses'],
       );
     } else {
       return SimplifiedCard(
@@ -76,6 +86,9 @@ class SimplifiedCard {
         deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
+        traits: (map['traits'] as String?)?.split(' '),
+        tags: map['tags'],
+        uses: map['uses'],
       );
     }
   }
@@ -86,7 +99,6 @@ class ArkhamCard extends SimplifiedCard {
   final String? flavor;
   final String? backText;
   final String? backFlavor;
-  final List<String>? traits;
   final int? health, sanity;
   final bool isUnique;
   final List<String> customizationText;
@@ -110,7 +122,7 @@ class ArkhamCard extends SimplifiedCard {
 
     this.text,
     this.flavor,
-    List<String>? traits,
+    super.traits,
     this.health,
     this.sanity,
     this.isUnique = false,
@@ -121,8 +133,7 @@ class ArkhamCard extends SimplifiedCard {
     this.backText,
     this.backFlavor,
     this.taboo,
-  }) : traits = traits ?? const [],
-       customizationText = customizationText ?? const [],
+  }) : customizationText = customizationText ?? const [],
        additionalCards = additionalCards ?? const [];
 
   ///calling this constructor directly DOES NOT handle bonded cards
@@ -158,13 +169,13 @@ class ArkhamCard extends SimplifiedCard {
       slots: simplified.slots,
       level: simplified.level,
       deckLimit: simplified.deckLimit,
+      traits: simplified.traits,
       printings: printings,
 
       text: map['text'] as String?,
       health: map['health'] as int?,
       sanity: map['sanity'] as int?,
       flavor: map['flavor'] as String?,
-      traits: (map['traits'] as String?)?.split(' '),
       backText: map['back_text'] as String?,
       backFlavor: map['back_flavor'] as String?,
       isUnique: isUnique,

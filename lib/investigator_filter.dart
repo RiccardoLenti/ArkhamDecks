@@ -10,6 +10,9 @@ class InvestigatorFilter extends BaseFilter {
   final List<String> requiredCodes;
   final Map<String, OptionConstraint> _constraints;
   List<String> _extraOptions = const [];
+  List<Map<String, dynamic>>? _cachedOptions;
+  List<Map<String, dynamic>>? _cachedCountedOptions;
+  List<DeckLimit?>? _cachedLimits;
 
   InvestigatorFilter(this.deckOptions, {this.requiredCodes = const []})
     : _constraints = {
@@ -35,6 +38,9 @@ class InvestigatorFilter extends BaseFilter {
     }
 
     _extraOptions = options;
+    _cachedOptions = null;
+    _cachedCountedOptions = null;
+    _cachedLimits = null;
     notifyListeners();
   }
 
@@ -80,10 +86,59 @@ class InvestigatorFilter extends BaseFilter {
   }
 
   List<Map<String, dynamic>> get _options =>
-      [
-        ...jsonDecode(deckOptions!),
-        for (final extra in _extraOptions) ...jsonDecode(extra),
-      ].cast<Map<String, dynamic>>();
+      _cachedOptions ??=
+          [
+            ...jsonDecode(deckOptions!),
+            for (final extra in _extraOptions) ...jsonDecode(extra),
+          ].cast<Map<String, dynamic>>();
+
+  List<Map<String, dynamic>> get _countedOptions {
+    final allowed = _options.where((option) => option['not'] != true);
+
+    return _cachedCountedOptions ??= [
+      ...allowed.where((option) => option['limit'] == null),
+      ...allowed.where((option) => option['limit'] != null),
+    ];
+  }
+
+  List<DeckLimit?> get limits =>
+      _cachedLimits ??= _countedOptions.map(DeckLimit.fromOption).toList();
+
+  /// index into [limits] of the slot this card takes, null if it takes none
+  int? chargedLimit(SimplifiedCard card, List<int> counts) {
+    final limits = this.limits;
+    int? full;
+
+    for (var i = 0; i < _countedOptions.length; i++) {
+      if (!_satisfiedBy(_countedOptions[i], card)) {
+        continue;
+      }
+
+      final limit = limits[i];
+
+      if (limit == null) {
+        return null;
+      }
+      if (counts[i] < limit.limit) {
+        return i;
+      }
+
+      full = i;
+    }
+
+    return full;
+  }
+
+  bool _satisfiedBy(Map<String, dynamic> option, SimplifiedCard card) {
+    final known = option.entries.where(
+      (entry) => _constraints.containsKey(entry.key),
+    );
+
+    return known.isNotEmpty &&
+        known.every(
+          (entry) => _constraints[entry.key]!.satisfiedBy(entry.value, card),
+        );
+  }
 
   (String?, List<String>) _buildOption(Map<String, dynamic> option) {
     final List<String> conditions = [];
@@ -111,8 +166,35 @@ class InvestigatorFilter extends BaseFilter {
 }
 
 @immutable
+class DeckLimit {
+  final int limit;
+  final String error;
+
+  const DeckLimit({required this.limit, required this.error});
+
+  static DeckLimit? fromOption(Map<String, dynamic> option) =>
+      option['limit'] == null
+          ? null
+          : DeckLimit(
+            limit: option['limit'],
+            error:
+                option['error'] ??
+                "Doesn't comply with the Investigator requirements",
+          );
+}
+
+@immutable
 abstract class OptionConstraint {
   (String, List<String>) buildQuery(dynamic value);
+  bool satisfiedBy(dynamic value, SimplifiedCard card);
+}
+
+bool _contains(String? haystack, dynamic value) {
+  final needles = (value as List).cast<String>();
+
+  return needles.any(
+    (needle) => haystack?.toLowerCase().contains(needle.toLowerCase()) ?? false,
+  );
 }
 
 class FactionConstraint implements OptionConstraint {
@@ -127,6 +209,15 @@ class FactionConstraint implements OptionConstraint {
       [...factions, ...factions, ...factions],
     );
   }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) {
+    final factions = (value as List).cast<String>();
+    final cardFactions =
+        card.multiFactions.isEmpty ? [card.faction] : card.multiFactions;
+
+    return cardFactions.any((faction) => factions.contains(faction.name));
+  }
 }
 
 class LevelConstraint implements OptionConstraint {
@@ -138,6 +229,15 @@ class LevelConstraint implements OptionConstraint {
     final maxXp = level['max'] as int;
 
     return ("(xp BETWEEN ? AND ?)", ['$minXp', '$maxXp']);
+  }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) {
+    final level = value as Map<String, dynamic>;
+
+    return card.level != null &&
+        card.level! >= level['min'] &&
+        card.level! <= level['max'];
   }
 }
 
@@ -152,6 +252,10 @@ class TraitConstraint implements OptionConstraint {
 
     return ('($condition)', args);
   }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) =>
+      _contains(card.traits.join(' '), value);
 }
 
 class TypeConstraint implements OptionConstraint {
@@ -163,6 +267,10 @@ class TypeConstraint implements OptionConstraint {
 
     return ('(type_code IN ($placeholders))', types);
   }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) =>
+      (value as List).cast<String>().contains(card.type);
 }
 
 class TagConstraint implements OptionConstraint {
@@ -175,6 +283,10 @@ class TagConstraint implements OptionConstraint {
 
     return ('($condition)', args);
   }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) =>
+      _contains(card.tags, value);
 }
 
 class UsesConstraint implements OptionConstraint {
@@ -186,6 +298,10 @@ class UsesConstraint implements OptionConstraint {
 
     return ('(uses IN ($placeholders))', uses);
   }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) =>
+      (value as List).cast<String>().contains(card.uses);
 }
 
 class SlotConstraint implements OptionConstraint {
@@ -198,4 +314,8 @@ class SlotConstraint implements OptionConstraint {
 
     return ('($condition)', args);
   }
+
+  @override
+  bool satisfiedBy(dynamic value, SimplifiedCard card) =>
+      _contains(card.slots?.join(' '), value);
 }

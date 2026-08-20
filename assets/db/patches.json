@@ -1,0 +1,13 @@
+[
+  {
+    "code": "06167",
+    "deck_options": [
+      {
+        "name": "Versatile",
+        "level": { "min": 0, "max": 0 },
+        "limit": 1,
+        "error": "Too many off-class cards for Versatile"
+      }
+    ]
+  }
+]

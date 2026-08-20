@@ -85,7 +85,7 @@ class CardView extends StatelessWidget {
                                     spacing: 14.0,
                                     children: [
                                       TypeAndSlots(card: card),
-                                      if (card.traits != null)
+                                      if (card.traits.isNotEmpty)
                                         Traits(card: card),
                                       if (card.commitSkills.isNotEmpty)
                                         CommitIcons(card: card),
@@ -302,7 +302,7 @@ class Traits extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      card.traits!.join('  '),
+      card.traits.join('  '),
       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
         fontStyle: FontStyle.italic,
         fontVariations: [FontVariation('wght', 800)],
@@ -811,7 +811,7 @@ class TypeAndTraits extends StatelessWidget {
         ),
 
         Text(
-          card.traits!.join('  '),
+          card.traits.join('  '),
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
             fontStyle: FontStyle.italic,
             fontVariations: [FontVariation('wght', 800)],

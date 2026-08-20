@@ -1,5 +1,6 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/investigator_filter.dart';
 import 'package:flutter/material.dart';
 
 class Deck extends ChangeNotifier {
@@ -95,8 +96,11 @@ class Deck extends ChangeNotifier {
 
   List<String> get extraDeckOptions =>
       _main.values
-          .map((deckCard) => deckCard.card.deckOptions)
-          .nonNulls
+          .where((deckCard) => deckCard.card.deckOptions != null)
+          .expand(
+            (deckCard) =>
+                List.filled(deckCard.count, deckCard.card.deckOptions!),
+          )
           .toList();
 
   List<SimplifiedCard> get sideCards =>
@@ -117,13 +121,52 @@ class Deck extends ChangeNotifier {
   DeckCard lookup(SimplifiedCard card, {required bool side}) =>
       (side ? _side[card.code] : _main[card.code]) ?? DeckCard(card, 0, side);
 
-  bool canAdd(SimplifiedCard card, {required bool side}) =>
-      lookup(card, side: side).count < card.deckLimit;
+  late final InvestigatorFilter _limitFilter = InvestigatorFilter(deckOptions);
+  List<int>? _cachedLimitCounts;
+
+  List<int> get _limitCounts {
+    if (_cachedLimitCounts != null) {
+      return _cachedLimitCounts!;
+    }
+
+    _limitFilter.setExtraOptions(extraDeckOptions);
+    final counts = List.filled(_limitFilter.limits.length, 0);
+
+    for (final deckCard in _main.values.where(
+      (deckCard) => !_isExtra(deckCard.card),
+    )) {
+      for (var copy = 0; copy < deckCard.count; copy++) {
+        final charged = _limitFilter.chargedLimit(deckCard.card, counts);
+
+        if (charged != null) {
+          counts[charged]++;
+        }
+      }
+    }
+
+    return _cachedLimitCounts = counts;
+  }
+
+  bool canAdd(SimplifiedCard card, {required bool side}) {
+    if (lookup(card, side: side).count >= card.deckLimit) {
+      return false;
+    }
+    if (side || _isExtra(card)) {
+      return true;
+    }
+
+    final charged = _limitFilter.chargedLimit(card, _limitCounts);
+
+    return charged == null ||
+        _limitCounts[charged] < _limitFilter.limits[charged]!.limit;
+  }
 
   void addCard(DeckCard cardToAdd) {
     if (!canAdd(cardToAdd.card, side: cardToAdd.side)) {
       return;
     }
+
+    _cachedLimitCounts = null;
 
     final collection = cardToAdd.side ? _side : _main;
     final deckCard = collection[cardToAdd.card.code];
@@ -147,6 +190,9 @@ class Deck extends ChangeNotifier {
     if (deckCard == null) {
       return;
     }
+
+    _cachedLimitCounts = null;
+
     if (deckCard.count > 1) {
       deckCard.count--;
     } else {
@@ -185,11 +231,25 @@ class Deck extends ChangeNotifier {
     ..._side.values,
   ].any((deckCard) => deckCard.count > deckCard.card.deckLimit);
 
+  DeckError? get _limitError {
+    final limits = _limitFilter.limits;
+
+    for (var i = 0; i < limits.length; i++) {
+      if (limits[i] != null && _limitCounts[i] > limits[i]!.limit) {
+        return DeckError(limits[i]!.error);
+      }
+    }
+
+    return null;
+  }
+
   DeckError? validate() {
     if (!_hasRequiredCards) {
       return DeckError.missingRequired;
     } else if (_hasTooManyCopies) {
       return DeckError.tooManyCopies;
+    } else if (_limitError != null) {
+      return _limitError;
     } else if (nonExtraCardsCount > size) {
       return DeckError.tooManyCards;
     } else if (nonExtraCardsCount < size) {
@@ -212,6 +272,7 @@ class Deck extends ChangeNotifier {
       [id],
     );
 
+    _cachedLimitCounts = null;
     _main.clear();
     _side.clear();
 
@@ -263,14 +324,17 @@ class DeckCard {
   }
 }
 
-enum DeckError {
-  notEnoughCards("Deck contains too few cards"),
-  tooManyCards("Deck contains too many cards"),
-  missingRequired("Deck is missing a required card"),
-  tooManyCopies("Deck contains too many copies of a card"),
-  generic("");
+@immutable
+class DeckError {
+  final String text;
 
   const DeckError(this.text);
 
-  final String text;
+  static const notEnoughCards = DeckError("Deck contains too few cards");
+  static const tooManyCards = DeckError("Deck contains too many cards");
+  static const missingRequired = DeckError("Deck is missing a required card");
+  static const tooManyCopies = DeckError(
+    "Deck contains too many copies of a card",
+  );
+  static const generic = DeckError("");
 }

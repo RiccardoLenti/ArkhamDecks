@@ -15,6 +15,7 @@ def card_uses(text):
 DB_PATH = "app.db"
 SCHEMA_PATH = "schema.sql"
 JSON_DIR = "json"
+PATCHES_PATH = "patches.json"
 
 if os.path.exists(DB_PATH):
     os.remove(DB_PATH)
@@ -147,6 +148,16 @@ if os.path.exists(taboos_path):
                              card.get("deck_limit")))
                 except:
                     print(f"{taboo_code=} | {card.get('code')=}")
+
+if os.path.exists(PATCHES_PATH):
+    with open(PATCHES_PATH, "r", encoding="utf-8") as f:
+        for patch in json.load(f):
+            code = patch.pop("code")
+            for column, value in patch.items():
+                cur.execute(
+                    f"UPDATE cards SET {column} = ? WHERE code = ?",
+                    (json.dumps(value) if isinstance(value, (list, dict)) else value, code),
+                )
 
 conn.commit()
 conn.close()
