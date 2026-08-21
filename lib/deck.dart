@@ -3,6 +3,15 @@ import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/investigator_filter.dart';
 import 'package:flutter/material.dart';
 
+// hardcoded
+const _deckSizeModifiers = {
+  '06167': 5,
+  '07303': 5,
+  '08031': 15,
+  '09077': 10,
+  '08046': -5,
+};
+
 class Deck extends ChangeNotifier {
   final int id;
   String _name;
@@ -200,6 +209,13 @@ class Deck extends ChangeNotifier {
   int get xpCount =>
       _main.values.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
 
+  int get deckSizeModifier => _main.values.fold(
+    0,
+    (acc, el) => acc + el.count * (_deckSizeModifiers[el.card.code] ?? 0),
+  );
+
+  int get effectiveSize => size + deckSizeModifier;
+
   bool _isExtra(SimplifiedCard card) =>
       card.subtype != null || requiredCodes.contains(card.code);
 
@@ -241,9 +257,9 @@ class Deck extends ChangeNotifier {
       return DeckError.tooManyCopies;
     } else if (_limitError != null) {
       return _limitError;
-    } else if (nonExtraCardsCount > size) {
+    } else if (nonExtraCardsCount > effectiveSize) {
       return DeckError.tooManyCards;
-    } else if (nonExtraCardsCount < size) {
+    } else if (nonExtraCardsCount < effectiveSize) {
       return DeckError.notEnoughCards;
     }
 

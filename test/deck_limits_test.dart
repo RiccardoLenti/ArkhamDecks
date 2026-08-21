@@ -1,4 +1,5 @@
 import 'package:arkham_decks/arkham_card.dart';
+import 'package:arkham_decks/deck.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures.dart';
@@ -14,6 +15,11 @@ SimplifiedCard versatileCard() => testCard(
   faction: 'neutral',
   level: 2,
   deckOptions: versatileOptions,
+);
+
+List<SimplifiedCard> inClass(int count, {String prefix = 'g'}) => List.generate(
+  count,
+  (index) => testCard(code: '$prefix$index', faction: 'guardian', level: 1),
 );
 
 void main() {
@@ -54,7 +60,7 @@ void main() {
       addCards(deck, offClass(7));
 
       expect(deck.cardsCount, 9);
-      expect(deck.validate(), isNull);
+      expect(deck.validate()?.text, isNot(versatileLimitError));
 
       deck.removeCard(deck.lookup(versatile, side: false));
 
@@ -148,7 +154,7 @@ void main() {
       addCards(deck, [versatile]);
       addCards(deck, improvised);
 
-      expect(deck.validate(), isNull);
+      expect(deck.validate()?.text, isNot(genericLimitError));
 
       deck.removeCard(deck.lookup(versatile, side: false));
 
@@ -248,6 +254,60 @@ void main() {
 
       expect(deck.lookup(banned, side: false).count, 0);
       expect(deck.lookup(limited, side: false).count, 1);
+    });
+  });
+
+  group('deck size modifiers', () {
+    test('a Versatile raises the target by 5', () {
+      final deck = testDeck(zoeyOptions, size: 30);
+
+      addCards(deck, [versatileCard()]);
+      addCards(deck, inClass(29));
+
+      expect(deck.effectiveSize, 35);
+      expect(deck.validate()?.text, DeckError.notEnoughCards.text);
+
+      addCards(deck, inClass(5, prefix: 'extra'));
+
+      expect(deck.nonExtraCardsCount, 35);
+      expect(deck.validate(), isNull);
+    });
+
+    test('two Versatiles raise it by 10', () {
+      final deck = testDeck(zoeyOptions, size: 30);
+      final versatile = versatileCard();
+
+      addCards(deck, [versatile, versatile]);
+      addCards(deck, inClass(28));
+
+      expect(deck.deckSizeModifier, 10);
+      expect(deck.effectiveSize, 40);
+    });
+
+    test('Underworld Support lowers the target by 5', () {
+      final deck = testDeck(zoeyOptions, size: 30);
+
+      addCards(deck, [
+        testCard(code: '08046', faction: 'neutral', level: 3, deckLimit: 1),
+      ]);
+      addCards(deck, inClass(24));
+
+      expect(deck.effectiveSize, 25);
+      expect(deck.validate(), isNull);
+
+      addCards(deck, inClass(5, prefix: 'extra'));
+
+      expect(deck.validate()?.text, DeckError.tooManyCards.text);
+    });
+
+    test('an ordinary card leaves the target alone', () {
+      final deck = testDeck(zoeyOptions, size: 30);
+
+      addCards(deck, inClass(30));
+
+      expect(deck.deckSizeModifier, 0);
+      expect(deck.effectiveSize, 30);
+      expect(deck.validate(), isNull);
     });
   });
 }
