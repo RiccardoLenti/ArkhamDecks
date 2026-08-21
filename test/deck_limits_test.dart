@@ -9,24 +9,31 @@ List<SimplifiedCard> offClass(int count, {String prefix = 'r'}) =>
       (index) => testCard(code: '$prefix$index', faction: 'rogue'),
     );
 
+SimplifiedCard versatileCard() => testCard(
+  code: '06167',
+  faction: 'neutral',
+  level: 2,
+  deckOptions: versatileOptions,
+);
+
 void main() {
   group('Zoey', () {
-    test('five off-class level 0 cards fit, the sixth does not', () {
+    test('a sixth off-class level 0 card goes in and is reported', () {
       final deck = testDeck(zoeyOptions);
       final cards = offClass(6);
 
       addCards(deck, cards.take(5));
 
-      expect(deck.cardsCount, 5);
-      expect(deck.canAdd(cards[5], side: false), isFalse);
+      expect(deck.validate()?.text, isNot(zoeyLimitError));
+      expect(deck.canAdd(cards[5], side: false), isTrue);
 
       addCards(deck, [cards[5]]);
 
-      expect(deck.cardsCount, 5);
-      expect(deck.validate()?.text, isNot(contains('Guardian')));
+      expect(deck.cardsCount, 6);
+      expect(deck.validate()?.text, zoeyLimitError);
     });
 
-    test('in-class and neutral cards keep adding past the limit', () {
+    test('in-class and neutral cards are never charged', () {
       final deck = testDeck(zoeyOptions);
 
       addCards(deck, offClass(5));
@@ -36,61 +43,54 @@ void main() {
       ]);
 
       expect(deck.cardsCount, 7);
+      expect(deck.validate()?.text, isNot(zoeyLimitError));
     });
 
-    test('an over-limit deck is reported by validate', () {
-      final deck = testDeck(zoeyOptions, size: 7);
-      final versatile = testCard(
-        code: '06167',
-        faction: 'neutral',
-        level: 2,
-        deckOptions: versatileOptions,
-      );
+    test('removing a Versatile leaves the deck over its limit', () {
+      final deck = testDeck(zoeyOptions, size: 9);
+      final versatile = versatileCard();
 
       addCards(deck, [versatile, versatile]);
       addCards(deck, offClass(7));
 
       expect(deck.cardsCount, 9);
+      expect(deck.validate(), isNull);
 
       deck.removeCard(deck.lookup(versatile, side: false));
 
-      expect(deck.validate()?.text, 'Too many off-class cards for Versatile');
+      expect(deck.validate()?.text, versatileLimitError);
     });
   });
 
   group('Zoey + Versatile', () {
     test('one Versatile grants a sixth off-class slot, not a seventh', () {
       final deck = testDeck(zoeyOptions);
-      final versatile = testCard(
-        code: '06167',
-        faction: 'neutral',
-        level: 2,
-        deckOptions: versatileOptions,
-      );
       final cards = offClass(7);
 
-      addCards(deck, [versatile]);
+      addCards(deck, [versatileCard()]);
       addCards(deck, cards.take(6));
 
-      expect(deck.cardsCount, 7);
-      expect(deck.canAdd(cards[6], side: false), isFalse);
+      expect(deck.validate()?.text, isNot(versatileLimitError));
+
+      addCards(deck, [cards[6]]);
+
+      expect(deck.cardsCount, 8);
+      expect(deck.validate()?.text, versatileLimitError);
     });
 
     test('two Versatiles grant two slots', () {
       final deck = testDeck(zoeyOptions);
-      final versatile = testCard(
-        code: '06167',
-        faction: 'neutral',
-        level: 2,
-        deckOptions: versatileOptions,
-      );
+      final versatile = versatileCard();
       final cards = offClass(8);
 
       addCards(deck, [versatile, versatile]);
       addCards(deck, cards.take(7));
 
-      expect(deck.cardsCount, 9);
-      expect(deck.canAdd(cards[7], side: false), isFalse);
+      expect(deck.validate()?.text, isNot(versatileLimitError));
+
+      addCards(deck, [cards[7]]);
+
+      expect(deck.validate()?.text, versatileLimitError);
     });
   });
 
@@ -109,8 +109,12 @@ void main() {
     addCards(deck, [ally, onYourOwn]);
     addCards(deck, cards.take(5));
 
-    expect(deck.cardsCount, 7);
-    expect(deck.canAdd(cards[5], side: false), isFalse);
+    expect(deck.validate()?.text, isNot(zoeyLimitError));
+
+    addCards(deck, [cards[5]]);
+
+    expect(deck.cardsCount, 8);
+    expect(deck.validate()?.text, zoeyLimitError);
   });
 
   group('Wilson', () {
@@ -123,23 +127,19 @@ void main() {
       );
 
       addCards(deck, improvised.take(5));
-
-      expect(deck.canAdd(improvised[5], side: false), isFalse);
-      expect(deck.canAdd(tool, side: false), isTrue);
-
       addCards(deck, [tool]);
 
       expect(deck.cardsCount, 6);
+      expect(deck.validate()?.text, isNot(genericLimitError));
+
+      addCards(deck, [improvised[5]]);
+
+      expect(deck.validate()?.text, genericLimitError);
     });
 
     test('an option without an error uses the generic sentence', () {
       final deck = testDeck(wilsonOptions, size: 7);
-      final versatile = testCard(
-        code: '06167',
-        faction: 'neutral',
-        level: 2,
-        deckOptions: versatileOptions,
-      );
+      final versatile = versatileCard();
       final improvised = List.generate(
         6,
         (index) => testCard(code: 'i$index', traits: 'Improvised.'),
@@ -164,15 +164,14 @@ void main() {
     );
 
     addCards(deck, plain.take(15));
+    addCards(deck, [testCard(code: 'h1', faction: 'seeker', tags: 'hh')]);
 
-    expect(deck.canAdd(plain[15], side: false), isFalse);
-    expect(
-      deck.canAdd(
-        testCard(code: 'h1', faction: 'seeker', tags: 'hh'),
-        side: false,
-      ),
-      isTrue,
-    );
+    expect(deck.cardsCount, 16);
+    expect(deck.validate()?.text, isNot(carolynLimitError));
+
+    addCards(deck, [plain[15]]);
+
+    expect(deck.validate()?.text, carolynLimitError);
   });
 
   group('Daniela', () {
@@ -188,12 +187,14 @@ void main() {
       );
 
       addCards(deck, zeroes.take(5));
-
-      expect(deck.canAdd(zeroes[5], side: false), isFalse);
-
       addCards(deck, upgrades);
 
       expect(deck.cardsCount, 9);
+      expect(deck.validate()?.text, isNot(danielaLimitError));
+
+      addCards(deck, [zeroes[5]]);
+
+      expect(deck.validate()?.text, danielaLimitError);
     });
 
     test('a multiclass card counts for its Survivor slot', () {
@@ -206,7 +207,11 @@ void main() {
 
       addCards(deck, multi.take(5));
 
-      expect(deck.canAdd(multi[5], side: false), isFalse);
+      expect(deck.validate()?.text, isNot(danielaLimitError));
+
+      addCards(deck, [multi[5]]);
+
+      expect(deck.validate()?.text, danielaLimitError);
     });
   });
 
@@ -220,7 +225,29 @@ void main() {
     addCards(deck, [sideCard], side: true);
 
     expect(deck.cardsCount, 6);
-    expect(deck.canAdd(weakness, side: false), isFalse);
-    expect(deck.validate()?.text, isNot(contains('Guardian')));
+    expect(deck.validate()?.text, isNot(zoeyLimitError));
+  });
+
+  group('copy limit', () {
+    test('a third copy is refused', () {
+      final deck = testDeck(zoeyOptions);
+      final card = testCard(code: 'c1');
+
+      addCards(deck, [card, card, card]);
+
+      expect(deck.cardsCount, 2);
+      expect(deck.canAdd(card, side: false), isFalse);
+    });
+
+    test('a taboo deck limit overrides the printed one', () {
+      final deck = testDeck(zoeyOptions);
+      final banned = testCard(code: '02026', tabooDeckLimit: 0);
+      final limited = testCard(code: '02027', tabooDeckLimit: 1);
+
+      addCards(deck, [banned, limited, limited]);
+
+      expect(deck.lookup(banned, side: false).count, 0);
+      expect(deck.lookup(limited, side: false).count, 1);
+    });
   });
 }

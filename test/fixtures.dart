@@ -20,6 +20,16 @@ const onYourOwnOptions = '[{"not": true, "slot": ["Ally"]}]';
 
 const genericLimitError = "Doesn't comply with the Investigator requirements";
 
+const zoeyLimitError =
+    'You cannot have more than 5 cards that are not Guardian or Neutral';
+
+const carolynLimitError =
+    'You cannot have more than 15 level 0-1 Seeker and/or Mystic cards';
+
+const danielaLimitError = 'You cannot have more than 5 level 0 Survivor cards';
+
+const versatileLimitError = 'Too many off-class cards for Versatile';
+
 SimplifiedCard testCard({
   required String code,
   String faction = 'rogue',
@@ -32,6 +42,7 @@ SimplifiedCard testCard({
   String? slot,
   String? deckOptions,
   int deckLimit = 2,
+  int? tabooDeckLimit,
 }) => SimplifiedCard.fromMap({
   'code': code,
   'name': code,
@@ -45,6 +56,8 @@ SimplifiedCard testCard({
   'slot': slot,
   'deck_options': deckOptions,
   'deck_limit': deckLimit,
+  'taboo.code': tabooDeckLimit == null ? null : code,
+  'taboo.deck_limit': tabooDeckLimit,
 });
 
 Deck testDeck(String deckOptions, {int size = 30}) => Deck(

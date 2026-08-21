@@ -129,7 +129,6 @@ class Deck extends ChangeNotifier {
       return _cachedLimitCounts!;
     }
 
-    _limitFilter.setExtraOptions(extraDeckOptions);
     final counts = List.filled(_limitFilter.limits.length, 0);
 
     for (final deckCard in _main.values.where(
@@ -147,26 +146,18 @@ class Deck extends ChangeNotifier {
     return _cachedLimitCounts = counts;
   }
 
-  bool canAdd(SimplifiedCard card, {required bool side}) {
-    if (lookup(card, side: side).count >= card.deckLimit) {
-      return false;
-    }
-    if (side || _isExtra(card)) {
-      return true;
-    }
+  bool canAdd(SimplifiedCard card, {required bool side}) =>
+      lookup(card, side: side).count < card.deckLimit;
 
-    final charged = _limitFilter.chargedLimit(card, _limitCounts);
-
-    return charged == null ||
-        _limitCounts[charged] < _limitFilter.limits[charged]!.limit;
+  void _invalidateLimits() {
+    _cachedLimitCounts = null;
+    _limitFilter.setExtraOptions(extraDeckOptions);
   }
 
   void addCard(DeckCard cardToAdd) {
     if (!canAdd(cardToAdd.card, side: cardToAdd.side)) {
       return;
     }
-
-    _cachedLimitCounts = null;
 
     final collection = cardToAdd.side ? _side : _main;
     final deckCard = collection[cardToAdd.card.code];
@@ -180,6 +171,7 @@ class Deck extends ChangeNotifier {
       deckCard.count++;
     }
 
+    _invalidateLimits();
     notifyListeners();
   }
 
@@ -191,14 +183,13 @@ class Deck extends ChangeNotifier {
       return;
     }
 
-    _cachedLimitCounts = null;
-
     if (deckCard.count > 1) {
       deckCard.count--;
     } else {
       collection.remove(cardToRemove.card.code);
     }
 
+    _invalidateLimits();
     notifyListeners();
   }
 
@@ -272,7 +263,6 @@ class Deck extends ChangeNotifier {
       [id],
     );
 
-    _cachedLimitCounts = null;
     _main.clear();
     _side.clear();
 
@@ -283,6 +273,8 @@ class Deck extends ChangeNotifier {
         _main[deckCard.card.code] = deckCard;
       }
     });
+
+    _invalidateLimits();
   }
 
   Future<void> storeCardsToDb() async {

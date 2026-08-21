@@ -36,6 +36,8 @@ class _DeckScreenState extends State<DeckScreen> {
     widget.deck.addListener(_updateExtraOptions);
   }
 
+  // TODO: re-queries the whole card list whenever a card with deck options is
+  // added or removed, might get too slow
   void _updateExtraOptions([_]) => _searchFilters.investigatorFilter
       .setExtraOptions(widget.deck.extraDeckOptions);
 
