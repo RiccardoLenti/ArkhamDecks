@@ -163,6 +163,46 @@ void main() {
   });
 
   group('Mandy', () {
+    Deck mandyDeck(int size) => testDeck(
+      mandyOptions,
+      size: size,
+      deckRequirements: 'size:30, card:06008, card:06009',
+      selections: {deckSizeKey: '$size'},
+    );
+
+    SimplifiedCard signature(String code, {int deckLimit = 1}) =>
+        testCard(code: code, faction: 'seeker', deckLimit: deckLimit);
+
+    test('too few Occult Evidence outranks the size error', () {
+      final deck = mandyDeck(50);
+
+      addCards(deck, [signature('06008', deckLimit: 3), signature('06009')]);
+
+      expect(deck.validate()?.text, DeckError.missingRequired.text);
+    });
+
+    test('three copies satisfy a 50 card deck', () {
+      final deck = mandyDeck(50);
+      final occultEvidence = signature('06008', deckLimit: 3);
+
+      addCards(deck, [
+        occultEvidence,
+        occultEvidence,
+        occultEvidence,
+        signature('06009'),
+      ]);
+
+      expect(deck.validate()?.text, DeckError.notEnoughCards.text);
+    });
+
+    test('one copy satisfies a 30 card deck', () {
+      final deck = mandyDeck(30);
+
+      addCards(deck, [signature('06008', deckLimit: 3), signature('06009')]);
+
+      expect(deck.validate()?.text, DeckError.notEnoughCards.text);
+    });
+
     test('a chosen deck size sets the target', () {
       final deck = testDeck(
         mandyOptions,

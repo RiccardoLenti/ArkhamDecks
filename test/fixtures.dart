@@ -86,6 +86,7 @@ SimplifiedCard testCard({
 Deck testDeck(
   String deckOptions, {
   int size = 30,
+  String? deckRequirements,
   Map<String, String> selections = const {},
 }) => Deck(
   id: 1,
@@ -99,7 +100,7 @@ Deck testDeck(
     'is_unique': 1,
   }),
   deckOptions: deckOptions,
-  deckRequirements: 'size:$size',
+  deckRequirements: deckRequirements ?? 'size:$size',
   size: size,
   selections: selections,
   signaturesCount: 0,

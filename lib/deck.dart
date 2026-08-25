@@ -287,13 +287,31 @@ class Deck extends ChangeNotifier {
       .fold(0, (acc, el) => acc + el.count);
 
   bool get _hasRequiredCards =>
-      requiredCards(
-        deckRequirements,
-      ).every((codes) => codes.any(_main.containsKey)) &&
+      requiredCards(deckRequirements)
+          .fold<Map<String, int>>(
+            {},
+            (counts, codes) =>
+                counts..update(
+                  codes.join(':'),
+                  (count) => count + 1,
+                  ifAbsent: () => 1,
+                ),
+          )
+          .entries
+          .every(
+            (entry) =>
+                _copiesOf(entry.key) ==
+                (entry.key == _occultEvidence
+                    ? (_size - 20) ~/ 10
+                    : entry.value),
+          ) &&
       (!deckRequirements.contains('random:subtype:basicweakness') ||
           _main.values.any(
             (deckCard) => deckCard.card.subtype == Subtype.basicWeakness,
           ));
+
+  int _copiesOf(String group) =>
+      group.split(':').fold(0, (acc, code) => acc + (_main[code]?.count ?? 0));
 
   bool get _hasTooManyCopies => [
     ..._main.values,
