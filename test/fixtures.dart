@@ -24,6 +24,18 @@ const lolaOptions =
 const ancestralOptions =
     '[{"name": "Ancestral Knowledge", "type": ["skill"], "atleast": {"types": 1, "min": 10}, "virtual": true, "error": "Your deck must include at least 10 skills"}]';
 
+const tonyOptions =
+    '[{"faction": ["rogue", "neutral"], "level": {"min": 0, "max": 5}}, {"name": "Secondary Class", "faction_select": ["guardian", "seeker", "survivor"], "level": {"min": 0, "max": 1}, "type": ["event", "skill"], "limit": 10}]';
+
+const charlieOptions =
+    '[{"faction": ["neutral"], "level": {"min": 0, "max": 5}}, {"trait": ["ally"], "level": {"min": 0, "max": 5}}, {"name": "Class Choice", "id": "faction_1", "faction_select": ["guardian", "seeker", "rogue", "mystic", "survivor"], "level": {"min": 0, "max": 2}}, {"name": "Class Choice", "id": "faction_2", "faction_select": ["guardian", "seeker", "rogue", "mystic", "survivor"], "level": {"min": 0, "max": 2}}]';
+
+const mandyOptions =
+    '[{"name": "Deck Size", "deck_size_select": ["30", "40", "50"], "faction": []}, {"faction": ["seeker", "neutral"], "level": {"min": 0, "max": 5}}, {"name": "Secondary Class", "faction_select": ["mystic", "rogue", "survivor"], "level": {"min": 0, "max": 1}, "type": ["event", "skill"], "limit": 10}]';
+
+const marionOptions =
+    '[{"faction": ["guardian", "neutral"], "level": {"min": 0, "max": 5}}, {"name": "Trait Choice", "option_select": [{"id": "improvised", "name": "Improvised", "trait": ["improvised"], "type": ["event"], "level": {"min": 0, "max": 2}}, {"id": "gambit", "name": "Gambit", "trait": ["gambit"], "type": ["event"], "level": {"min": 0, "max": 2}}, {"id": "fortune", "name": "Fortune", "trait": ["fortune"], "type": ["event"], "level": {"min": 0, "max": 2}}]}, {"faction": ["survivor"], "level": {"min": 0, "max": 0}, "limit": 5}]';
+
 const genericLimitError = "Doesn't comply with the Investigator requirements";
 
 const zoeyLimitError =
@@ -71,7 +83,11 @@ SimplifiedCard testCard({
   'taboo.deck_limit': tabooDeckLimit,
 });
 
-Deck testDeck(String deckOptions, {int size = 30}) => Deck(
+Deck testDeck(
+  String deckOptions, {
+  int size = 30,
+  Map<String, String> selections = const {},
+}) => Deck(
   id: 1,
   name: 'test',
   investigator: ArkhamCard.fromMap({
@@ -85,6 +101,7 @@ Deck testDeck(String deckOptions, {int size = 30}) => Deck(
   deckOptions: deckOptions,
   deckRequirements: 'size:$size',
   size: size,
+  selections: selections,
   signaturesCount: 0,
 );
 

@@ -2,6 +2,7 @@ import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
+import 'package:arkham_decks/deck_choices.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
@@ -112,11 +113,14 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     SimplifiedCard investigator,
     TextEditingController controller,
   ) {
+    final choices = DeckChoice.parse(investigator.deckOptions);
+
     return showDialog(
       context: context,
       useRootNavigator: false,
       builder: (context) {
         String? errorText;
+        final selections = DeckChoice.defaults(choices);
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -125,14 +129,26 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                 'New ${investigator.name} Deck',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              content: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: 'Deck name:',
-                  hintStyle: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium!.copyWith(fontStyle: FontStyle.italic),
-                  errorText: errorText,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        hintText: 'Deck name:',
+                        hintStyle: Theme.of(context).textTheme.bodyMedium!
+                            .copyWith(fontStyle: FontStyle.italic),
+                        errorText: errorText,
+                      ),
+                    ),
+                    DeckChoicePicker(
+                      choices: choices,
+                      selections: selections,
+                      onChanged:
+                          (key, id) => setState(() => selections[key] = id),
+                    ),
+                  ],
                 ),
               ),
 
@@ -157,7 +173,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                           return; // dialog is not closed
                         }
 
-                        await Deck.initInDb(name, investigator);
+                        await Deck.initInDb(name, investigator, selections);
 
                         controller.clear();
                         Navigator.pop(context);

@@ -9,21 +9,26 @@ class InvestigatorFilter extends BaseFilter {
   final String? deckOptions;
   final List<String> requiredCodes;
   final Map<String, OptionConstraint> _constraints;
+  Map<String, String> _selections;
   List<String> _extraOptions = const [];
   List<Map<String, dynamic>>? _cachedOptions;
   List<Map<String, dynamic>>? _cachedCountedOptions;
   List<DeckLimit?>? _cachedLimits;
 
-  InvestigatorFilter(this.deckOptions, {this.requiredCodes = const []})
-    : _constraints = {
-        'faction': FactionConstraint(),
-        'level': LevelConstraint(),
-        'trait': TraitConstraint(),
-        'type': TypeConstraint(),
-        'tag': TagConstraint(),
-        'uses': UsesConstraint(),
-        'slot': SlotConstraint(),
-      };
+  InvestigatorFilter(
+    this.deckOptions, {
+    this.requiredCodes = const [],
+    Map<String, String> selections = const {},
+  }) : _selections = selections,
+       _constraints = {
+         'faction': FactionConstraint(),
+         'level': LevelConstraint(),
+         'trait': TraitConstraint(),
+         'type': TypeConstraint(),
+         'tag': TagConstraint(),
+         'uses': UsesConstraint(),
+         'slot': SlotConstraint(),
+       };
 
   @override
   /// This should never be called
@@ -31,6 +36,18 @@ class InvestigatorFilter extends BaseFilter {
 
   @override
   bool get isActive => deckOptions != null;
+
+  void setSelections(Map<String, String> selections) {
+    if (mapEquals(_selections, selections)) {
+      return;
+    }
+
+    _selections = selections;
+    _cachedOptions = null;
+    _cachedCountedOptions = null;
+    _cachedLimits = null;
+    notifyListeners();
+  }
 
   void setExtraOptions(List<String> options) {
     if (listEquals(_extraOptions, options)) {
@@ -95,7 +112,30 @@ class InvestigatorFilter extends BaseFilter {
           [
             ...jsonDecode(deckOptions!),
             for (final extra in _extraOptions) ...jsonDecode(extra),
-          ].cast<Map<String, dynamic>>();
+          ].cast<Map<String, dynamic>>().map(_resolve).toList();
+
+  Map<String, dynamic> _resolve(Map<String, dynamic> option) {
+    if (option['faction_select'] != null) {
+      final key = option['id'] as String? ?? 'faction_selected';
+      final selected = _selections[key];
+
+      return {
+        ...option,
+        'faction': selected == null ? option['faction_select'] : [selected],
+      };
+    }
+
+    if (option['option_select'] != null) {
+      final key = option['id'] as String? ?? 'option_selected';
+      final subs =
+          (option['option_select'] as List).cast<Map<String, dynamic>>();
+      final chosen = subs.where((sub) => sub['id'] == _selections[key]);
+
+      return {...option, ...(chosen.isEmpty ? subs.first : chosen.first)};
+    }
+
+    return option;
+  }
 
   List<Map<String, dynamic>> get _countedOptions {
     final allowed = _options.where(

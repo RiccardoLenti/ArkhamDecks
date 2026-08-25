@@ -31,10 +31,15 @@ class SearchFilters extends ChangeNotifier {
   //(the query is quite long and it's constant, it can be computed only once instead of at every call)
 
   @override
-  SearchFilters({String? deckOptions, List<String> requiredCodes = const []}) {
+  SearchFilters({
+    String? deckOptions,
+    List<String> requiredCodes = const [],
+    Map<String, String> selections = const {},
+  }) {
     investigatorFilter = InvestigatorFilter(
       deckOptions,
       requiredCodes: requiredCodes,
+      selections: selections,
     );
 
     for (final filter in filters) {

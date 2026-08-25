@@ -264,7 +264,6 @@ void main() {
       addCards(deck, [versatileCard()]);
       addCards(deck, inClass(29));
 
-      expect(deck.effectiveSize, 35);
       expect(deck.validate()?.text, DeckError.notEnoughCards.text);
 
       addCards(deck, inClass(5, prefix: 'extra'));
@@ -280,8 +279,12 @@ void main() {
       addCards(deck, [versatile, versatile]);
       addCards(deck, inClass(28));
 
-      expect(deck.deckSizeModifier, 10);
-      expect(deck.effectiveSize, 40);
+      expect(deck.validate()?.text, DeckError.notEnoughCards.text);
+
+      addCards(deck, inClass(10, prefix: 'extra'));
+
+      expect(deck.nonExtraCardsCount, 40);
+      expect(deck.validate(), isNull);
     });
 
     test('Underworld Support lowers the target by 5', () {
@@ -292,7 +295,7 @@ void main() {
       ]);
       addCards(deck, inClass(24));
 
-      expect(deck.effectiveSize, 25);
+      expect(deck.nonExtraCardsCount, 25);
       expect(deck.validate(), isNull);
 
       addCards(deck, inClass(5, prefix: 'extra'));
@@ -305,8 +308,6 @@ void main() {
 
       addCards(deck, inClass(30));
 
-      expect(deck.deckSizeModifier, 0);
-      expect(deck.effectiveSize, 30);
       expect(deck.validate(), isNull);
     });
   });

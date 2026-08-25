@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
+import 'package:arkham_decks/deck_choices.dart';
 import 'package:arkham_decks/investigator_filter.dart';
 import 'package:flutter/material.dart';
 
@@ -12,13 +15,17 @@ const _deckSizeModifiers = {
   '08046': -5,
 };
 
+// hardcoded
+const _occultEvidence = '06008';
+
 class Deck extends ChangeNotifier {
   final int id;
   String _name;
   final ArkhamCard investigator;
   final String deckOptions;
   final String deckRequirements;
-  final int size;
+  int _size;
+  Map<String, String> _selections;
   final int signaturesCount;
   final Map<String, DeckCard> _main = {};
   final Map<String, DeckCard> _side = {};
@@ -29,11 +36,18 @@ class Deck extends ChangeNotifier {
     required this.investigator,
     required this.deckOptions,
     required this.deckRequirements,
-    required this.size,
+    required int size,
     required this.signaturesCount,
-  }) : _name = name;
+    Map<String, String> selections = const {},
+  }) : _name = name,
+       _size = size,
+       _selections = selections;
 
   String get name => _name;
+  int get size => _size;
+  Map<String, String> get selections => _selections;
+
+  late final List<DeckChoice> choices = DeckChoice.parse(deckOptions);
 
   static Iterable<List<String>> requiredCards(String deckRequirements) =>
       deckRequirements
@@ -45,7 +59,11 @@ class Deck extends ChangeNotifier {
   late final List<String> requiredCodes =
       requiredCards(deckRequirements).expand((codes) => codes).toList();
 
-  static Future<void> initInDb(String name, SimplifiedCard investigator) async {
+  static Future<void> initInDb(
+    String name,
+    SimplifiedCard investigator,
+    Map<String, String> selections,
+  ) async {
     final db = await DatabaseHelper.instance.db;
     final deckRequirements =
         (await db.query(
@@ -69,10 +87,17 @@ class Deck extends ChangeNotifier {
       }
     }
 
+    size = int.tryParse(selections[deckSizeKey] ?? '') ?? size;
+
+    if (cards.containsKey(_occultEvidence)) {
+      cards[_occultEvidence] = (size - 20) ~/ 10;
+    }
+
     final deckId = await db.insert('decks', {
       'name': name,
       'investigator_code': investigator.code,
       'size': size,
+      'selections': jsonEncode(selections),
       'signatures_count': cards.values.fold<int>(0, (acc, el) => acc + el),
     });
 
@@ -101,6 +126,35 @@ class Deck extends ChangeNotifier {
     );
   }
 
+  Future<void> updateSelections(Map<String, String> selections) async {
+    _selections = selections;
+    _size = int.tryParse(selections[deckSizeKey] ?? '') ?? _size;
+
+    final occultEvidence = _main[_occultEvidence];
+    occultEvidence?.count = (_size - 20) ~/ 10;
+
+    _limitFilter.setSelections(selections);
+    _cachedLimitCounts = null;
+    notifyListeners();
+
+    final db = await DatabaseHelper.instance.db;
+    await db.update(
+      'decks',
+      {'selections': jsonEncode(selections), 'size': _size},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (occultEvidence != null) {
+      await db.update(
+        'deck_cards',
+        {'count': occultEvidence.count},
+        where: 'deck_id = ? AND card_code = ?',
+        whereArgs: [id, _occultEvidence],
+      );
+    }
+  }
+
   List<SimplifiedCard> get deckCards =>
       _main.values.map((card) => card.card).toList(growable: false);
 
@@ -123,15 +177,24 @@ class Deck extends ChangeNotifier {
       deckOptions: map['deck_options'],
       deckRequirements: map['deck_requirements'],
       size: map['size'],
+      selections: decodeSelections(map['selections']),
       signaturesCount: map['signatures_count'],
       investigator: ArkhamCard.fromMap(map),
     );
   }
 
+  static Map<String, String> decodeSelections(String? json) =>
+      json == null
+          ? const {}
+          : (jsonDecode(json) as Map).cast<String, String>();
+
   DeckCard lookup(SimplifiedCard card, {required bool side}) =>
       (side ? _side[card.code] : _main[card.code]) ?? DeckCard(card, 0, side);
 
-  late final InvestigatorFilter _limitFilter = InvestigatorFilter(deckOptions);
+  late final InvestigatorFilter _limitFilter = InvestigatorFilter(
+    deckOptions,
+    selections: _selections,
+  );
   List<int>? _cachedLimitCounts;
 
   List<int> get _limitCounts {
@@ -210,12 +273,10 @@ class Deck extends ChangeNotifier {
   int get xpCount =>
       _main.values.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
 
-  int get deckSizeModifier => _main.values.fold(
+  int get _deckSizeModifier => _main.values.fold(
     0,
     (acc, el) => acc + el.count * (_deckSizeModifiers[el.card.code] ?? 0),
   );
-
-  int get effectiveSize => size + deckSizeModifier;
 
   bool _isExtra(SimplifiedCard card) =>
       card.subtype != null || requiredCodes.contains(card.code);
@@ -270,9 +331,9 @@ class Deck extends ChangeNotifier {
       return _limitError;
     } else if (_atLeastError != null) {
       return _atLeastError;
-    } else if (nonExtraCardsCount > effectiveSize) {
+    } else if (nonExtraCardsCount > _size + _deckSizeModifier) {
       return DeckError.tooManyCards;
-    } else if (nonExtraCardsCount < effectiveSize) {
+    } else if (nonExtraCardsCount < _size + _deckSizeModifier) {
       return DeckError.notEnoughCards;
     }
 

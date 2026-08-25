@@ -5,6 +5,8 @@ import 'package:arkham_decks/card_list_widget.dart';
 import 'package:arkham_decks/cards_screen.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
+import 'package:arkham_decks/deck_choices.dart';
+import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:arkham_decks/theme.dart';
@@ -31,19 +33,22 @@ class _DeckScreenState extends State<DeckScreen> {
     _searchFilters = SearchFilters(
       deckOptions: widget.deck.deckOptions,
       requiredCodes: widget.deck.requiredCodes,
+      selections: widget.deck.selections,
     );
-    _deckFuture = widget.deck.fetchCards().then(_updateExtraOptions);
-    widget.deck.addListener(_updateExtraOptions);
+    _deckFuture = widget.deck.fetchCards().then(_syncFilters);
+    widget.deck.addListener(_syncFilters);
   }
 
   // TODO: re-queries the whole card list whenever a card with deck options is
   // added or removed, might get too slow
-  void _updateExtraOptions([_]) => _searchFilters.investigatorFilter
-      .setExtraOptions(widget.deck.extraDeckOptions);
+  void _syncFilters([_]) =>
+      _searchFilters.investigatorFilter
+        ..setSelections(widget.deck.selections)
+        ..setExtraOptions(widget.deck.extraDeckOptions);
 
   @override
   void dispose() {
-    widget.deck.removeListener(_updateExtraOptions);
+    widget.deck.removeListener(_syncFilters);
     super.dispose();
   }
 
@@ -106,6 +111,8 @@ class _DeckScreenState extends State<DeckScreen> {
                     child: Column(
                       children: [
                         _InvestigatorDetail(investigator: deck.investigator),
+
+                        _DeckChoices(deck: deck),
 
                         _DeckInvalidError(error: deck.validate()),
 
@@ -452,6 +459,95 @@ class _InvestigatorDetail extends StatelessWidget {
           CardText(card: investigator, buildBar: false),
         ],
       ),
+    );
+  }
+}
+
+class _DeckChoices extends StatelessWidget {
+  final Deck deck;
+
+  const _DeckChoices({required this.deck});
+
+  @override
+  Widget build(BuildContext context) {
+    if (deck.choices.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
+      child: Wrap(
+        spacing: 8.0,
+        runSpacing: 8.0,
+        children:
+            deck.choices.map((choice) => _buildChip(context, choice)).toList(),
+      ),
+    );
+  }
+
+  Widget _buildChip(BuildContext context, DeckChoice choice) {
+    final selected = deck.selections[choice.key];
+    final value = choice.values.where((value) => value.id == selected);
+    final faction = Faction.fromString(selected);
+
+    return ActionChip(
+      avatar:
+          faction == null
+              ? const Icon(Icons.tune, size: 16.0)
+              : IconManager().getIcon(
+                faction.name,
+                size: 16.0,
+                color: AppColors.factions[faction]!.light,
+              ),
+      label: Text(
+        '${choice.label}: ${value.isEmpty ? '—' : value.first.label}',
+      ),
+      onPressed: () => _showChoiceDialog(context, choice),
+    );
+  }
+
+  void _showChoiceDialog(BuildContext context, DeckChoice choice) {
+    showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (context) {
+        final selections = {...deck.selections};
+
+        return StatefulBuilder(
+          builder:
+              (context, setState) => AlertDialog(
+                title: Text(
+                  choice.label,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                content: DeckChoicePicker(
+                  choices: deck.choices,
+                  only: choice.key,
+                  selections: selections,
+                  onChanged: (key, id) => setState(() => selections[key] = id),
+                ),
+                actions: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        label: const Text('Cancel'),
+                        icon: Icon(Icons.close),
+                      ),
+                      TextButton.icon(
+                        onPressed: () async {
+                          await deck.updateSelections(selections);
+
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        label: const Text('Confirm'),
+                        icon: Icon(Icons.check),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+        );
+      },
     );
   }
 }

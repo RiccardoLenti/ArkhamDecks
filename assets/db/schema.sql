@@ -58,6 +58,7 @@ CREATE TABLE decks (
     investigator_code TEXT,
     size INT NOT NULL, 
     signatures_count INT,
+    selections TEXT,
     FOREIGN KEY(investigator_code) REFERENCES cards(code)
 );
 
