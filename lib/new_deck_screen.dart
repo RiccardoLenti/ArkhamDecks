@@ -16,11 +16,21 @@ class NewDeckScreen extends StatefulWidget {
 
 class _NewDeckScreenState extends State<NewDeckScreen> {
   Map<Cycle, List<SimplifiedCard>>? _investigatorMap;
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  String _searchText = '';
 
   @override
   void initState() {
     super.initState();
     _loadInvestigators();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _nameController.dispose();
+    super.dispose();
   }
 
   //TODO: when the refactoring is finishes change every 'expansion' here into something decent
@@ -61,23 +71,67 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
       body:
           _investigatorMap == null
               ? Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    for (final expansion in Cycle.values)
-                      ..._buildInvestigatorsList(expansion),
-                  ],
-                ),
+              : Column(
+                children: [
+                  Container(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CustomSearchBar(
+                        controller: _searchController,
+                        onChanged:
+                            (text) => setState(
+                              () => _searchText = text.trim().toLowerCase(),
+                            ),
+                        clear: () {
+                          _searchController.clear();
+                          setState(() => _searchText = '');
+                        },
+                      ),
+                    ),
+                  ),
+                  Expanded(child: _buildResults()),
+                ],
               ),
     );
   }
 
-  List<Widget> _buildInvestigatorsList(Cycle expansion) {
+  Widget _buildResults() {
+    final results = [
+      for (final expansion in Cycle.values)
+        ..._buildInvestigatorsList(expansion),
+    ];
+
+    if (results.isEmpty) {
+      return Center(
+        child: Text(
+          'No investigators found',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+      );
+    }
+
+    return SingleChildScrollView(child: Column(children: results));
+  }
+
+  List<SimplifiedCard> _filtered(Cycle expansion) {
     final investigators = _investigatorMap![expansion]!;
-    final textEditingController = TextEditingController();
+    if (_searchText.isEmpty) return investigators;
+
+    return investigators
+        .where(
+          (i) =>
+              i.name.toLowerCase().contains(_searchText) ||
+              (i.subname?.toLowerCase().contains(_searchText) ?? false),
+        )
+        .toList();
+  }
+
+  List<Widget> _buildInvestigatorsList(Cycle expansion) {
+    final investigators = _filtered(expansion);
 
     if (investigators.isEmpty) {
-      return [SizedBox.shrink()];
+      return const [];
     }
 
     return [
@@ -101,7 +155,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
               title: Text(investigator.name),
               subtitle: Text(investigator.subname!),
               contentPadding: EdgeInsets.only(left: 22.0),
-              onTap: () => _newDeckDialog(investigator, textEditingController),
+              onTap: () => _newDeckDialog(investigator),
             ),
           );
         },
@@ -109,11 +163,9 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
     ];
   }
 
-  Future<dynamic> _newDeckDialog(
-    SimplifiedCard investigator,
-    TextEditingController controller,
-  ) {
+  Future<dynamic> _newDeckDialog(SimplifiedCard investigator) {
     final choices = DeckChoice.parse(investigator.deckOptions);
+    _nameController.clear();
 
     return showDialog(
       context: context,
@@ -134,7 +186,7 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
-                      controller: controller,
+                      controller: _nameController,
                       decoration: InputDecoration(
                         hintText: 'Deck name:',
                         hintStyle: Theme.of(context).textTheme.bodyMedium!
@@ -158,14 +210,13 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
                   children: [
                     TextButton(
                       onPressed: () {
-                        controller.clear();
                         Navigator.pop(context);
                       },
                       child: Text('Cancel'),
                     ),
                     TextButton(
                       onPressed: () async {
-                        final name = controller.text.trim();
+                        final name = _nameController.text.trim();
                         if (name.isEmpty) {
                           setState(() {
                             errorText = 'Name cannot be empty';
@@ -175,7 +226,6 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
                         await Deck.initInDb(name, investigator, selections);
 
-                        controller.clear();
                         Navigator.pop(context);
                         Navigator.pop(context);
                       },
