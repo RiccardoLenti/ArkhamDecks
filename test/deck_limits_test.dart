@@ -100,27 +100,46 @@ void main() {
     });
   });
 
-  test('On Your Own does not swallow cards from their normal slot', () {
-    final deck = testDeck(zoeyOptions);
-    final ally = testCard(code: 'a1', faction: 'guardian', slot: 'Ally');
-    final onYourOwn = testCard(
+  group('On Your Own', () {
+    SimplifiedCard onYourOwnCard() => testCard(
       code: '53010',
       faction: 'survivor',
       level: 3,
       deckLimit: 1,
       deckOptions: onYourOwnOptions,
     );
-    final cards = offClass(6);
 
-    addCards(deck, [ally, onYourOwn]);
-    addCards(deck, cards.take(5));
+    test('does not swallow cards from their normal slot', () {
+      final deck = testDeck(danielaOptions);
+      final cards = List.generate(
+        6,
+        (index) => testCard(code: 's$index', faction: 'survivor'),
+      );
 
-    expect(deck.validate()?.text, isNot(zoeyLimitError));
+      addCards(deck, [onYourOwnCard()]);
+      addCards(deck, cards.take(5));
 
-    addCards(deck, [cards[5]]);
+      expect(deck.validate()?.text, isNot(danielaLimitError));
 
-    expect(deck.cardsCount, 8);
-    expect(deck.validate()?.text, zoeyLimitError);
+      addCards(deck, [cards[5]]);
+
+      expect(deck.cardsCount, 7);
+      expect(deck.validate()?.text, danielaLimitError);
+    });
+
+    test('an Ally is reported', () {
+      final deck = testDeck(danielaOptions);
+
+      addCards(deck, [onYourOwnCard()]);
+
+      expect(deck.validate()?.text, isNot(DeckError.notAllowed.text));
+
+      addCards(deck, [
+        testCard(code: 'a1', faction: 'survivor', level: 1, slot: 'Ally'),
+      ]);
+
+      expect(deck.validate()?.text, DeckError.notAllowed.text);
+    });
   });
 
   group('Wilson', () {

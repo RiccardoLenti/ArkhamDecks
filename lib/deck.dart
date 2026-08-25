@@ -75,11 +75,18 @@ class Deck extends ChangeNotifier {
             as String;
     final parts = deckRequirements.split(',').map((s) => s.trim());
     int size = 0;
-    final cards = requiredCards(deckRequirements).fold<Map<String, int>>(
-      {'01000': 1},
-      (counts, codes) =>
-          counts..update(codes.first, (count) => count + 1, ifAbsent: () => 1),
+    final codes =
+        requiredCards(deckRequirements).map((codes) => codes.first).toSet();
+    final limits = await db.query(
+      'cards',
+      columns: ['code', 'deck_limit'],
+      where: 'code IN (${List.filled(codes.length, '?').join(', ')})',
+      whereArgs: codes.toList(),
     );
+    final cards = {
+      '01000': 1,
+      for (final row in limits) row['code'] as String: row['deck_limit'] as int,
+    };
 
     for (final part in parts) {
       if (part.startsWith('size:')) {
@@ -287,31 +294,27 @@ class Deck extends ChangeNotifier {
       .fold(0, (acc, el) => acc + el.count);
 
   bool get _hasRequiredCards =>
-      requiredCards(deckRequirements)
-          .fold<Map<String, int>>(
-            {},
-            (counts, codes) =>
-                counts..update(
-                  codes.join(':'),
-                  (count) => count + 1,
-                  ifAbsent: () => 1,
-                ),
-          )
-          .entries
-          .every(
-            (entry) =>
-                _copiesOf(entry.key) ==
-                (entry.key == _occultEvidence
-                    ? (_size - 20) ~/ 10
-                    : entry.value),
-          ) &&
+      requiredCards(deckRequirements).every(_hasEveryCopyOf) &&
       (!deckRequirements.contains('random:subtype:basicweakness') ||
           _main.values.any(
             (deckCard) => deckCard.card.subtype == Subtype.basicWeakness,
           ));
 
-  int _copiesOf(String group) =>
-      group.split(':').fold(0, (acc, code) => acc + (_main[code]?.count ?? 0));
+  // TODO: recheck deck_limit is the required count once more cards are supported
+  bool _hasEveryCopyOf(List<String> codes) {
+    final held = codes.map((code) => _main[code]).whereType<DeckCard>();
+
+    if (held.isEmpty) {
+      return false;
+    }
+
+    final required =
+        held.first.card.code == _occultEvidence
+            ? (_size - 20) ~/ 10
+            : held.first.card.deckLimit;
+
+    return held.fold(0, (acc, deckCard) => acc + deckCard.count) == required;
+  }
 
   bool get _hasTooManyCopies => [
     ..._main.values,
@@ -330,6 +333,13 @@ class Deck extends ChangeNotifier {
     return null;
   }
 
+  DeckError? get _notAllowedError =>
+      _main.values
+              .where((deckCard) => !_isExtra(deckCard.card))
+              .every((deckCard) => _limitFilter.allows(deckCard.card))
+          ? null
+          : DeckError.notAllowed;
+
   DeckError? get _atLeastError {
     final error = _limitFilter.atLeastError(
       _main.values
@@ -345,6 +355,8 @@ class Deck extends ChangeNotifier {
       return DeckError.missingRequired;
     } else if (_hasTooManyCopies) {
       return DeckError.tooManyCopies;
+    } else if (_notAllowedError != null) {
+      return _notAllowedError;
     } else if (_limitError != null) {
       return _limitError;
     } else if (_atLeastError != null) {
@@ -433,6 +445,9 @@ class DeckError {
   static const notEnoughCards = DeckError("Deck contains too few cards");
   static const tooManyCards = DeckError("Deck contains too many cards");
   static const missingRequired = DeckError("Deck is missing a required card");
+  static const notAllowed = DeckError(
+    "Deck contains a card the investigator cannot take",
+  );
   static const tooManyCopies = DeckError(
     "Deck contains too many copies of a card",
   );

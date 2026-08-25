@@ -162,6 +162,44 @@ void main() {
     });
   });
 
+  group('switching a choice', () {
+    Deck tonyDeck(String faction) => testDeck(
+      tonyOptions,
+      size: 4,
+      selections: {'faction_selected': faction},
+    );
+
+    test('guardian events are legal while guardian is the second class', () {
+      final deck = tonyDeck('guardian');
+
+      addCards(deck, events(4, 'guardian'));
+
+      expect(deck.validate(), isNull);
+    });
+
+    test('the same events are reported once the class is seeker', () {
+      final deck = tonyDeck('seeker');
+
+      addCards(deck, events(4, 'guardian'));
+
+      expect(deck.validate()?.text, DeckError.notAllowed.text);
+    });
+
+    test('setSelections re-resolves the pool', () {
+      final filter = InvestigatorFilter(
+        tonyOptions,
+        selections: const {'faction_selected': 'guardian'},
+      );
+      final card = testCard(code: 'g1', faction: 'guardian', type: 'event');
+
+      expect(filter.allows(card), true);
+
+      filter.setSelections(const {'faction_selected': 'seeker'});
+
+      expect(filter.allows(card), false);
+    });
+  });
+
   group('Mandy', () {
     Deck mandyDeck(int size) => testDeck(
       mandyOptions,

@@ -9,10 +9,11 @@ List<SimplifiedCard> factionCards(int count, String faction) => List.generate(
   (index) => testCard(code: '$faction$index', faction: faction, level: 1),
 );
 
-List<SimplifiedCard> skills(int count) => List.generate(
-  count,
-  (index) => testCard(code: 's$index', faction: 'guardian', type: 'skill'),
-);
+List<SimplifiedCard> skills(int count, {String faction = 'guardian'}) =>
+    List.generate(
+      count,
+      (index) => testCard(code: 's$index', faction: faction, type: 'skill'),
+    );
 
 SimplifiedCard ancestralCard() => testCard(
   code: '07303',
@@ -82,7 +83,7 @@ void main() {
       addCards(deck, factionCards(7, 'guardian'));
       addCards(deck, factionCards(7, 'seeker'));
       addCards(deck, factionCards(6, 'rogue'));
-      addCards(deck, [testCard(code: 'r9', faction: 'rogue', level: 4)]);
+      addCards(deck, [testCard(code: 'n9', faction: 'neutral', level: 4)]);
 
       expect(deck.validate()?.text, lolaAtLeastError);
     });
@@ -98,27 +99,27 @@ void main() {
 
   group('Ancestral Knowledge', () {
     test('fewer than 10 skills is reported', () {
-      final deck = testDeck(zoeyOptions, size: 5);
+      final deck = testDeck(seekerOptions, size: 5);
 
       addCards(deck, [ancestralCard()]);
-      addCards(deck, skills(9));
+      addCards(deck, skills(9, faction: 'seeker'));
 
       expect(deck.validate()?.text, ancestralAtLeastError);
     });
 
     test('10 skills is valid', () {
-      final deck = testDeck(zoeyOptions, size: 6);
+      final deck = testDeck(seekerOptions, size: 6);
 
       addCards(deck, [ancestralCard()]);
-      addCards(deck, skills(10));
+      addCards(deck, skills(10, faction: 'seeker'));
 
       expect(deck.validate(), isNull);
     });
 
     test('removing the card removes the rule', () {
-      final deck = testDeck(zoeyOptions, size: 5);
+      final deck = testDeck(seekerOptions, size: 5);
       final ancestral = ancestralCard();
-      final cards = skills(9);
+      final cards = skills(9, faction: 'seeker');
 
       addCards(deck, [ancestral]);
       addCards(deck, cards);
@@ -133,20 +134,21 @@ void main() {
       expect(deck.validate(), isNull);
     });
 
-    test('an off-class skill still charges a Zoey slot', () {
-      final deck = testDeck(zoeyOptions, size: 7);
+    test('an off-class skill still charges a limit slot', () {
+      final deck = testDeck(
+        mandyOptions,
+        size: 7,
+        selections: const {'faction_selected': 'rogue'},
+      );
 
       addCards(deck, [ancestralCard()]);
-      addCards(
-        deck,
-        List.generate(
-          5,
-          (index) => testCard(code: 'r$index', faction: 'rogue'),
-        ),
-      );
+      addCards(deck, skills(10, faction: 'rogue'));
+
+      expect(deck.validate()?.text, isNot(genericLimitError));
+
       addCards(deck, [testCard(code: 'rs1', faction: 'rogue', type: 'skill')]);
 
-      expect(deck.validate()?.text, zoeyLimitError);
+      expect(deck.validate()?.text, genericLimitError);
     });
   });
 

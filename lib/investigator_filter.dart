@@ -176,6 +176,14 @@ class InvestigatorFilter extends BaseFilter {
     return full;
   }
 
+  bool allows(SimplifiedCard card) =>
+      (card.subtype == Subtype.basicWeakness ||
+          requiredCodes.contains(card.code) ||
+          _countedOptions.any((option) => _satisfiedBy(option, card))) &&
+      !_options.any(
+        (option) => option['not'] == true && _satisfiedBy(option, card),
+      );
+
   String? atLeastError(Iterable<(SimplifiedCard, int)> cards) {
     for (final option in _options) {
       final atLeast = option['atleast'] as Map<String, dynamic>?;
