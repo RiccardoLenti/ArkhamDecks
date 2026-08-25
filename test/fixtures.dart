@@ -18,6 +18,12 @@ const versatileOptions =
 
 const onYourOwnOptions = '[{"not": true, "slot": ["Ally"]}]';
 
+const lolaOptions =
+    '[{"faction": ["survivor", "guardian", "seeker", "rogue", "mystic"], "level": {"min": 0, "max": 3}, "atleast": {"factions": 3, "min": 7}, "error": "You must have at least 7 cards from 3 different factions"}, {"faction": ["neutral"], "level": {"min": 0, "max": 5}}]';
+
+const ancestralOptions =
+    '[{"name": "Ancestral Knowledge", "type": ["skill"], "atleast": {"types": 1, "min": 10}, "virtual": true, "error": "Your deck must include at least 10 skills"}]';
+
 const genericLimitError = "Doesn't comply with the Investigator requirements";
 
 const zoeyLimitError =
@@ -29,6 +35,11 @@ const carolynLimitError =
 const danielaLimitError = 'You cannot have more than 5 level 0 Survivor cards';
 
 const versatileLimitError = 'Too many off-class cards for Versatile';
+
+const lolaAtLeastError =
+    'You must have at least 7 cards from 3 different factions';
+
+const ancestralAtLeastError = 'Your deck must include at least 10 skills';
 
 SimplifiedCard testCard({
   required String code,

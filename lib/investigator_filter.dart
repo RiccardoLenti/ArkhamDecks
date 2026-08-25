@@ -59,6 +59,11 @@ class InvestigatorFilter extends BaseFilter {
     allowedArgs.add(Subtype.basicWeakness.name);
 
     for (final option in _options) {
+      // ancestral knowledge
+      if (option['virtual'] == true) {
+        continue;
+      }
+
       final (condition, args) = _buildOption(option);
 
       if (condition == null) {
@@ -93,7 +98,9 @@ class InvestigatorFilter extends BaseFilter {
           ].cast<Map<String, dynamic>>();
 
   List<Map<String, dynamic>> get _countedOptions {
-    final allowed = _options.where((option) => option['not'] != true);
+    final allowed = _options.where(
+      (option) => option['not'] != true && option['virtual'] != true,
+    );
 
     return _cachedCountedOptions ??= [
       ...allowed.where((option) => option['limit'] == null),
@@ -128,6 +135,51 @@ class InvestigatorFilter extends BaseFilter {
 
     return full;
   }
+
+  String? atLeastError(Iterable<(SimplifiedCard, int)> cards) {
+    for (final option in _options) {
+      final atLeast = option['atleast'] as Map<String, dynamic>?;
+
+      if (atLeast == null) {
+        continue;
+      }
+
+      final key = atLeast.keys.firstWhere((key) => key != 'min');
+      final min = atLeast['min'] as int;
+      final counts = <String, int>{};
+
+      for (final (card, count) in cards) {
+        if (!_satisfiedBy(option, card)) {
+          continue;
+        }
+
+        for (final group in _atLeastGroups(option, key, card)) {
+          counts[group] = (counts[group] ?? 0) + count;
+        }
+      }
+
+      if (counts.values.where((count) => count >= min).length < atLeast[key]) {
+        return option['error'] ??
+            "Doesn't comply with the Investigator requirements";
+      }
+    }
+
+    return null;
+  }
+
+  Iterable<String> _atLeastGroups(
+    Map<String, dynamic> option,
+    String key,
+    SimplifiedCard card,
+  ) => switch (key) {
+    'factions' => (card.multiFactions.isEmpty
+            ? [card.faction]
+            : card.multiFactions)
+        .map((faction) => faction.name)
+        .where((name) => (option['faction'] as List?)?.contains(name) ?? true),
+    'types' => [card.type],
+    _ => const [],
+  };
 
   bool _satisfiedBy(Map<String, dynamic> option, SimplifiedCard card) {
     final known = option.entries.where(

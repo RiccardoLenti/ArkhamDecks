@@ -9,5 +9,17 @@
         "error": "Too many off-class cards for Versatile"
       }
     ]
+  },
+  {
+    "code": "07303",
+    "deck_options": [
+      {
+        "name": "Ancestral Knowledge",
+        "type": ["skill"],
+        "atleast": { "types": 1, "min": 10 },
+        "virtual": true,
+        "error": "Your deck must include at least 10 skills"
+      }
+    ]
   }
 ]

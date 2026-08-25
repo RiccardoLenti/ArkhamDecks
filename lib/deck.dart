@@ -250,6 +250,16 @@ class Deck extends ChangeNotifier {
     return null;
   }
 
+  DeckError? get _atLeastError {
+    final error = _limitFilter.atLeastError(
+      _main.values
+          .where((deckCard) => !_isExtra(deckCard.card))
+          .map((deckCard) => (deckCard.card, deckCard.count)),
+    );
+
+    return error == null ? null : DeckError(error);
+  }
+
   DeckError? validate() {
     if (!_hasRequiredCards) {
       return DeckError.missingRequired;
@@ -261,6 +271,8 @@ class Deck extends ChangeNotifier {
       return DeckError.tooManyCards;
     } else if (nonExtraCardsCount < effectiveSize) {
       return DeckError.notEnoughCards;
+    } else if (_atLeastError != null) {
+      return _atLeastError;
     }
 
     return null;
