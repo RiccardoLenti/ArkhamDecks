@@ -64,6 +64,7 @@ SimplifiedCard testCard({
   String type = 'asset',
   String? subtype,
   String? traits,
+  String? restrictions,
   String? tags,
   String? slot,
   String? deckOptions,
@@ -78,6 +79,7 @@ SimplifiedCard testCard({
   'subtype_code': subtype,
   'xp': level,
   'traits': traits,
+  'restrictions': restrictions,
   'tags': tags,
   'slot': slot,
   'deck_options': deckOptions,
@@ -90,6 +92,7 @@ Deck testDeck(
   String deckOptions, {
   int size = 30,
   String? deckRequirements,
+  String investigatorTraits = '',
   Map<String, String> selections = const {},
 }) => Deck(
   id: 1,
@@ -99,6 +102,7 @@ Deck testDeck(
     'name': 'investigator',
     'faction_code': 'guardian',
     'type_code': 'investigator',
+    'traits': investigatorTraits,
     'deck_limit': 1,
     'is_unique': 1,
   }),

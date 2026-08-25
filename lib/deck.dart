@@ -200,6 +200,7 @@ class Deck extends ChangeNotifier {
 
   late final InvestigatorFilter _limitFilter = InvestigatorFilter(
     deckOptions,
+    investigator: investigator,
     selections: _selections,
   );
   List<int>? _cachedLimitCounts;

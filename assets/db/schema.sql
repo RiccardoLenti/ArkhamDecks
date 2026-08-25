@@ -132,6 +132,7 @@ SELECT
     cards.slot,
     cards.hidden,
     cards.traits,
+    cards.restrictions,
     cards.tags,
     cards.uses,
     cards.deck_options,

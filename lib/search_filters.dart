@@ -33,11 +33,13 @@ class SearchFilters extends ChangeNotifier {
   @override
   SearchFilters({
     String? deckOptions,
+    SimplifiedCard? investigator,
     List<String> requiredCodes = const [],
     Map<String, String> selections = const {},
   }) {
     investigatorFilter = InvestigatorFilter(
       deckOptions,
+      investigator: investigator,
       requiredCodes: requiredCodes,
       selections: selections,
     );

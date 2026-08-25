@@ -21,6 +21,7 @@ class SimplifiedCard {
   final Taboo? taboo;
   final String? deckOptions;
   final List<String> traits;
+  final String? restrictions;
   final String? tags;
   final String? uses;
 
@@ -39,6 +40,7 @@ class SimplifiedCard {
     this.taboo,
     this.deckOptions,
     List<String>? traits,
+    this.restrictions,
     this.tags,
     this.uses,
   }) : slots = slots ?? const [],
@@ -69,6 +71,7 @@ class SimplifiedCard {
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
+        restrictions: map['restrictions'],
         tags: map['tags'],
         uses: map['uses'],
       );
@@ -87,6 +90,7 @@ class SimplifiedCard {
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
+        restrictions: map['restrictions'],
         tags: map['tags'],
         uses: map['uses'],
       );
@@ -123,6 +127,7 @@ class ArkhamCard extends SimplifiedCard {
     this.text,
     this.flavor,
     super.traits,
+    super.restrictions,
     this.health,
     this.sanity,
     this.isUnique = false,
@@ -170,6 +175,7 @@ class ArkhamCard extends SimplifiedCard {
       level: simplified.level,
       deckLimit: simplified.deckLimit,
       traits: simplified.traits,
+      restrictions: simplified.restrictions,
       printings: printings,
 
       text: map['text'] as String?,

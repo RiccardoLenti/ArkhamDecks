@@ -32,6 +32,7 @@ class _DeckScreenState extends State<DeckScreen> {
     super.initState();
     _searchFilters = SearchFilters(
       deckOptions: widget.deck.deckOptions,
+      investigator: widget.deck.investigator,
       requiredCodes: widget.deck.requiredCodes,
       selections: widget.deck.selections,
     );

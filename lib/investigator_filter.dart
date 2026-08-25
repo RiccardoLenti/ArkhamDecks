@@ -4,9 +4,9 @@ import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/search_filters.dart';
 import 'package:flutter/foundation.dart';
 
-//right now we handle factions (list), levels (json), traits (list), types (list)
 class InvestigatorFilter extends BaseFilter {
   final String? deckOptions;
+  final SimplifiedCard? investigator;
   final List<String> requiredCodes;
   final Map<String, OptionConstraint> _constraints;
   Map<String, String> _selections;
@@ -17,6 +17,7 @@ class InvestigatorFilter extends BaseFilter {
 
   InvestigatorFilter(
     this.deckOptions, {
+    this.investigator,
     this.requiredCodes = const [],
     Map<String, String> selections = const {},
   }) : _selections = selections,
@@ -96,15 +97,60 @@ class InvestigatorFilter extends BaseFilter {
       }
     }
 
+    final restrictions = _restrictionsClause;
+
     final conditions = [
       if (allowed.isNotEmpty) allowed.join(' OR '),
       ...forbidden,
+      if (restrictions != null) restrictions.sql,
     ];
 
     return SqlClause(conditions.map((c) => '($c)').join(' AND '), [
       ...allowedArgs,
       ...forbiddenArgs,
+      ...?restrictions?.args,
     ]);
+  }
+
+  late final List<String> _investigatorTraits =
+      investigator?.traits
+          .join(' ')
+          .split('.')
+          .map((trait) => trait.trim().toLowerCase())
+          .where((trait) => trait.isNotEmpty)
+          .toList() ??
+      const [];
+
+  SqlClause? get _restrictionsClause {
+    final investigator = this.investigator;
+
+    if (investigator == null) {
+      return null;
+    }
+
+    final conditions = [
+      'restrictions IS NULL',
+      'restrictions LIKE ?',
+      ...List.filled(_investigatorTraits.length, "restrictions || ',' LIKE ?"),
+    ];
+
+    return SqlClause(conditions.join(' OR '), [
+      '%investigator:${investigator.code}%',
+      ..._investigatorTraits.map((trait) => '%trait:$trait,%'),
+    ]);
+  }
+
+  bool _restrictionAllows(SimplifiedCard card) {
+    final restrictions = card.restrictions;
+
+    if (restrictions == null || investigator == null) {
+      return true;
+    }
+
+    return restrictions.contains('investigator:${investigator!.code}') ||
+        _investigatorTraits.any(
+          (trait) => '$restrictions,'.contains('trait:$trait,'),
+        );
   }
 
   List<Map<String, dynamic>> get _options =>
@@ -177,6 +223,7 @@ class InvestigatorFilter extends BaseFilter {
   }
 
   bool allows(SimplifiedCard card) =>
+      _restrictionAllows(card) &&
       (card.subtype == Subtype.basicWeakness ||
           requiredCodes.contains(card.code) ||
           _countedOptions.any((option) => _satisfiedBy(option, card))) &&
