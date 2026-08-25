@@ -57,10 +57,11 @@ class Deck extends ChangeNotifier {
             as String;
     final parts = deckRequirements.split(',').map((s) => s.trim());
     int size = 0;
-    final cards = [
-      '01000',
-      ...requiredCards(deckRequirements).map((codes) => codes.first),
-    ];
+    final cards = requiredCards(deckRequirements).fold<Map<String, int>>(
+      {'01000': 1},
+      (counts, codes) =>
+          counts..update(codes.first, (count) => count + 1, ifAbsent: () => 1),
+    );
 
     for (final part in parts) {
       if (part.startsWith('size:')) {
@@ -72,15 +73,15 @@ class Deck extends ChangeNotifier {
       'name': name,
       'investigator_code': investigator.code,
       'size': size,
-      'signatures_count': cards.length,
+      'signatures_count': cards.values.fold<int>(0, (acc, el) => acc + el),
     });
 
     await Future.wait(
-      cards.map(
-        (cardCode) => db.insert('deck_cards', {
+      cards.entries.map(
+        (entry) => db.insert('deck_cards', {
           'deck_id': deckId,
-          'card_code': cardCode,
-          'count': 1,
+          'card_code': entry.key,
+          'count': entry.value,
           'side_deck': 0,
         }),
       ),
