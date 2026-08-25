@@ -268,12 +268,12 @@ class Deck extends ChangeNotifier {
       return DeckError.tooManyCopies;
     } else if (_limitError != null) {
       return _limitError;
+    } else if (_atLeastError != null) {
+      return _atLeastError;
     } else if (nonExtraCardsCount > effectiveSize) {
       return DeckError.tooManyCards;
     } else if (nonExtraCardsCount < effectiveSize) {
       return DeckError.notEnoughCards;
-    } else if (_atLeastError != null) {
-      return _atLeastError;
     }
 
     return null;

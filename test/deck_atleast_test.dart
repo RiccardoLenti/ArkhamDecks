@@ -1,5 +1,4 @@
 import 'package:arkham_decks/arkham_card.dart';
-import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/investigator_filter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -88,12 +87,12 @@ void main() {
       expect(deck.validate()?.text, lolaAtLeastError);
     });
 
-    test('an incomplete deck reports its size, not the minimum', () {
+    test('an incomplete deck reports the minimum before its size', () {
       final deck = testDeck(lolaOptions, size: 21);
 
       addCards(deck, factionCards(7, 'guardian'));
 
-      expect(deck.validate()?.text, DeckError.notEnoughCards.text);
+      expect(deck.validate()?.text, lolaAtLeastError);
     });
   });
 
