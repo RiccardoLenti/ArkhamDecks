@@ -398,7 +398,16 @@ class Deck extends ChangeNotifier {
     _invalidateLimits();
   }
 
-  Future<void> storeCardsToDb() async {
+  Future<void>? _pendingWrite;
+  Future<void> get pendingWrite => _pendingWrite ?? Future.value();
+
+  Future<void> storeCardsToDb() {
+    final write = _storeCardsToDb();
+    _pendingWrite = write;
+    return write;
+  }
+
+  Future<void> _storeCardsToDb() async {
     final db = await DatabaseHelper.instance.db;
     await db.delete('deck_cards', where: 'deck_id = ?', whereArgs: [id]);
     final batch = db.batch();
