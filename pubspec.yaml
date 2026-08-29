@@ -30,6 +30,8 @@ flutter:
   assets:
   - assets/icons/
   - assets/db/app.db
+  - assets/images/art/
+  - assets/images/thumb/
 
   fonts: 
     - family: Cost 

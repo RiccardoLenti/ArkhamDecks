@@ -1,6 +1,5 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
-import 'package:arkham_decks/card_pager_screen.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/theme.dart';
@@ -69,46 +68,40 @@ class CardView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 250,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Row(
-                              spacing: 2.0,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    spacing: 14.0,
-                                    children: [
-                                      TypeAndSlots(card: card),
-                                      if (card.traits.isNotEmpty)
-                                        Traits(card: card),
-                                      if (card.commitSkills.isNotEmpty)
-                                        CommitIcons(card: card),
-                                      if (card.slots != null &&
-                                          card.slots!.isNotEmpty)
-                                        Slots(card: card),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            spacing: 10.0,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  spacing: 10.0,
+                                  children: [
+                                    TypeAndSlots(card: card),
+                                    if (card.traits.isNotEmpty)
+                                      Traits(card: card),
+                                    if (card.commitSkills.isNotEmpty)
+                                      CommitIcons(card: card),
 
-                                      if (card.health != null ||
-                                          card.sanity != null)
-                                        HealthSanityIcon(
-                                          valueHealth: card.health,
-                                          valueSanity: card.sanity,
-                                        ),
-                                    ],
-                                  ),
+                                    if (card.health != null ||
+                                        card.sanity != null)
+                                      HealthSanityIcon(
+                                        valueHealth: card.health,
+                                        valueSanity: card.sanity,
+                                      ),
+                                  ],
                                 ),
-                                Image.network(
-                                  'https://arkhamdb.com/bundles/cards/${card.code}.png',
-                                  fit: BoxFit.cover,
-                                  alignment: AlignmentGeometry.topCenter,
-                                ),
-                              ],
-                            ),
+                              ),
+
+                              if (card.slots != null && card.slots!.isNotEmpty)
+                                Slots(card: card),
+
+                              CardArt(card: card),
+                            ],
                           ),
                         ),
 
@@ -238,8 +231,8 @@ class Slots extends StatelessWidget {
       children: [
         ...card.slots!.map((slotName) {
           return Container(
-            width: 40,
-            height: 40,
+            width: 34,
+            height: 34,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -253,19 +246,47 @@ class Slots extends StatelessWidget {
                       Theme.of(
                         context,
                       ).colorScheme.onSurface, // this can be variant
-                  size: 30,
+                  size: 26,
                 ),
 
                 IconManager().getIcon(
                   '${slotName.toLowerCase().replaceAll(' ', '_')}_inverted',
                   color: Theme.of(context).colorScheme.surface,
-                  size: 30,
+                  size: 26,
                 ),
               ],
             ),
           );
         }),
       ],
+    );
+  }
+}
+
+class CardArt extends StatelessWidget {
+  final ArkhamCard card;
+
+  const CardArt({super.key, required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(
+          color: AppColors.factions[card.faction]!.dark,
+          width: 1.5,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.5),
+        child: Image.asset(
+          'assets/images/art/${card.code}.webp',
+          fit: BoxFit.cover,
+          cacheHeight: 300,
+        ),
+      ),
     );
   }
 }
@@ -344,12 +365,17 @@ class HealthSanityIcon extends StatelessWidget {
             children: [
               IconManager().getIcon(
                 'health',
-                size: 40,
+                size: 32,
                 color: AppColors.health,
               ),
-              IconManager().getIcon('$numberHealth-fill', color: Colors.white),
+              IconManager().getIcon(
+                '$numberHealth-fill',
+                size: 19,
+                color: Colors.white,
+              ),
               IconManager().getIcon(
                 '$numberHealth-outline',
+                size: 19,
                 color: AppColors.health,
               ),
             ],
@@ -359,12 +385,17 @@ class HealthSanityIcon extends StatelessWidget {
             children: [
               IconManager().getIcon(
                 'sanity',
-                size: 40,
+                size: 32,
                 color: AppColors.sanity,
               ),
-              IconManager().getIcon('$numberSanity-fill', color: Colors.white),
+              IconManager().getIcon(
+                '$numberSanity-fill',
+                size: 19,
+                color: Colors.white,
+              ),
               IconManager().getIcon(
                 '$numberSanity-outline',
+                size: 19,
                 color: AppColors.sanity,
               ),
             ],
@@ -451,23 +482,18 @@ class BoxBorder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Align(
-          alignment: Alignment.topCenter,
-          child: IntrinsicHeight(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusGeometry.circular(8.0),
-                border: Border(
-                  top: BorderSide(color: color, width: (thickTop ? 50 : 4)),
-                  bottom: BorderSide(color: color, width: 4),
-                  left: BorderSide(color: color, width: 4),
-                  right: BorderSide(color: color, width: 4),
-                ),
-              ),
-              width: MediaQuery.of(context).size.width,
-              child: child,
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadiusGeometry.circular(8.0),
+            border: Border(
+              top: BorderSide(color: color, width: (thickTop ? 50 : 4)),
+              bottom: BorderSide(color: color, width: 4),
+              left: BorderSide(color: color, width: 4),
+              right: BorderSide(color: color, width: 4),
             ),
           ),
+          width: MediaQuery.of(context).size.width,
+          child: child,
         ),
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: 50),
@@ -529,10 +555,11 @@ class CardText extends StatelessWidget {
 
 class TextWithIcons extends StatelessWidget {
   final String text;
+  final Color? iconColor;
   // matches everything like [tag], ignores [[tag]]
   static final pattern = RegExp(r'(?<!\[)\[([^\[\]]+)\](?!\])');
 
-  const TextWithIcons({super.key, required this.text});
+  const TextWithIcons({super.key, required this.text, this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -563,7 +590,7 @@ class TextWithIcons extends StatelessWidget {
               child: IconManager().getIcon(
                 iconName!,
                 size: 18,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: iconColor ?? Theme.of(context).colorScheme.onSurface,
               ),
             );
           },
@@ -579,7 +606,12 @@ class TextWithIcons extends StatelessWidget {
         ),
       ],
       style: {
-        "body": Style(textAlign: TextAlign.left, margin: Margins.zero),
+        "body": Style(
+          textAlign: TextAlign.left,
+          margin: Margins.zero,
+          fontSize: FontSize(15),
+          //lineHeight: LineHeight(1.1),
+        ),
         "icon": Style(display: Display.inlineBlock),
       },
     );
@@ -712,22 +744,30 @@ class InvestigatorDetailScreen extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            spacing: 10.0,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 14.0,
             children: [
-              TypeAndTraits(card: card),
-              Image.network(
-                'https://arkhamdb.com/bundles/cards/${card.code}.png',
-                fit: BoxFit.cover,
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 10.0,
+                  children: [
+                    TypeAndSlots(card: card),
+                    if (card.traits.isNotEmpty) Traits(card: card),
+                    InvestigatorStats(card: card),
+                    HealthSanityIcon(
+                      valueHealth: card.health,
+                      valueSanity: card.sanity,
+                    ),
+                  ],
+                ),
               ),
-              InvestigatorStats(card: card),
-              HealthSanityIcon(
-                valueHealth: card.health,
-                valueSanity: card.sanity,
-              ),
+
+              CardArt(card: card),
             ],
           ),
         ),
@@ -792,36 +832,6 @@ class InvestigatorBack extends StatelessWidget {
   }
 }
 
-class TypeAndTraits extends StatelessWidget {
-  final ArkhamCard card;
-
-  const TypeAndTraits({super.key, required this.card});
-
-  @override
-  Widget build(BuildContext context) {
-    final type = card.type[0].toUpperCase() + card.type.substring(1);
-
-    return Row(
-      children: [
-        Text(
-          '$type   •  ',
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-            fontVariations: [FontVariation('wght', 800)],
-          ),
-        ),
-
-        Text(
-          card.traits.join('  '),
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-            fontStyle: FontStyle.italic,
-            fontVariations: [FontVariation('wght', 800)],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _TextLeftBar extends StatelessWidget {
   final Color? color;
 
@@ -831,7 +841,7 @@ class _TextLeftBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 2,
-      margin: EdgeInsets.only(right: 8, left: 4),
+      margin: EdgeInsets.only(right: 8, left: 8),
       decoration: BoxDecoration(
         color: color ?? Colors.grey,
         borderRadius: BorderRadius.circular(4),
@@ -870,21 +880,9 @@ class TabooTextBox extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(right: 4.0),
-                child: Column(
-                  children: [
-                    Row(
-                      spacing: 4.0,
-                      children: [
-                        IconManager().getIcon(
-                          "tablet",
-                          color: AppColors.taboo,
-                          size: 16,
-                        ),
-                        Text("Taboo list"),
-                      ],
-                    ),
-                    TextWithIcons(text: text),
-                  ],
+                child: TextWithIcons(
+                  text: '[tablet] Taboo list\n$text',
+                  iconColor: AppColors.taboo,
                 ),
               ),
             ),

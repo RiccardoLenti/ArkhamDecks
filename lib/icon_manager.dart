@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +10,6 @@ class IconManager {
   IconManager._internal();
 
   final Map<String, String> _iconSvgMap = {};
-  final Map<String, double> _iconScaleMap = {};
 
   Future<void> loadIcons(String path) async {
     final jsonString = await rootBundle.loadString(path);
@@ -24,9 +22,6 @@ class IconManager {
       final width = (iconEntry["icon"]["width"] ?? 1024).toDouble();
       final height = (iconEntry["icon"]["height"] ?? 1024).toDouble();
 
-      final standardSize = 1024.0;
-      final scaleFactor = standardSize / max(height, width);
-
       final svgString = '''
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 $width $height">
         $svgPaths
@@ -34,13 +29,11 @@ class IconManager {
       ''';
 
       _iconSvgMap[name] = svgString;
-      _iconScaleMap[name] = scaleFactor;
     }
   }
 
   Widget getIcon(String name, {double size = 24, Color? color}) {
     final svgString = _iconSvgMap[name];
-    final scaleFactor = _iconScaleMap[name] ?? 1.0;
 
     if (svgString == null) {
       return const SizedBox.shrink(); // fallback
@@ -48,8 +41,8 @@ class IconManager {
 
     return SvgPicture.string(
       svgString,
-      width: size * scaleFactor,
-      height: size * scaleFactor,
+      width: size,
+      height: size,
       fit: BoxFit.contain,
       color: color,
     );

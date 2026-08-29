@@ -142,7 +142,7 @@ class _DecksScreenState extends State<DecksScreen> {
     );
   }
 
-  // TODO: instr on deck_requirements instead of parsing requiredCodes
+  // instr on deck_requirements instead of parsing requiredCodes
   Future<List<DeckSummary>> fetchDecks() async {
     final db = await DatabaseHelper.instance.db;
 
@@ -177,7 +177,6 @@ class _DeckTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final deck = summary.deck;
     final faction = deck.investigator.faction;
-    final factionColors = AppColors.factions[faction]!;
     final colorScheme = Theme.of(context).colorScheme;
     final listTileTheme = Theme.of(context).listTileTheme;
 
@@ -214,12 +213,13 @@ class _DeckTile extends StatelessWidget {
                 child: Row(
                   spacing: 10.0,
                   children: [
-                    Transform.translate(
-                      offset: const Offset(0.0, -2.0),
-                      child: IconManager().getIcon(
-                        faction.name,
-                        color: factionColors.light,
-                        size: 38,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4.0),
+                      child: Image.asset(
+                        'assets/images/thumb/${deck.investigator.code}.webp',
+                        width: 44,
+                        height: 44,
+                        cacheWidth: 132,
                       ),
                     ),
 
