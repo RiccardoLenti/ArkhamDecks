@@ -81,6 +81,8 @@ class _DeckScreenState extends State<DeckScreen> {
                   );
                 }
 
+                final error = deck.validate();
+
                 return Scaffold(
                   appBar: AppBar(
                     title: Column(
@@ -108,153 +110,213 @@ class _DeckScreenState extends State<DeckScreen> {
                     ],
                   ),
 
-                  body: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _InvestigatorDetail(investigator: deck.investigator),
+                  body: Column(
+                    children: [
+                      Container(
+                        height: 40.0,
+                        color:
+                            AppColors.factions[deck.investigator.faction]!.dark,
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 12.0),
+                            IconManager().getIcon(
+                              'xp-bold',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            Text('${deck.xpCount} XP'),
+                            const SizedBox(width: 16.0),
+                            IconManager().getIcon(
+                              'upgrade',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            const Text('0 XP'),
+                            SizedBox(width: 16.0),
+                            IconManager().getIcon(
+                              'card-outline-bold',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            Text(
+                              'x ${deck.nonExtraCardsCount} (${deck.cardsCount})',
+                            ),
 
-                        _DeckChoices(deck: deck),
+                            const Spacer(),
 
-                        _DeckInvalidError(error: deck.validate()),
-
-                        Container(
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                            color:
-                                AppColors
-                                    .factions[deck.investigator.faction]!
-                                    .dark,
-                          ),
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 12.0),
-                              IconManager().getIcon(
-                                'xp-bold',
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                              Text('${deck.xpCount} XP'),
-                              const SizedBox(width: 16.0),
-                              IconManager().getIcon(
-                                'upgrade',
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                              const Text('0 XP'),
-                              SizedBox(width: 16.0),
-                              IconManager().getIcon(
-                                'card-outline-bold',
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                              Text(
-                                'x ${deck.nonExtraCardsCount} (${deck.cardsCount})',
-                              ),
-
-                              const Spacer(),
-
-                              Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.primaryContainer,
+                                ),
+                                child: IconButton(
+                                  icon: IconManager().getIcon(
+                                    'upgrade',
                                     color:
                                         Theme.of(
                                           context,
-                                        ).colorScheme.primaryContainer,
+                                        ).colorScheme.onPrimaryContainer,
                                   ),
-                                  child: IconButton(
-                                    icon: IconManager().getIcon(
-                                      'upgrade',
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.onPrimaryContainer,
-                                    ),
-                                    onPressed:
-                                        () => _showUpgradeDialog(context, deck),
-                                  ),
+                                  onPressed:
+                                      () => _showUpgradeDialog(context, deck),
                                 ),
                               ),
-                              const SizedBox(width: 20.0),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 20.0),
+                          ],
                         ),
+                      ),
 
-                        const SizedBox(height: 16.0),
-                        // TODO: do I want an horizontal padding from here down?
-                        BoxBorder(
-                          color:
-                              AppColors
-                                  .factions[deck.investigator.faction]!
-                                  .dark,
-                          thickTop: true,
-                          center: Text(
-                            "Deck",
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          trailing: Padding(
-                            padding: const EdgeInsetsGeometry.only(right: 16.0),
-                            child: IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed:
-                                  () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => ChangeNotifierProvider.value(
-                                            value: deck,
-                                            child: CardsScreen(
-                                              searchFilters: _searchFilters,
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12.0),
+                                  child: Row(
+                                    spacing: 10.0,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: _InvestigatorDetail(
+                                          investigator: deck.investigator,
+                                        ),
+                                      ),
+                                      Column(
+                                        spacing: 12.0,
+                                        children: [
+                                          CardArt(card: deck.investigator),
+                                          HealthSanityIcon(
+                                            valueHealth:
+                                                deck.investigator.health,
+                                            valueSanity:
+                                                deck.investigator.sanity,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const Padding(
+                                  padding: EdgeInsetsGeometry.symmetric(
+                                    vertical: 4.0,
+                                  ),
+                                  child: Divider(height: 12.0),
+                                ),
+
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  spacing: 8.0,
+                                  children: [
+                                    if (deck.choices.isNotEmpty)
+                                      _DeckChoices(deck: deck),
+                                    if (error != null)
+                                      _DeckInvalidError(error: error),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 12.0),
+                                BoxBorder(
+                                  color:
+                                      AppColors
+                                          .factions[deck.investigator.faction]!
+                                          .dark,
+                                  thickTop: true,
+                                  center: Text(
+                                    "Deck",
+                                    style:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.headlineMedium,
+                                  ),
+                                  trailing: Padding(
+                                    padding: const EdgeInsetsGeometry.only(
+                                      right: 16.0,
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed:
+                                          () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) =>
+                                                      ChangeNotifierProvider.value(
+                                                        value: deck,
+                                                        child: CardsScreen(
+                                                          searchFilters:
+                                                              _searchFilters,
+                                                        ),
+                                                      ),
                                             ),
                                           ),
                                     ),
                                   ),
-                            ),
-                          ),
-                          child: CardListWidget(
-                            cardList: CardList.fromList(deck.deckCards),
-                            deck: deck,
-                            sticky: false,
-                          ),
-                        ),
-                        const Divider(height: 64.0),
-                        BoxBorder(
-                          color:
-                              AppColors
-                                  .factions[deck.investigator.faction]!
-                                  .dark,
-                          thickTop: true,
-                          center: Text(
-                            "Side Deck",
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          trailing: Padding(
-                            padding: const EdgeInsetsGeometry.only(right: 16.0),
-                            child: IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed:
-                                  () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => ChangeNotifierProvider.value(
-                                            value: deck,
-                                            child: CardsScreen(
-                                              searchFilters: _searchFilters,
-                                              sideDeck: true,
+                                  child: CardListWidget(
+                                    cardList: CardList.fromList(deck.deckCards),
+                                    deck: deck,
+                                    sticky: false,
+                                  ),
+                                ),
+                                const Divider(height: 64.0),
+                                BoxBorder(
+                                  color:
+                                      AppColors
+                                          .factions[deck.investigator.faction]!
+                                          .dark,
+                                  thickTop: true,
+                                  center: Text(
+                                    "Side Deck",
+                                    style:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.headlineMedium,
+                                  ),
+                                  trailing: Padding(
+                                    padding: const EdgeInsetsGeometry.only(
+                                      right: 16.0,
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed:
+                                          () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) =>
+                                                      ChangeNotifierProvider.value(
+                                                        value: deck,
+                                                        child: CardsScreen(
+                                                          searchFilters:
+                                                              _searchFilters,
+                                                          sideDeck: true,
+                                                        ),
+                                                      ),
                                             ),
                                           ),
                                     ),
                                   ),
+                                  child: CardListWidget(
+                                    cardList: CardList.fromList(deck.sideCards),
+                                    deck: deck,
+                                    sticky: false,
+                                  ),
+                                ),
+                                const SizedBox(height: 75.0),
+                              ],
                             ),
                           ),
-                          child: CardListWidget(
-                            cardList: CardList.fromList(deck.sideCards),
-                            deck: deck,
-                            sticky: false,
-                          ),
                         ),
-                        const SizedBox(height: 75.0),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
 
                   floatingActionButton: FloatingActionButton(
@@ -447,19 +509,13 @@ class _InvestigatorDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(12.0),
-      child: Column(
-        spacing: 14.0,
-        children: [
-          InvestigatorStats(card: investigator),
-          HealthSanityIcon(
-            valueHealth: investigator.health,
-            valueSanity: investigator.sanity,
-          ),
-          CardText(card: investigator, buildBar: false),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 12.0,
+      children: [
+        InvestigatorStats(card: investigator),
+        CardText(card: investigator, buildBar: false),
+      ],
     );
   }
 }
@@ -473,14 +529,12 @@ class _DeckChoices extends StatelessWidget {
   Widget build(BuildContext context) {
     if (deck.choices.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children:
-            deck.choices.map((choice) => _buildChip(context, choice)).toList(),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      spacing: 8.0,
+      children:
+          deck.choices.map((choice) => _buildChip(context, choice)).toList(),
     );
   }
 
@@ -490,6 +544,8 @@ class _DeckChoices extends StatelessWidget {
     final faction = Faction.fromString(selected);
 
     return ActionChip(
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      visualDensity: VisualDensity.compact,
       avatar:
           faction == null
               ? const Icon(Icons.tune, size: 16.0)
@@ -564,31 +620,25 @@ class _DeckInvalidError extends StatelessWidget {
 
     final scheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsetsGeometry.only(bottom: 12.0),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: scheme.errorContainer,
-          border: Border.all(color: scheme.error, width: 1.0),
-          borderRadius: BorderRadiusGeometry.circular(8.0),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-        child: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, size: 18.0),
-            const SizedBox(width: 10.0),
-            Expanded(
-              child: Text(
-                error!.text,
-                style: TextStyle(
-                  color: scheme.onErrorContainer,
-                  fontSize: 13.0,
-                ),
-              ),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: scheme.errorContainer,
+        border: Border.all(color: scheme.error, width: 1.0),
+        borderRadius: BorderRadiusGeometry.circular(8.0),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, size: 18.0),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              error!.text,
+              style: TextStyle(color: scheme.onErrorContainer, fontSize: 13.0),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
