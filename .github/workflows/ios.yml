@@ -20,12 +20,14 @@ jobs:
         run: flutter pub get
 
       - name: Build
-        run: flutter build ios --release --no-codesign
+        run: |
+          flutter build ios --release --no-codesign --config-only
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos -derivedDataPath build/ios-dd CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" CODE_SIGN_ENTITLEMENTS="" build
 
       - name: Package .ipa
         run: |
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          cp -r build/ios-dd/Build/Products/Release-iphoneos/Runner.app Payload/
           zip -qr ArkhamDecks.ipa Payload
 
       - uses: actions/upload-artifact@v4
