@@ -1,6 +1,7 @@
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/deck_screen.dart';
+import 'package:arkham_decks/card_view.dart';
 import 'package:arkham_decks/factions.dart';
 import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/new_deck_screen.dart';
@@ -213,14 +214,9 @@ class _DeckTile extends StatelessWidget {
                 child: Row(
                   spacing: 10.0,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4.0),
-                      child: Image.asset(
-                        'assets/images/thumb/${deck.investigator.code}.webp',
-                        width: 44,
-                        height: 44,
-                        cacheWidth: 132,
-                      ),
+                    InvestigatorThumb(
+                      code: deck.investigator.code,
+                      faction: faction,
                     ),
 
                     Expanded(

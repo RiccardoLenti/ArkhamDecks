@@ -1,9 +1,11 @@
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
+import 'package:arkham_decks/card_view.dart';
 import 'package:arkham_decks/database.dart';
 import 'package:arkham_decks/deck.dart';
 import 'package:arkham_decks/deck_choices.dart';
 import 'package:arkham_decks/expansions.dart';
+import 'package:arkham_decks/icon_manager.dart';
 import 'package:arkham_decks/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -142,20 +144,40 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
         itemCount: investigators.length,
         itemBuilder: (context, index) {
           final investigator = investigators[index];
-          return Container(
-            decoration: BoxDecoration(
-              color: AppColors.factions[investigator.faction]!.dark,
-              border: Border.all(
-                width: 3.0,
-                color: Theme.of(context).colorScheme.surface,
+          final colorScheme = Theme.of(context).colorScheme;
+          final faction = AppColors.factions[investigator.faction]!;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+            child: Material(
+              color: colorScheme.surfaceContainerLow,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: BorderSide(color: colorScheme.outline),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              title: Text(investigator.name),
-              subtitle: Text(investigator.subname!),
-              contentPadding: EdgeInsets.only(left: 22.0),
-              onTap: () => _newDeckDialog(investigator),
+              child: ListTile(
+                leading: InvestigatorThumb(
+                  code: investigator.code,
+                  faction: investigator.faction,
+                  light: true,
+                ),
+                titleAlignment: ListTileTitleAlignment.center,
+                horizontalTitleGap: 12.0,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
+                title: Text(
+                  investigator.name,
+                  style: Theme.of(context).listTileTheme.titleTextStyle!
+                      .copyWith(color: faction.light),
+                ),
+                subtitle: Text(investigator.subname!),
+                trailing: IconManager().getIcon(
+                  investigator.faction.name,
+                  color: faction.light,
+                  size: 30,
+                ),
+                onTap: () => _newDeckDialog(investigator),
+              ),
             ),
           );
         },

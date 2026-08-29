@@ -406,6 +406,44 @@ class HealthSanityIcon extends StatelessWidget {
   }
 }
 
+class InvestigatorThumb extends StatelessWidget {
+  final String code;
+  final Faction faction;
+  final double size;
+  final bool light;
+
+  const InvestigatorThumb({
+    super.key,
+    required this.code,
+    required this.faction,
+    this.size = 44,
+    this.light = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5.0),
+        border: Border.all(
+          color: AppColors.factions[faction]!.dark,
+          width: 1.0,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4.0),
+        child: Image.asset(
+          'assets/images/thumb/$code.webp',
+          fit: BoxFit.cover,
+          cacheWidth: 132,
+        ),
+      ),
+    );
+  }
+}
+
 class InvestigatorStats extends StatelessWidget {
   final ArkhamCard card;
 
