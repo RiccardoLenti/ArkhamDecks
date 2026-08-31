@@ -32,7 +32,7 @@ class CardDetailScreen extends StatelessWidget {
           final cards = snapshot.data!;
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              padding: const EdgeInsets.only(left: 5.0, right: 5.0, top: 5.0),
               child: Column(
                 children: [
                   CardView(card: cards.first),

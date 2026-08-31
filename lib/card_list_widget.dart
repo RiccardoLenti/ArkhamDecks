@@ -177,7 +177,11 @@ class CardListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CostLevelCircle(card: card),
-      title: Text(card.name),
+      title: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(card.name),
+      ),
       subtitle: _CardListTileSubtitle(card: card),
       trailing: trailing,
       onTap: () {

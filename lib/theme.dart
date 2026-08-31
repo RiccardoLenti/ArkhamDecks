@@ -161,11 +161,11 @@ class AppTheme {
     final listTileTheme = ListTileThemeData(
       titleTextStyle: textTheme.headlineMedium!.copyWith(
         fontSize: 22.0,
-        color: colorScheme.onSurface,
+        color: colorScheme.onSurfaceVariant,
       ),
       subtitleTextStyle: textTheme.bodySmall!.copyWith(
         fontSize: 14.0,
-        color: colorScheme.onSurface,
+        color: colorScheme.onSurfaceVariant,
       ),
       minVerticalPadding: 0.0,
       visualDensity: VisualDensity(horizontal: 0.0, vertical: -4.0),
