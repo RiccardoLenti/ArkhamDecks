@@ -38,7 +38,8 @@ CREATE TABLE cards (
     restrictions TEXT,
     is_unique BOOLEAN,
     customization_text TEXT,
-    deck_limit INTEGER
+    deck_limit INTEGER,
+    exceptional BOOLEAN
 );
 
 --TODO: add references for pack_code?
@@ -95,6 +96,11 @@ CREATE TABLE taboo_cards (
     text TEXT,
     replacement_text TEXT,
     deck_limit INTEGER,
+    exceptional BOOLEAN,
+    replacement_back_text TEXT,
+    deck_options TEXT,
+    deck_requirements TEXT,
+    customization_text TEXT,
     FOREIGN KEY(taboo_list) REFERENCES taboos(code),
     FOREIGN KEY(code) REFERENCES cards(code),
     PRIMARY KEY(taboo_list, code)
@@ -110,7 +116,12 @@ SELECT
     taboo_cards.xp AS "taboo.xp",
     taboo_cards.deck_limit AS "taboo.deck_limit",
     taboo_cards.text AS "taboo.text",
-    taboo_cards.replacement_text AS "taboo.replacement_text"
+    taboo_cards.replacement_text AS "taboo.replacement_text",
+    taboo_cards.exceptional AS "taboo.exceptional",
+    taboo_cards.replacement_back_text AS "taboo.replacement_back_text",
+    taboo_cards.deck_options AS "taboo.deck_options",
+    taboo_cards.deck_requirements AS "taboo.deck_requirements",
+    taboo_cards.customization_text AS "taboo.customization_text"
 FROM cards 
 JOIN printings AS printing ON cards.code = printing.canonical_code
 LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
@@ -136,12 +147,17 @@ SELECT
     cards.tags,
     cards.uses,
     cards.deck_options,
+    cards.deck_requirements,
+    cards.exceptional,
     printing.pack_code,
     printing.position,
     printing.quantity,
     taboo_cards.code AS "taboo.code",
     taboo_cards.xp AS "taboo.xp",
-    taboo_cards.deck_limit AS "taboo.deck_limit"
+    taboo_cards.deck_limit AS "taboo.deck_limit",
+    taboo_cards.exceptional AS "taboo.exceptional",
+    taboo_cards.deck_options AS "taboo.deck_options",
+    taboo_cards.deck_requirements AS "taboo.deck_requirements"
 FROM cards
 JOIN printings AS printing ON cards.code = printing.canonical_code
 LEFT JOIN taboo_cards ON cards.code = taboo_cards.code

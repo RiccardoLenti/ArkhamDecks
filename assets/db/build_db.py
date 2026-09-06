@@ -12,6 +12,24 @@ def card_uses(text):
     return "charges" if words[0] == "charge" else words[0]
 
 
+def deck_requirements_string(requirements):
+    if requirements is None:
+        return None
+
+    parts = []
+
+    if requirements.get("size") is not None:
+        parts.append(f"size:{requirements['size']}")
+
+    for alternates in requirements.get("card", {}).values():
+        parts.append("card:" + ":".join(alternates.values()))
+
+    for random in requirements.get("random", []):
+        parts.append(f"random:{random['target']}:{random['value']}")
+
+    return ", ".join(parts)
+
+
 DB_PATH = "app.db"
 SCHEMA_PATH = "schema.sql"
 JSON_DIR = "json"
@@ -56,9 +74,10 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                     faction3_code, traits, tags, uses, text, flavor, cost, health,
                     sanity, xp, slot, bonded_to, hidden, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
-                    back_text, back_flavor, restrictions, is_unique, customization_text, deck_limit
+                    back_text, back_flavor, restrictions, is_unique, customization_text, deck_limit,
+                    exceptional
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                          ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -93,6 +112,7 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 1 if card.get("is_unique") else 0,
                 card.get("customization_text"),
                 card.get("deck_limit"),
+                1 if card.get("exceptional") else 0,
             ))
 
             cur.execute("""
@@ -141,11 +161,21 @@ if os.path.exists(taboos_path):
                 try:
                     cur.execute("""
                             INSERT INTO taboo_cards(taboo_list, code, xp, text,
-                                                    replacement_text, deck_limit)
-                            VALUES (?, ?, ?, ?, ?, ?)""",
+                                                    replacement_text, deck_limit,
+                                                    exceptional, replacement_back_text,
+                                                    deck_options, deck_requirements,
+                                                    customization_text)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             (taboo_code, card.get("code"), card.get("xp"),
                              card.get("text"), card.get("replacement_text"),
-                             card.get("deck_limit")))
+                             card.get("deck_limit"),
+                             None if card.get("exceptional") is None
+                                 else (1 if card.get("exceptional") else 0),
+                             card.get("replacement_back_text"),
+                             json.dumps(card.get("deck_options"))
+                                 if card.get("deck_options") is not None else None,
+                             deck_requirements_string(card.get("deck_requirements")),
+                             card.get("customization_text")))
                 except:
                     print(f"{taboo_code=} | {card.get('code')=}")
 

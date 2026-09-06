@@ -18,6 +18,7 @@ class SimplifiedCard {
   final List<String>? slots;
   final int? level;
   final int deckLimit;
+  final bool exceptional;
   final Taboo? taboo;
   final String? deckOptions;
   final List<String> traits;
@@ -35,6 +36,7 @@ class SimplifiedCard {
     List<String>? slots,
     required this.level,
     required this.deckLimit,
+    this.exceptional = false,
     this.multiFactions = const [],
     this.subtype,
     this.taboo,
@@ -68,8 +70,9 @@ class SimplifiedCard {
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
+        exceptional: (map['taboo.exceptional'] ?? map['exceptional'] ?? 0) == 1,
         taboo: Taboo.fromSimplifiedMap(map),
-        deckOptions: map['deck_options'],
+        deckOptions: map['taboo.deck_options'] ?? map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
         restrictions: map['restrictions'],
         tags: map['tags'],
@@ -87,8 +90,9 @@ class SimplifiedCard {
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
         deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
+        exceptional: (map['taboo.exceptional'] ?? map['exceptional'] ?? 0) == 1,
         taboo: Taboo.fromSimplifiedMap(map),
-        deckOptions: map['deck_options'],
+        deckOptions: map['taboo.deck_options'] ?? map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
         restrictions: map['restrictions'],
         tags: map['tags'],
@@ -120,6 +124,7 @@ class ArkhamCard extends SimplifiedCard {
     required super.type,
     required super.level,
     required super.deckLimit,
+    super.exceptional,
     super.multiFactions,
     super.subtype,
     super.slots,
@@ -158,9 +163,10 @@ class ArkhamCard extends SimplifiedCard {
     final simplified = SimplifiedCard.fromMap(map);
 
     final isUnique = (map['is_unique'] as int) == 1 ? true : false;
-    final customizationText = (map['customization_text'] as String?)?.split(
-      '\n',
-    );
+    final customizationText = ((map['taboo.customization_text'] ??
+                map['customization_text'])
+            as String?)
+        ?.split('\n');
 
     return ArkhamCard(
       code: simplified.code,
@@ -174,6 +180,7 @@ class ArkhamCard extends SimplifiedCard {
       slots: simplified.slots,
       level: simplified.level,
       deckLimit: simplified.deckLimit,
+      exceptional: simplified.exceptional,
       traits: simplified.traits,
       restrictions: simplified.restrictions,
       printings: printings,
@@ -259,12 +266,20 @@ class Taboo {
   final int? deckLimit;
   final String? text;
   final String? replacementText;
+  final String? replacementBackText;
+  final String? deckOptions;
+  final String? deckRequirements;
+  final String? customizationText;
 
   const Taboo({
     required this.xp,
     this.deckLimit,
     this.text,
     this.replacementText,
+    this.replacementBackText,
+    this.deckOptions,
+    this.deckRequirements,
+    this.customizationText,
   });
 
   static Taboo? fromSimplifiedMap(Map<String, dynamic> map) {
@@ -273,6 +288,8 @@ class Taboo {
     return Taboo(
       xp: map['taboo.xp'] as int?,
       deckLimit: map['taboo.deck_limit'] as int?,
+      deckOptions: map['taboo.deck_options'],
+      deckRequirements: map['taboo.deck_requirements'],
     );
   }
 
@@ -284,6 +301,10 @@ class Taboo {
       xp: map['taboo.xp'] as int?,
       deckLimit: map['taboo.deck_limit'] as int?,
       replacementText: map['taboo.replacement_text'],
+      replacementBackText: map['taboo.replacement_back_text'],
+      deckOptions: map['taboo.deck_options'],
+      deckRequirements: map['taboo.deck_requirements'],
+      customizationText: map['taboo.customization_text'],
     );
   }
 }

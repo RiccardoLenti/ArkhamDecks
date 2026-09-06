@@ -53,8 +53,8 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
       final maps = await db.rawQuery(
         '''
-        SELECT * FROM cards JOIN printings on cards.code = printings.canonical_code where type_code = ? 
-        AND pack_code in (${placeholders.join(', ')}) AND bonded_to IS NULL GROUP BY canonical_code ORDER BY code''',
+        SELECT * FROM card_details WHERE type_code = ? 
+        AND pack_code in (${placeholders.join(', ')}) AND bonded_to IS NULL GROUP BY code ORDER BY code''',
         ['investigator', ...packs],
       );
 

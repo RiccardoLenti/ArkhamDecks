@@ -65,27 +65,30 @@ class Deck extends ChangeNotifier {
     Map<String, String> selections,
   ) async {
     final db = await DatabaseHelper.instance.db;
+    final investigatorRow =
+        (await db.rawQuery(
+          'SELECT deck_requirements, "taboo.deck_requirements" '
+          'FROM card_simplified WHERE code = ?',
+          [investigator.code],
+        )).first;
     final deckRequirements =
-        (await db.query(
-              'cards',
-              columns: ['deck_requirements'],
-              where: 'code = ?',
-              whereArgs: [investigator.code],
-            )).first['deck_requirements']
+        (investigatorRow['taboo.deck_requirements'] ??
+                investigatorRow['deck_requirements'])
             as String;
     final parts = deckRequirements.split(',').map((s) => s.trim());
     int size = 0;
     final codes =
         requiredCards(deckRequirements).map((codes) => codes.first).toSet();
-    final limits = await db.query(
-      'cards',
-      columns: ['code', 'deck_limit'],
-      where: 'code IN (${List.filled(codes.length, '?').join(', ')})',
-      whereArgs: codes.toList(),
+    final limits = await db.rawQuery(
+      'SELECT code, deck_limit, "taboo.deck_limit" FROM card_simplified '
+      'WHERE code IN (${List.filled(codes.length, '?').join(', ')})',
+      codes.toList(),
     );
     final cards = {
       '01000': 1,
-      for (final row in limits) row['code'] as String: row['deck_limit'] as int,
+      for (final row in limits)
+        row['code'] as String:
+            (row['taboo.deck_limit'] ?? row['deck_limit']) as int,
     };
 
     for (final part in parts) {
@@ -278,8 +281,14 @@ class Deck extends ChangeNotifier {
 
   int get cardsCount => _main.values.fold(0, (acc, el) => acc + el.count);
 
-  int get xpCount =>
-      _main.values.fold(0, (acc, el) => acc + el.count * (el.card.level ?? 0));
+  int get xpCount => _main.values.fold(
+    0,
+    (acc, el) =>
+        acc +
+        el.count *
+            ((el.card.level ?? 0) * (el.card.exceptional ? 2 : 1) +
+                (el.card.taboo?.xp ?? 0)),
+  );
 
   int get _deckSizeModifier => _main.values.fold(
     0,
@@ -376,7 +385,9 @@ class Deck extends ChangeNotifier {
     final rows = await db.rawQuery(
       'SELECT cards.*, deck_cards.count, deck_cards.side_deck, '
       'taboo_cards.code AS "taboo.code", taboo_cards.xp AS "taboo.xp", '
-      'taboo_cards.deck_limit AS "taboo.deck_limit" '
+      'taboo_cards.deck_limit AS "taboo.deck_limit", '
+      'taboo_cards.exceptional AS "taboo.exceptional", '
+      'taboo_cards.deck_options AS "taboo.deck_options" '
       'FROM cards JOIN deck_cards ON card_code = cards.code '
       'LEFT JOIN taboo_cards ON taboo_cards.code = cards.code '
       'AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos) '

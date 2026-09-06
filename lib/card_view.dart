@@ -853,7 +853,11 @@ class InvestigatorBack extends StatelessWidget {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(right: 4.0),
-                        child: TextWithIcons(text: investigator.backText!),
+                        child: TextWithIcons(
+                          text:
+                              investigator.taboo?.replacementBackText ??
+                              investigator.backText!,
+                        ),
                       ),
                     ),
                   ],

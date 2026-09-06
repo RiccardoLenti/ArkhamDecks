@@ -151,15 +151,25 @@ class _DecksScreenState extends State<DecksScreen> {
       '''SELECT decks.id, decks.name AS deck_name, decks.size AS size, decks.signatures_count AS signatures_count,
       decks.selections AS selections,
       investigator.*,
+      IFNULL(investigator_taboo.deck_options, investigator.deck_options) AS deck_options,
+      IFNULL(investigator_taboo.deck_requirements, investigator.deck_requirements) AS deck_requirements,
       IFNULL(SUM(deck_cards.count), 0) AS cards_count,
-      IFNULL(SUM(deck_cards.count * IFNULL(cards.xp, 0)), 0) AS xp_count,
+      IFNULL(SUM(deck_cards.count *
+        (IFNULL(cards.xp, 0) *
+          (CASE WHEN IFNULL(card_taboo.exceptional, IFNULL(cards.exceptional, 0)) = 1
+            THEN 2 ELSE 1 END)
+        + IFNULL(card_taboo.xp, 0))), 0) AS xp_count,
       IFNULL(SUM(CASE WHEN cards.subtype_code IS NULL
-        AND instr(investigator.deck_requirements, deck_cards.card_code) = 0
+        AND instr(IFNULL(investigator_taboo.deck_requirements, investigator.deck_requirements), deck_cards.card_code) = 0
         THEN deck_cards.count END), 0) AS non_extra_count
       FROM decks
       JOIN cards AS investigator ON decks.investigator_code = investigator.code
+      LEFT JOIN taboo_cards AS investigator_taboo ON investigator_taboo.code = investigator.code
+        AND investigator_taboo.taboo_list = (SELECT MAX(code) FROM taboos)
       LEFT JOIN deck_cards ON deck_cards.deck_id = decks.id AND deck_cards.side_deck = 0
       LEFT JOIN cards ON cards.code = deck_cards.card_code
+      LEFT JOIN taboo_cards AS card_taboo ON card_taboo.code = cards.code
+        AND card_taboo.taboo_list = (SELECT MAX(code) FROM taboos)
       GROUP BY decks.id
       ORDER BY decks.id DESC''',
     );
