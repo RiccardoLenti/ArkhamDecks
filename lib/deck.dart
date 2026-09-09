@@ -65,30 +65,30 @@ class Deck extends ChangeNotifier {
     Map<String, String> selections,
   ) async {
     final db = await DatabaseHelper.instance.db;
-    final investigatorRow =
-        (await db.rawQuery(
-          'SELECT deck_requirements, "taboo.deck_requirements" '
-          'FROM card_simplified WHERE code = ?',
-          [investigator.code],
-        )).first;
+    final taboo = TabooClause.active();
     final deckRequirements =
-        (investigatorRow['taboo.deck_requirements'] ??
-                investigatorRow['deck_requirements'])
+        (await db.rawQuery(
+              'SELECT ${taboo.resolve('deck_requirements', 'card_simplified')} '
+              'FROM card_simplified ${taboo.join('card_simplified')} '
+              'WHERE card_simplified.code = ?',
+              [...taboo.args, investigator.code],
+            )).first['deck_requirements']
             as String;
     final parts = deckRequirements.split(',').map((s) => s.trim());
     int size = 0;
     final codes =
         requiredCards(deckRequirements).map((codes) => codes.first).toSet();
     final limits = await db.rawQuery(
-      'SELECT code, deck_limit, "taboo.deck_limit" FROM card_simplified '
-      'WHERE code IN (${List.filled(codes.length, '?').join(', ')})',
-      codes.toList(),
+      'SELECT card_simplified.code, '
+      '${taboo.resolve('deck_limit', 'card_simplified')} '
+      'FROM card_simplified ${taboo.join('card_simplified')} '
+      'WHERE card_simplified.code IN '
+      '(${List.filled(codes.length, '?').join(', ')})',
+      [...taboo.args, ...codes],
     );
     final cards = {
       '01000': 1,
-      for (final row in limits)
-        row['code'] as String:
-            (row['taboo.deck_limit'] ?? row['deck_limit']) as int,
+      for (final row in limits) row['code'] as String: row['deck_limit'] as int,
     };
 
     for (final part in parts) {
@@ -184,8 +184,8 @@ class Deck extends ChangeNotifier {
     return Deck(
       id: map['id'],
       name: map['deck_name'],
-      deckOptions: map['deck_options'],
-      deckRequirements: map['deck_requirements'],
+      deckOptions: map['investigator_deck_options'],
+      deckRequirements: map['investigator_deck_requirements'],
       size: map['size'],
       selections: decodeSelections(map['selections']),
       signaturesCount: map['signatures_count'],
@@ -382,17 +382,14 @@ class Deck extends ChangeNotifier {
 
   Future<void> fetchCards() async {
     final db = await DatabaseHelper.instance.db;
+    final taboo = TabooClause.active();
     final rows = await db.rawQuery(
-      'SELECT cards.*, deck_cards.count, deck_cards.side_deck, '
-      'taboo_cards.code AS "taboo.code", taboo_cards.xp AS "taboo.xp", '
-      'taboo_cards.deck_limit AS "taboo.deck_limit", '
-      'taboo_cards.exceptional AS "taboo.exceptional", '
-      'taboo_cards.deck_options AS "taboo.deck_options" '
-      'FROM cards JOIN deck_cards ON card_code = cards.code '
-      'LEFT JOIN taboo_cards ON taboo_cards.code = cards.code '
-      'AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos) '
+      'SELECT card_simplified.*, deck_cards.count, deck_cards.side_deck, '
+      '${taboo.columns('card_simplified')} '
+      'FROM card_simplified JOIN deck_cards ON card_code = card_simplified.code '
+      '${taboo.join('card_simplified')} '
       'WHERE deck_cards.deck_id = ?',
-      [id],
+      [...taboo.args, id],
     );
 
     _main.clear();

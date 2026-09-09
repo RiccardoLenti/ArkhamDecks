@@ -128,10 +128,11 @@ class CardList {
     final String where =
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
-    final maps = await db.query(
-      'card_simplified',
-      where: where,
-      whereArgs: [...args, type],
+    final taboo = TabooClause.active();
+    final maps = await db.rawQuery(
+      'SELECT card_simplified.*, ${taboo.columns('card_simplified')} '
+      'FROM card_simplified ${taboo.join('card_simplified')} WHERE $where',
+      [...taboo.args, ...args, type],
     );
 
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
@@ -147,10 +148,11 @@ class CardList {
     final String where =
         baseWhere.isEmpty ? extraWhere : '($baseWhere) AND $extraWhere';
 
-    final maps = await db.query(
-      'card_simplified',
-      where: where,
-      whereArgs: [...args, 'investigator', 'asset', 'event', 'skill'],
+    final taboo = TabooClause.active();
+    final maps = await db.rawQuery(
+      'SELECT card_simplified.*, ${taboo.columns('card_simplified')} '
+      'FROM card_simplified ${taboo.join('card_simplified')} WHERE $where',
+      [...taboo.args, ...args, 'investigator', 'asset', 'event', 'skill'],
     );
     return maps.map((map) => SimplifiedCard.fromMap(map)).toList();
   }

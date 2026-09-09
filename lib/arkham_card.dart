@@ -69,10 +69,10 @@ class SimplifiedCard {
         subtype: Subtype.fromString(map['subtype_code']),
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
-        deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
-        exceptional: (map['taboo.exceptional'] ?? map['exceptional'] ?? 0) == 1,
+        deckLimit: map['deck_limit'] ?? 1,
+        exceptional: map['exceptional'] == 1,
         taboo: Taboo.fromSimplifiedMap(map),
-        deckOptions: map['taboo.deck_options'] ?? map['deck_options'],
+        deckOptions: map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
         restrictions: map['restrictions'],
         tags: map['tags'],
@@ -89,10 +89,10 @@ class SimplifiedCard {
         subtype: Subtype.fromString(map['subtype_code']),
         slots: (map['slot'] as String?)?.split('. '),
         level: map['xp'],
-        deckLimit: map['taboo.deck_limit'] ?? map['deck_limit'] ?? 1,
-        exceptional: (map['taboo.exceptional'] ?? map['exceptional'] ?? 0) == 1,
+        deckLimit: map['deck_limit'] ?? 1,
+        exceptional: map['exceptional'] == 1,
         taboo: Taboo.fromSimplifiedMap(map),
-        deckOptions: map['taboo.deck_options'] ?? map['deck_options'],
+        deckOptions: map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
         restrictions: map['restrictions'],
         tags: map['tags'],
@@ -163,10 +163,9 @@ class ArkhamCard extends SimplifiedCard {
     final simplified = SimplifiedCard.fromMap(map);
 
     final isUnique = (map['is_unique'] as int) == 1 ? true : false;
-    final customizationText = ((map['taboo.customization_text'] ??
-                map['customization_text'])
-            as String?)
-        ?.split('\n');
+    final customizationText = (map['customization_text'] as String?)?.split(
+      '\n',
+    );
 
     return ArkhamCard(
       code: simplified.code,
@@ -201,9 +200,12 @@ class ArkhamCard extends SimplifiedCard {
 
   static Future<ArkhamCard> fromDb(String code) async {
     final db = await DatabaseHelper.instance.db;
+    final taboo = TabooClause.active();
     final rows = await db.rawQuery(
-      'SELECT * FROM card_details WHERE code = ?',
-      [code],
+      'SELECT card_details.*, ${taboo.detailColumns('card_details')} '
+      'FROM card_details ${taboo.join('card_details')} '
+      'WHERE card_details.code = ?',
+      [...taboo.args, code],
     );
 
     final printings =
@@ -261,36 +263,87 @@ enum Subtype {
       Subtype.values.firstWhereOrNull((subtype) => subtype.name == value);
 }
 
+/// Binding a null list does nothing
+class TabooClause {
+  static const _printedColumns = [
+    'deck_limit',
+    'exceptional',
+    'deck_options',
+    'deck_requirements',
+  ];
+
+  static const _tabooColumns = [
+    'code',
+    'xp',
+    'text',
+    'replacement_text',
+    'replacement_back_text',
+    'customization_text',
+    ..._printedColumns,
+  ];
+
+  static String? _active;
+
+  final String? list;
+
+  const TabooClause(this.list);
+
+  TabooClause.active() : list = _active;
+
+  static void initValues(List<Map<String, dynamic>> rows) =>
+      _active = rows.map((row) => row['code'] as String).lastOrNull;
+
+  List<Object?> get args => [list];
+
+  String join(String source, {String as = 'taboo_cards'}) =>
+      'LEFT JOIN (SELECT taboo_list, '
+      '${_tabooColumns.map((column) => '$column AS taboo_$column').join(', ')} '
+      'FROM taboo_cards) AS $as '
+      'ON $as.taboo_code = $source.code AND $as.taboo_list = ?';
+
+  String value(String column, String source, {String as = 'taboo_cards'}) =>
+      'IFNULL($as.taboo_$column, $source.printed_$column)';
+
+  String resolve(
+    String column,
+    String source, {
+    String as = 'taboo_cards',
+    String? name,
+  }) => '${value(column, source, as: as)} AS ${name ?? column}';
+
+  String columns(String source, {String as = 'taboo_cards'}) =>
+      '${_printedColumns.map((column) => resolve(column, source, as: as)).join(', ')}, '
+      '$as.taboo_code AS "taboo.code", $as.taboo_xp AS "taboo.xp"';
+
+  String detailColumns(String source, {String as = 'taboo_cards'}) =>
+      '${columns(source, as: as)}, '
+      '$as.taboo_text AS "taboo.text", '
+      '$as.taboo_replacement_text AS "taboo.replacement_text", '
+      '$as.taboo_replacement_back_text AS "taboo.replacement_back_text", '
+      '$as.taboo_customization_text AS "taboo.customization_text"';
+}
+
+/// Only for when the UI needs both the pre-taboo and post-taboo values.
+/// The other fields are overwritten in SimplifiedCard / ArkhamCard
 class Taboo {
   final int? xp;
-  final int? deckLimit;
   final String? text;
   final String? replacementText;
   final String? replacementBackText;
-  final String? deckOptions;
-  final String? deckRequirements;
-  final String? customizationText;
+  final List<String> customizationText;
 
-  const Taboo({
+  Taboo({
     required this.xp,
-    this.deckLimit,
     this.text,
     this.replacementText,
     this.replacementBackText,
-    this.deckOptions,
-    this.deckRequirements,
-    this.customizationText,
-  });
+    List<String>? customizationText,
+  }) : customizationText = customizationText ?? const [];
 
   static Taboo? fromSimplifiedMap(Map<String, dynamic> map) {
     if (map['taboo.code'] == null) return null;
 
-    return Taboo(
-      xp: map['taboo.xp'] as int?,
-      deckLimit: map['taboo.deck_limit'] as int?,
-      deckOptions: map['taboo.deck_options'],
-      deckRequirements: map['taboo.deck_requirements'],
-    );
+    return Taboo(xp: map['taboo.xp'] as int?);
   }
 
   static Taboo? fromFullMap(Map<String, dynamic> map) {
@@ -299,12 +352,11 @@ class Taboo {
     return Taboo(
       text: map['taboo.text'],
       xp: map['taboo.xp'] as int?,
-      deckLimit: map['taboo.deck_limit'] as int?,
       replacementText: map['taboo.replacement_text'],
       replacementBackText: map['taboo.replacement_back_text'],
-      deckOptions: map['taboo.deck_options'],
-      deckRequirements: map['taboo.deck_requirements'],
-      customizationText: map['taboo.customization_text'],
+      customizationText: (map['taboo.customization_text'] as String?)?.split(
+        '\n',
+      ),
     );
   }
 }

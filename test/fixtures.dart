@@ -83,9 +83,8 @@ SimplifiedCard testCard({
   'tags': tags,
   'slot': slot,
   'deck_options': deckOptions,
-  'deck_limit': deckLimit,
+  'deck_limit': tabooDeckLimit ?? deckLimit,
   'taboo.code': tabooDeckLimit == null ? null : code,
-  'taboo.deck_limit': tabooDeckLimit,
 });
 
 Deck testDeck(

@@ -1,3 +1,4 @@
+import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/expansions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
@@ -73,6 +74,8 @@ class DatabaseHelper {
     final cycles = await db.query('cycles');
     final packs = await db.query('packs');
     Cycle.initValues(cycles, packs);
+
+    TabooClause.initValues(await db.query('taboos', orderBy: 'code'));
 
     return db;
   }

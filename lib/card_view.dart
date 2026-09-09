@@ -22,6 +22,11 @@ class CardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final customizationText =
+        card.taboo?.customizationText.isNotEmpty ?? false
+            ? card.taboo!.customizationText
+            : card.customizationText;
+
     return Column(
       children: [
         BoxBorder(
@@ -135,7 +140,8 @@ class CardView extends StatelessWidget {
         if (card.type == 'investigator' && card.backFlavor != null)
           InvestigatorBack(investigator: card),
 
-        if (card.customizationText.isNotEmpty) CustomizationTable(card: card),
+        if (customizationText.isNotEmpty)
+          CustomizationTable(card: card, text: customizationText),
       ],
     );
   }
@@ -737,8 +743,9 @@ class Footer extends StatelessWidget {
 
 class CustomizationTable extends StatelessWidget {
   final ArkhamCard card;
+  final List<String> text;
 
-  const CustomizationTable({super.key, required this.card});
+  const CustomizationTable({super.key, required this.card, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -752,15 +759,11 @@ class CustomizationTable extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(card.customizationText.length * 2 - 1, (
-                index,
-              ) {
+              children: List.generate(text.length * 2 - 1, (index) {
                 if (index.isOdd) {
                   return Divider(thickness: 0.75, height: 10);
                 } else {
-                  return TextWithIcons(
-                    text: card.customizationText[index ~/ 2],
-                  );
+                  return TextWithIcons(text: text[index ~/ 2]);
                 }
               }),
             ),

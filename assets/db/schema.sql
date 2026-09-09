@@ -107,25 +107,46 @@ CREATE TABLE taboo_cards (
 );
 
 CREATE VIEW card_details AS
-SELECT 
-    cards.*,
+SELECT
+    cards.code,
+    cards.name,
+    cards.subname,
+    cards.type_code,
+    cards.subtype_code,
+    cards.faction_code,
+    cards.faction2_code,
+    cards.faction3_code,
+    cards.traits,
+    cards.tags,
+    cards.uses,
+    cards.text,
+    cards.flavor,
+    cards.cost,
+    cards.health,
+    cards.sanity,
+    cards.xp,
+    cards.slot,
+    cards.bonded_to,
+    cards.hidden,
+    cards.skill_intellect,
+    cards.skill_combat,
+    cards.skill_agility,
+    cards.skill_willpower,
+    cards.skill_wild,
+    cards.back_text,
+    cards.back_flavor,
+    cards.restrictions,
+    cards.is_unique,
+    cards.customization_text,
+    cards.deck_limit AS printed_deck_limit,
+    IFNULL(cards.exceptional, 0) AS printed_exceptional,
+    cards.deck_options AS printed_deck_options,
+    cards.deck_requirements AS printed_deck_requirements,
     printing.pack_code,
     printing.quantity,
-    printing.position,
-    taboo_cards.code AS "taboo.code",
-    taboo_cards.xp AS "taboo.xp",
-    taboo_cards.deck_limit AS "taboo.deck_limit",
-    taboo_cards.text AS "taboo.text",
-    taboo_cards.replacement_text AS "taboo.replacement_text",
-    taboo_cards.exceptional AS "taboo.exceptional",
-    taboo_cards.replacement_back_text AS "taboo.replacement_back_text",
-    taboo_cards.deck_options AS "taboo.deck_options",
-    taboo_cards.deck_requirements AS "taboo.deck_requirements",
-    taboo_cards.customization_text AS "taboo.customization_text"
-FROM cards 
-JOIN printings AS printing ON cards.code = printing.canonical_code
-LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
-    AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos);
+    printing.position
+FROM cards
+JOIN printings AS printing ON cards.code = printing.canonical_code;
 
 CREATE VIEW card_simplified AS
 SELECT
@@ -139,29 +160,21 @@ SELECT
     cards.faction3_code,
     cards.cost,
     cards.xp,
-    cards.deck_limit,
     cards.slot,
     cards.hidden,
     cards.traits,
     cards.restrictions,
     cards.tags,
     cards.uses,
-    cards.deck_options,
-    cards.deck_requirements,
-    cards.exceptional,
+    cards.deck_limit AS printed_deck_limit,
+    IFNULL(cards.exceptional, 0) AS printed_exceptional,
+    cards.deck_options AS printed_deck_options,
+    cards.deck_requirements AS printed_deck_requirements,
     printing.pack_code,
     printing.position,
-    printing.quantity,
-    taboo_cards.code AS "taboo.code",
-    taboo_cards.xp AS "taboo.xp",
-    taboo_cards.deck_limit AS "taboo.deck_limit",
-    taboo_cards.exceptional AS "taboo.exceptional",
-    taboo_cards.deck_options AS "taboo.deck_options",
-    taboo_cards.deck_requirements AS "taboo.deck_requirements"
+    printing.quantity
 FROM cards
 JOIN printings AS printing ON cards.code = printing.canonical_code
-LEFT JOIN taboo_cards ON cards.code = taboo_cards.code
-    AND taboo_cards.taboo_list = (SELECT MAX(code) FROM taboos)
 GROUP BY cards.code;
 
 CREATE INDEX idx_cards_type ON cards(type_code);

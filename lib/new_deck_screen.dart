@@ -51,11 +51,14 @@ class _NewDeckScreenState extends State<NewDeckScreen> {
 
       final List<String> placeholders = List.filled(packs.length, '?');
 
+      final taboo = TabooClause.active();
       final maps = await db.rawQuery(
         '''
-        SELECT * FROM card_details WHERE type_code = ? 
-        AND pack_code in (${placeholders.join(', ')}) AND bonded_to IS NULL GROUP BY code ORDER BY code''',
-        ['investigator', ...packs],
+        SELECT card_details.*, ${taboo.columns('card_details')}
+        FROM card_details ${taboo.join('card_details')}
+        WHERE type_code = ? AND pack_code in (${placeholders.join(', ')})
+        AND bonded_to IS NULL GROUP BY card_details.code ORDER BY card_details.code''',
+        [...taboo.args, 'investigator', ...packs],
       );
 
       res[expansion] = maps.map((map) => SimplifiedCard.fromMap(map)).toList();
