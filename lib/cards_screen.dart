@@ -97,15 +97,19 @@ class _CardsScreenState extends State<CardsScreen> {
             ),
           ),
 
-          _isLoading
-              ? CircularProgressIndicator()
-              : Expanded(
-                child: CardListWidget(
+          Expanded(
+            child: Stack(
+              children: [
+                CardListWidget(
                   cardList: _cardList,
                   deck: _deck,
                   side: widget.sideDeck,
                 ),
-              ),
+                if (_isLoading)
+                  const Center(child: CircularProgressIndicator()),
+              ],
+            ),
+          ),
         ],
       ),
     );
