@@ -19,6 +19,7 @@ class SimplifiedCard {
   final int? level;
   final int deckLimit;
   final bool exceptional;
+  final bool permanent;
   final Taboo? taboo;
   final String? deckOptions;
   final List<String> traits;
@@ -37,6 +38,7 @@ class SimplifiedCard {
     required this.level,
     required this.deckLimit,
     this.exceptional = false,
+    this.permanent = false,
     this.multiFactions = const [],
     this.subtype,
     this.taboo,
@@ -71,6 +73,7 @@ class SimplifiedCard {
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
         exceptional: map['exceptional'] == 1,
+        permanent: map['permanent'] == 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),
@@ -91,6 +94,7 @@ class SimplifiedCard {
         level: map['xp'],
         deckLimit: map['deck_limit'] ?? 1,
         exceptional: map['exceptional'] == 1,
+        permanent: map['permanent'] == 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
         traits: (map['traits'] as String?)?.split(' '),

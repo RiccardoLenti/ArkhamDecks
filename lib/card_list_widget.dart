@@ -15,6 +15,7 @@ class CardListWidget extends StatelessWidget {
   final Deck? deck;
   final bool sticky;
   final bool side;
+  final bool dimRemoved;
 
   const CardListWidget({
     super.key,
@@ -22,8 +23,10 @@ class CardListWidget extends StatelessWidget {
     this.deck,
     bool? sticky,
     bool? side,
+    bool? dimRemoved,
   }) : sticky = sticky ?? true,
-       side = side ?? false;
+       side = side ?? false,
+       dimRemoved = dimRemoved ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +62,8 @@ class CardListWidget extends StatelessWidget {
                 ...sectionCards.cards.map((card) {
                   return Column(
                     children: [
-                      CardListTile(
-                        key: ValueKey(card.code),
-                        card: card,
-                        cards: cardList.cards,
-                        index: cardList.cards.indexOf(card), //TODO: ?
-                        trailing: AddCardButton(card: card, side: side),
-                      ),
+                      //TODO: indexOf ?
+                      _buildTile(card, cardList.cards.indexOf(card)),
                       const Divider(height: 0),
                     ],
                   );
@@ -74,6 +72,22 @@ class CardListWidget extends StatelessWidget {
             );
           }).toList(),
     );
+  }
+
+  Widget _buildTile(SimplifiedCard card, int index) {
+    final tile = CardListTile(
+      key: ValueKey(card.code),
+      card: card,
+      cards: cardList.cards,
+      index: index,
+      trailing: deck == null ? null : AddCardButton(card: card, side: side),
+    );
+
+    if (!dimRemoved || deck!.lookup(card, side: side).count > 0) {
+      return tile;
+    }
+
+    return Opacity(opacity: 0.4, child: tile);
   }
 
   List<Widget> buildSlivers(BuildContext context) {
@@ -102,16 +116,7 @@ class CardListWidget extends StatelessWidget {
               final card = sectionCards.cards[i];
               return Column(
                 children: [
-                  CardListTile(
-                    key: ValueKey(card.code),
-                    card: card,
-                    cards: cardList.cards,
-                    index: i + cardList.offset(sectionCards.section),
-                    trailing:
-                        deck == null
-                            ? null
-                            : AddCardButton(card: card, side: side),
-                  ),
+                  _buildTile(card, i + cardList.offset(sectionCards.section)),
                   // TODO: bad solution but works for now
                   Divider(height: 0),
                 ],
@@ -176,6 +181,7 @@ class CardListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      contentPadding: EdgeInsets.only(left: 16.0, right: 12.0),
       leading: CostLevelCircle(card: card),
       title: FittedBox(
         fit: BoxFit.scaleDown,

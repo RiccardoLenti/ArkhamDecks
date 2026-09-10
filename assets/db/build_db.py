@@ -75,9 +75,9 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                     sanity, xp, slot, bonded_to, hidden, skill_intellect, skill_combat,
                     skill_agility, skill_willpower, skill_wild, deck_requirements, deck_options,
                     back_text, back_flavor, restrictions, is_unique, customization_text, deck_limit,
-                    exceptional
+                    exceptional, permanent
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 card.get("code"),
                 card.get("name"),
@@ -113,6 +113,7 @@ for path in glob.glob(os.path.join(JSON_DIR, "cards", "**/*.json"), recursive=Tr
                 card.get("customization_text"),
                 card.get("deck_limit"),
                 1 if card.get("exceptional") else 0,
+                1 if card.get("permanent") else 0,
             ))
 
             cur.execute("""

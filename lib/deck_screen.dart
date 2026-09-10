@@ -264,6 +264,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                     cardList: CardList.fromList(deck.deckCards),
                                     deck: deck,
                                     sticky: false,
+                                    dimRemoved: true,
                                   ),
                                 ),
                                 const Divider(height: 64.0),
@@ -308,6 +309,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                     cardList: CardList.fromList(deck.sideCards),
                                     deck: deck,
                                     sticky: false,
+                                    side: true,
                                   ),
                                 ),
                                 const SizedBox(height: 75.0),
@@ -470,6 +472,14 @@ class AddCardButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(
+                width: 36.0,
+                height: 36.0,
+              ),
+              style: IconButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               icon: Icon(Icons.remove),
               onPressed: () {
                 if (!canRemove) return;
@@ -485,6 +495,14 @@ class AddCardButton extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(
+                width: 36.0,
+                height: 36.0,
+              ),
+              style: IconButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               icon: Icon(Icons.add),
               onPressed: () {
                 if (!canAdd) return;
@@ -494,6 +512,31 @@ class AddCardButton extends StatelessWidget {
                   canAdd
                       ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).disabledColor,
+            ),
+            SizedBox(
+              width: 20.0,
+              child:
+                  (side && deckCard.count > 0)
+                      ? IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: OverflowBox(
+                          maxWidth: 40.0,
+                          maxHeight: 40.0,
+                          child: IconManager().getIcon(
+                            'above_arrow',
+                            size: 28.0,
+                            color:
+                                deck.canAdd(card, side: false)
+                                    ? Theme.of(context).colorScheme.onSurface
+                                    : Theme.of(context).disabledColor,
+                          ),
+                        ),
+                        onPressed: () {
+                          if (!deck.canAdd(card, side: false)) return;
+                          deck.moveToMain(deckCard);
+                        },
+                      )
+                      : const SizedBox(width: 48.0),
             ),
           ],
         );

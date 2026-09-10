@@ -18,6 +18,9 @@ const _deckSizeModifiers = {
 // hardcoded
 const _occultEvidence = '06008';
 
+// hardcoded
+const _randomBasicWeakness = '01000';
+
 class Deck extends ChangeNotifier {
   final int id;
   String _name;
@@ -87,7 +90,7 @@ class Deck extends ChangeNotifier {
       [...taboo.args, ...codes],
     );
     final cards = {
-      '01000': 1,
+      _randomBasicWeakness: 1,
       for (final row in limits) row['code'] as String: row['deck_limit'] as int,
     };
 
@@ -238,41 +241,63 @@ class Deck extends ChangeNotifier {
     _limitFilter.setExtraOptions(extraDeckOptions);
   }
 
+  bool _isRequired(String code) =>
+      requiredCodes.contains(code) || code == _randomBasicWeakness;
+
+  void _add(SimplifiedCard card, {required bool side}) {
+    final collection = side ? _side : _main;
+    final deckCard = collection[card.code];
+
+    if (deckCard == null) {
+      collection[card.code] = DeckCard(card, 1, side);
+    } else {
+      deckCard.count++;
+    }
+  }
+
+  bool _remove(SimplifiedCard card, {required bool side}) {
+    final collection = side ? _side : _main;
+    final deckCard = collection[card.code];
+
+    if (deckCard == null || deckCard.count == 0) {
+      return false;
+    }
+
+    deckCard.count--;
+
+    if (deckCard.count == 0 && (side || !_isRequired(card.code))) {
+      collection.remove(card.code);
+    }
+
+    return true;
+  }
+
   void addCard(DeckCard cardToAdd) {
     if (!canAdd(cardToAdd.card, side: cardToAdd.side)) {
       return;
     }
 
-    final collection = cardToAdd.side ? _side : _main;
-    final deckCard = collection[cardToAdd.card.code];
-    if (deckCard == null) {
-      collection[cardToAdd.card.code] = DeckCard(
-        cardToAdd.card,
-        1,
-        cardToAdd.side,
-      );
-    } else {
-      deckCard.count++;
+    _add(cardToAdd.card, side: cardToAdd.side);
+    _invalidateLimits();
+    notifyListeners();
+  }
+
+  void removeCard(DeckCard cardToRemove) {
+    if (!_remove(cardToRemove.card, side: cardToRemove.side)) {
+      return;
     }
 
     _invalidateLimits();
     notifyListeners();
   }
 
-  void removeCard(DeckCard cardToRemove) {
-    final collection = cardToRemove.side ? _side : _main;
-    final deckCard = collection[cardToRemove.card.code];
-
-    if (deckCard == null) {
+  void moveToMain(DeckCard cardToMove) {
+    if (!canAdd(cardToMove.card, side: false) ||
+        !_remove(cardToMove.card, side: true)) {
       return;
     }
 
-    if (deckCard.count > 1) {
-      deckCard.count--;
-    } else {
-      collection.remove(cardToRemove.card.code);
-    }
-
+    _add(cardToMove.card, side: false);
     _invalidateLimits();
     notifyListeners();
   }
@@ -300,14 +325,16 @@ class Deck extends ChangeNotifier {
 
   // TODO: signaturesCount is dead now, drop the column
   int get nonExtraCardsCount => _main.values
-      .where((deckCard) => !_isExtra(deckCard.card))
+      .where((deckCard) => !_isExtra(deckCard.card) && !deckCard.card.permanent)
       .fold(0, (acc, el) => acc + el.count);
 
   bool get _hasRequiredCards =>
       requiredCards(deckRequirements).every(_hasEveryCopyOf) &&
       (!deckRequirements.contains('random:subtype:basicweakness') ||
           _main.values.any(
-            (deckCard) => deckCard.card.subtype == Subtype.basicWeakness,
+            (deckCard) =>
+                deckCard.count > 0 &&
+                deckCard.card.subtype == Subtype.basicWeakness,
           ));
 
   // TODO: recheck deck_limit is the required count once more cards are supported

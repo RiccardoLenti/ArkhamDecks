@@ -39,7 +39,8 @@ CREATE TABLE cards (
     is_unique BOOLEAN,
     customization_text TEXT,
     deck_limit INTEGER,
-    exceptional BOOLEAN
+    exceptional BOOLEAN,
+    permanent BOOLEAN
 );
 
 --TODO: add references for pack_code?
@@ -162,6 +163,7 @@ SELECT
     cards.xp,
     cards.slot,
     cards.hidden,
+    cards.permanent,
     cards.traits,
     cards.restrictions,
     cards.tags,

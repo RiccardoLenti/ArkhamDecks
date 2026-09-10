@@ -90,7 +90,10 @@ class CardList {
         continue;
       }
 
-      map[card.slots!.join('|')]!.add(card);
+      map[card.permanent
+              ? Section.permanent.slots!.join('|')
+              : card.slots!.join('|')]!
+          .add(card);
     }
 
     return Section.assets()
@@ -192,6 +195,7 @@ enum Section {
   handx2Arcane('Asset', ['Hand x2', 'Arcane']),
   allyArcane('Asset', ['Ally', 'Arcane']),
   asset('Asset', []),
+  permanent('Asset', ['Permanent']),
   event('Event', null),
   skill('Skill', null),
   other('Other', null);
@@ -216,5 +220,6 @@ enum Section {
     handx2Arcane,
     allyArcane,
     asset,
+    permanent,
   ];
 }
