@@ -19,6 +19,7 @@ dependencies:
   provider: ^6.1.5+1
   flutter_sticky_header: ^0.8.0
   html: 0.15.6
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

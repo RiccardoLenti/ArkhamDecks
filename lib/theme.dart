@@ -156,6 +156,7 @@ class AppTheme {
       backgroundColor: colorScheme.surfaceContainer,
       elevation: 0.0,
       scrolledUnderElevation: 0.0,
+      iconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
       actionsIconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
     );
     final listTileTheme = ListTileThemeData(
