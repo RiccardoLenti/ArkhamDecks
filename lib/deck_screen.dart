@@ -25,6 +25,8 @@ class DeckScreen extends StatefulWidget {
 class _DeckScreenState extends State<DeckScreen> {
   late final SearchFilters _searchFilters;
   late final Future<void> _deckFuture;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _sideDeckKey = GlobalKey();
   bool _isDeckDeleted = false;
 
   @override
@@ -50,7 +52,29 @@ class _DeckScreenState extends State<DeckScreen> {
   @override
   void dispose() {
     widget.deck.removeListener(_syncFilters);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  double? get _sideDeckY {
+    final box = _sideDeckKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.localToGlobal(Offset.zero).dy;
+  }
+
+  void keepSideDeckStill(VoidCallback action) {
+    final before = _sideDeckY;
+    action();
+    if (before == null || !_scrollController.hasClients) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final after = _sideDeckY;
+      if (after == null || !_scrollController.hasClients) return;
+      final position = _scrollController.position;
+      final target = (position.pixels + after - before).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      );
+      if (target != position.pixels) _scrollController.jumpTo(target);
+    });
   }
 
   @override
@@ -171,6 +195,7 @@ class _DeckScreenState extends State<DeckScreen> {
 
                       Expanded(
                         child: SingleChildScrollView(
+                          controller: _scrollController,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8.0,
@@ -269,6 +294,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                 ),
                                 const Divider(height: 64.0),
                                 BoxBorder(
+                                  key: _sideDeckKey,
                                   color:
                                       AppColors
                                           .factions[deck.investigator.faction]!
@@ -533,7 +559,16 @@ class AddCardButton extends StatelessWidget {
                         ),
                         onPressed: () {
                           if (!deck.canAdd(card, side: false)) return;
-                          deck.moveToMain(deckCard);
+                          final screen =
+                              context
+                                  .findAncestorStateOfType<_DeckScreenState>();
+                          if (screen == null) {
+                            deck.moveToMain(deckCard);
+                          } else {
+                            screen.keepSideDeckStill(
+                              () => deck.moveToMain(deckCard),
+                            );
+                          }
                         },
                       )
                       : const SizedBox(width: 48.0),
