@@ -21,5 +21,9 @@
         "error": "Your deck must include at least 10 skills"
       }
     ]
+  },
+  {
+    "code": "01000",
+    "hidden": false
   }
 ]
