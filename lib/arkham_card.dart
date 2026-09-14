@@ -22,6 +22,7 @@ class SimplifiedCard {
   final bool permanent;
   final Taboo? taboo;
   final String? deckOptions;
+  final String? deckRequirements;
   final List<String> traits;
   final String? restrictions;
   final String? tags;
@@ -43,6 +44,7 @@ class SimplifiedCard {
     this.subtype,
     this.taboo,
     this.deckOptions,
+    this.deckRequirements,
     List<String>? traits,
     this.restrictions,
     this.tags,
@@ -76,6 +78,7 @@ class SimplifiedCard {
         permanent: map['permanent'] == 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
+        deckRequirements: map['deck_requirements'],
         traits: (map['traits'] as String?)?.split(' '),
         restrictions: map['restrictions'],
         tags: map['tags'],
@@ -97,6 +100,7 @@ class SimplifiedCard {
         permanent: map['permanent'] == 1,
         taboo: Taboo.fromSimplifiedMap(map),
         deckOptions: map['deck_options'],
+        deckRequirements: map['deck_requirements'],
         traits: (map['traits'] as String?)?.split(' '),
         restrictions: map['restrictions'],
         tags: map['tags'],

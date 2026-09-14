@@ -130,11 +130,12 @@ void main() {
       expect(args, isNot(contains('%improvised%')));
     });
 
-    test('Marion with no selection falls back to the first sub-option', () {
+    test('Marion with no selection offers every sub-option', () {
       final args = InvestigatorFilter(marionOptions).whereClause.args;
 
       expect(args, contains('%improvised%'));
-      expect(args, isNot(contains('%gambit%')));
+      expect(args, contains('%gambit%'));
+      expect(args, contains('%fortune%'));
     });
   });
 

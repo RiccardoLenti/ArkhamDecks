@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_list.dart';
 import 'package:arkham_decks/card_list_widget.dart';
 import 'package:arkham_decks/deck.dart';
@@ -114,4 +115,35 @@ class _CardsScreenState extends State<CardsScreen> {
       ),
     );
   }
+}
+
+class InvestigatorCardsScreen extends StatefulWidget {
+  final SimplifiedCard investigator;
+
+  const InvestigatorCardsScreen({super.key, required this.investigator});
+
+  @override
+  State<InvestigatorCardsScreen> createState() =>
+      _InvestigatorCardsScreenState();
+}
+
+class _InvestigatorCardsScreenState extends State<InvestigatorCardsScreen> {
+  late final SearchFilters _searchFilters = SearchFilters(
+    deckOptions: widget.investigator.deckOptions,
+    investigator: widget.investigator,
+    requiredCodes:
+        Deck.requiredCards(
+          widget.investigator.deckRequirements ?? '',
+        ).expand((codes) => codes).toList(),
+  );
+
+  @override
+  void dispose() {
+    _searchFilters.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      CardsScreen(searchFilters: _searchFilters);
 }

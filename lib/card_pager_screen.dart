@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/card_detail_screen.dart';
+import 'package:arkham_decks/cards_screen.dart';
 
 class CardPagerScreen extends StatefulWidget {
   final List<SimplifiedCard> cards;
@@ -43,18 +44,43 @@ class _CardPagerScreenState extends State<CardPagerScreen> {
         actions: [
           ValueListenableBuilder(
             valueListenable: _page,
-            builder:
-                (context, index, _) => IconButton(
-                  onPressed:
-                      () => launchUrl(
-                        Uri.parse(
-                          'https://arkhamdb.com/card/${widget.cards[index].code}',
-                        ),
-                        mode: LaunchMode.externalApplication,
+            builder: (context, index, _) {
+              final card = widget.cards[index];
+
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (card.type == 'investigator' && card.deckOptions != null)
+                    IconButton(
+                      onPressed:
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => InvestigatorCardsScreen(
+                                    investigator: card,
+                                  ),
+                            ),
+                          ),
+                      icon: IconManager().getIcon(
+                        'cards',
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
-                  icon: IconManager().getIcon('world', color: 
-                  Theme.of(context).colorScheme.onSurface),
-                ),
+                    ),
+                  IconButton(
+                    onPressed:
+                        () => launchUrl(
+                          Uri.parse('https://arkhamdb.com/card/${card.code}'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                    icon: IconManager().getIcon(
+                      'world',
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

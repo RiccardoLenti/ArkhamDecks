@@ -158,17 +158,19 @@ class InvestigatorFilter extends BaseFilter {
           [
             ...jsonDecode(deckOptions!),
             for (final extra in _extraOptions) ...jsonDecode(extra),
-          ].cast<Map<String, dynamic>>().map(_resolve).toList();
+          ].cast<Map<String, dynamic>>().expand(_resolve).toList();
 
-  Map<String, dynamic> _resolve(Map<String, dynamic> option) {
+  Iterable<Map<String, dynamic>> _resolve(Map<String, dynamic> option) {
     if (option['faction_select'] != null) {
       final key = option['id'] as String? ?? 'faction_selected';
       final selected = _selections[key];
 
-      return {
-        ...option,
-        'faction': selected == null ? option['faction_select'] : [selected],
-      };
+      return [
+        {
+          ...option,
+          'faction': selected == null ? option['faction_select'] : [selected],
+        },
+      ];
     }
 
     if (option['option_select'] != null) {
@@ -177,10 +179,10 @@ class InvestigatorFilter extends BaseFilter {
           (option['option_select'] as List).cast<Map<String, dynamic>>();
       final chosen = subs.where((sub) => sub['id'] == _selections[key]);
 
-      return {...option, ...(chosen.isEmpty ? subs.first : chosen.first)};
+      return (chosen.isEmpty ? subs : chosen).map((sub) => {...option, ...sub});
     }
 
-    return option;
+    return [option];
   }
 
   List<Map<String, dynamic>> get _countedOptions {
