@@ -116,6 +116,8 @@ class ArkhamCard extends SimplifiedCard {
   final String? backText;
   final String? backFlavor;
   final int? health, sanity;
+  final int? enemyFight, enemyEvade;
+  final int enemyDamage, enemyHorror;
   final bool isUnique;
   final List<String> customizationText;
   final List<String> additionalCards;
@@ -143,6 +145,10 @@ class ArkhamCard extends SimplifiedCard {
     super.restrictions,
     this.health,
     this.sanity,
+    this.enemyFight,
+    this.enemyEvade,
+    int? enemyDamage,
+    int? enemyHorror,
     this.isUnique = false,
     List<String>? customizationText,
     List<String>? additionalCards,
@@ -152,7 +158,9 @@ class ArkhamCard extends SimplifiedCard {
     this.backFlavor,
     this.taboo,
   }) : customizationText = customizationText ?? const [],
-       additionalCards = additionalCards ?? const [];
+       additionalCards = additionalCards ?? const [],
+       enemyDamage = enemyDamage ?? 0,
+       enemyHorror = enemyHorror ?? 0;
 
   ///calling this constructor directly DOES NOT handle bonded cards
   factory ArkhamCard.fromMap(
@@ -195,6 +203,10 @@ class ArkhamCard extends SimplifiedCard {
       text: map['text'] as String?,
       health: map['health'] as int?,
       sanity: map['sanity'] as int?,
+      enemyFight: map['enemy_fight'] as int?,
+      enemyEvade: map['enemy_evade'] as int?,
+      enemyDamage: map['enemy_damage'] as int?,
+      enemyHorror: map['enemy_horror'] as int?,
       flavor: map['flavor'] as String?,
       backText: map['back_text'] as String?,
       backFlavor: map['back_flavor'] as String?,

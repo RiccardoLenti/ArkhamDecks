@@ -89,15 +89,22 @@ class CardView extends StatelessWidget {
                                     TypeAndSlots(card: card),
                                     if (card.traits.isNotEmpty)
                                       Traits(card: card),
-                                    if (card.commitSkills.isNotEmpty)
-                                      CommitIcons(card: card),
+                                    if (card.type == 'enemy') ...[
+                                      EnemyStats(card: card),
+                                      if (card.enemyDamage > 0 ||
+                                          card.enemyHorror > 0)
+                                        EnemyDamageHorror(card: card),
+                                    ] else ...[
+                                      if (card.commitSkills.isNotEmpty)
+                                        CommitIcons(card: card),
 
-                                    if (card.health != null ||
-                                        card.sanity != null)
-                                      HealthSanityIcon(
-                                        valueHealth: card.health,
-                                        valueSanity: card.sanity,
-                                      ),
+                                      if (card.health != null ||
+                                          card.sanity != null)
+                                        HealthSanityIcon(
+                                          valueHealth: card.health,
+                                          valueSanity: card.sanity,
+                                        ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -302,14 +309,16 @@ class TypeAndSlots extends StatelessWidget {
 
   const TypeAndSlots({super.key, required this.card});
 
+  String get _label => [
+    card.type[0].toUpperCase() + card.type.substring(1),
+    if (card.subtype != null) card.subtype!.label,
+    if (card.slots != null && card.slots!.isNotEmpty) card.slots!.join(' - '),
+  ].join('  •  ');
+
   @override
   Widget build(BuildContext context) {
-    final type = card.type[0].toUpperCase() + card.type.substring(1);
-
     return Text(
-      card.slots == null || card.slots!.isEmpty
-          ? type
-          : '$type  •  ${card.slots!.join(' - ')}',
+      _label,
       style: TextStyle(
         fontFamily: 'Alegreya',
         height: 0.4,
@@ -405,6 +414,131 @@ class HealthSanityIcon extends StatelessWidget {
                 color: AppColors.sanity,
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EnemyStats extends StatelessWidget {
+  final ArkhamCard card;
+
+  const EnemyStats({super.key, required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: 5.0,
+      children: [
+        _buildBox(
+          context,
+          card.enemyFight,
+          'skill_combat',
+          AppColors.stats[2],
+          true,
+        ),
+        _buildBox(context, card.health, null, null, false),
+        _buildBox(
+          context,
+          card.enemyEvade,
+          'skill_agility',
+          AppColors.stats[3],
+          false,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBox(
+    BuildContext context,
+    int? value,
+    String? iconName,
+    Color? color,
+    bool iconFirst,
+  ) {
+    final icon =
+        iconName == null
+            ? null
+            : Stack(
+              children: [
+                IconManager().getIcon(iconName, size: 22, color: color),
+                IconManager().getIcon(
+                  '${iconName}_inverted',
+                  size: 22,
+                  color: Colors.white,
+                ),
+              ],
+            );
+
+    return Container(
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceDim,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 5.0,
+        children: [
+          if (icon != null && iconFirst) icon,
+          Text(
+            value?.toString() ?? '-',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          if (icon != null && !iconFirst) icon,
+        ],
+      ),
+    );
+  }
+}
+
+class EnemyDamageHorror extends StatelessWidget {
+  final ArkhamCard card;
+
+  const EnemyDamageHorror({super.key, required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4.0),
+      child: Row(
+        spacing: 4.0,
+        children: [
+          ...List.generate(
+            card.enemyDamage,
+            (_) => Stack(
+              children: [
+                IconManager().getIcon(
+                  'health_inverted',
+                  size: 22,
+                  color: Colors.white,
+                ),
+                IconManager().getIcon(
+                  'health',
+                  size: 22,
+                  color: AppColors.health,
+                ),
+              ],
+            ),
+          ),
+          ...List.generate(
+            card.enemyHorror,
+            (_) => Stack(
+              children: [
+                IconManager().getIcon(
+                  'sanity_inverted',
+                  size: 22,
+                  color: Colors.white,
+                ),
+                IconManager().getIcon(
+                  'sanity',
+                  size: 22,
+                  color: AppColors.sanity,
+                ),
+              ],
+            ),
           ),
         ],
       ),
