@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:arkham_decks/arkham_card.dart';
 import 'package:arkham_decks/database.dart';
@@ -300,6 +301,42 @@ class Deck extends ChangeNotifier {
     _add(cardToMove.card, side: false);
     _invalidateLimits();
     notifyListeners();
+  }
+
+  Future<String?> drawRandomBasicWeakness() async {
+    final placeholder = _main[_randomBasicWeakness];
+    if (placeholder == null || placeholder.count == 0) return null;
+
+    final db = await DatabaseHelper.instance.db;
+    final taboo = TabooClause.active();
+    //TODO: limit this to the current collection
+    final rows = await db.rawQuery(
+      'SELECT card_simplified.*, ${taboo.columns('card_simplified')} '
+      'FROM card_simplified ${taboo.join('card_simplified')} '
+      'WHERE card_simplified.subtype_code = ? '
+      'AND card_simplified.code != ? AND NOT card_simplified.hidden',
+      [...taboo.args, 'basicweakness', _randomBasicWeakness],
+    );
+
+    final candidates = rows
+        .map(SimplifiedCard.fromMap)
+        .where(_limitFilter.allows)
+        .expand((card) => List.filled(
+              (card.deckLimit - lookup(card, side: false).count -
+                      lookup(card, side: true).count)
+                  .clamp(0, card.deckLimit),
+              card,
+            ))
+        .toList();
+    if (candidates.isEmpty) return null;
+
+    final chosen = candidates[Random().nextInt(candidates.length)];
+    if (placeholder.count == 0) return null;
+    _remove(placeholder.card, side: false);
+    _add(chosen, side: false);
+    _invalidateLimits();
+    notifyListeners();
+    return chosen.name;
   }
 
   String get investigatorName => investigator.name;

@@ -10,12 +10,14 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 /// If sticky this uses slivers.
 /// If !sticky this uses a column.
+/// dimRemoved dims removed required cards instead of removing them completely
 class CardListWidget extends StatelessWidget {
   final CardList cardList;
   final Deck? deck;
   final bool sticky;
   final bool side;
   final bool dimRemoved;
+  final bool showDrawWeakness;
 
   const CardListWidget({
     super.key,
@@ -24,6 +26,7 @@ class CardListWidget extends StatelessWidget {
     bool? sticky,
     bool? side,
     bool? dimRemoved,
+    this.showDrawWeakness = false,
   }) : sticky = sticky ?? true,
        side = side ?? false,
        dimRemoved = dimRemoved ?? false;
@@ -80,7 +83,14 @@ class CardListWidget extends StatelessWidget {
       card: card,
       cards: cardList.cards,
       index: index,
-      trailing: deck == null ? null : AddCardButton(card: card, side: side),
+      trailing:
+          deck == null
+              ? null
+              : AddCardButton(
+                card: card,
+                side: side,
+                showDrawWeakness: showDrawWeakness,
+              ),
     );
 
     if (!dimRemoved || deck!.lookup(card, side: side).count > 0) {

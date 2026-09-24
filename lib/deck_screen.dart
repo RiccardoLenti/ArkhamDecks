@@ -290,6 +290,7 @@ class _DeckScreenState extends State<DeckScreen> {
                                     deck: deck,
                                     sticky: false,
                                     dimRemoved: true,
+                                    showDrawWeakness: true,
                                   ),
                                 ),
                                 const Divider(height: 64.0),
@@ -484,7 +485,13 @@ class _DeckScreenState extends State<DeckScreen> {
 class AddCardButton extends StatelessWidget {
   final SimplifiedCard card;
   final bool side;
-  const AddCardButton({super.key, required this.card, required this.side});
+  final bool showDrawWeakness;
+  const AddCardButton({
+    super.key,
+    required this.card,
+    required this.side,
+    this.showDrawWeakness = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -542,7 +549,33 @@ class AddCardButton extends StatelessWidget {
             SizedBox(
               width: 20.0,
               child:
-                  (side && deckCard.count > 0)
+                  // TODO: this ui sucks. The code is a mess.
+                  (showDrawWeakness &&
+                          !side &&
+                          deckCard.card.code == "01000" &&
+                          deckCard.count > 0)
+                      ? IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: OverflowBox(
+                          maxWidth: 40.0,
+                          maxHeight: 40.0,
+                          child: Icon(Icons.shuffle, size: 22.0),
+                        ),
+                        onPressed: () async {
+                          final name = await deck.drawRandomBasicWeakness();
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                name == null
+                                    ? 'No basic weaknesses available'
+                                    : 'You drew $name',
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                      : (side && deckCard.count > 0)
                       ? IconButton(
                         padding: EdgeInsets.zero,
                         icon: OverflowBox(
